@@ -1,0 +1,12 @@
+on:
+  push:
+  pull_request:
+
+jobs:
+  call-reusable:
+    uses: 3592917/ci-templates/.github/workflows/flutter-reusable.yml@main
+    with:
+      channel: 'stable'
+      run_ios: false
+      run_android_build: true
+      upload_apk: true
