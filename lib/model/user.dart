@@ -10,7 +10,7 @@ class User {
   String? phoneNumber;
   String? role;
   String? urlImage;
-  //DateTime? createdAt;
+  //DateTime? createdAt; no se si sera necesario teniendo en cuenta los requisitos
 
   //CONSTRUCTOR
   User({this.id, this.name, this.email, this.phoneNumber, this.role,
