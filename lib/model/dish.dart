@@ -4,7 +4,6 @@ part 'dish.g.dart';
 @JsonSerializable()
 class Dish {
   //ATTRIBUTES
-
   int? id;
   String? name;
   String? description;
