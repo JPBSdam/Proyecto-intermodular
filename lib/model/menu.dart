@@ -3,7 +3,7 @@ part 'menu.g.dart';
 
 @JsonSerializable()
 class Menu {
-  //ATRIBUTES
+  //ATTRIBUTES
   int? id;
   String? name;
   String? description;
