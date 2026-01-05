@@ -7,7 +7,7 @@ class Reservation {
   int? id;
   int? userId;
   int? seats;
-  DateTime? reservationDate; //creo que sera mas facil unificar fecha y hora, si no se cambia
+  DateTime? reservationDate; //creo que sera mas facil unificar fecha y hora, si hace falta, se cambia
   String? state;
   String? comments;
 
