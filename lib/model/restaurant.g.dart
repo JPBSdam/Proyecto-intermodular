@@ -7,16 +7,16 @@ part of 'restaurant.dart';
 // **************************************************************************
 
 Restaurant _$RestaurantFromJson(Map<String, dynamic> json) => Restaurant(
-  (json['id'] as num?)?.toInt(),
-  json['name'] as String?,
-  json['address'] as String?,
-  json['phoneNumber'] as String?,
-  json['description'] as String?,
-  json['email'] as String?,
-  (json['capacity'] as num?)?.toInt(),
-  json['urlImage'] as String?,
-  json['open'] as bool?,
-  (json['schedule'] as Map<String, dynamic>?)?.map(
+  id: (json['id'] as num?)?.toInt(),
+  name: json['name'] as String?,
+  address: json['address'] as String?,
+  phoneNumber: json['phoneNumber'] as String?,
+  description: json['description'] as String?,
+  email: json['email'] as String?,
+  capacity: (json['capacity'] as num?)?.toInt(),
+  urlImage: json['urlImage'] as String?,
+  open: json['open'] as bool?,
+  schedule: (json['schedule'] as Map<String, dynamic>?)?.map(
     (k, e) => MapEntry(k, e as String),
   ),
 );

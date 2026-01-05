@@ -16,9 +16,9 @@ class Restaurant {
   Map<String, String>? schedule;
 
   //CONSTRUCTOR
-  Restaurant(this.id, this.name, this.address, this.phoneNumber,
+  Restaurant({this.id, this.name, this.address, this.phoneNumber,
       this.description, this.email, this.capacity, this.urlImage, this.open,
-      this.schedule);
+      this.schedule});
 
   //JSONSERIALIZABLE
   factory Restaurant.fromJson(Map<String, dynamic> json) => _$RestaurantFromJson(json);
