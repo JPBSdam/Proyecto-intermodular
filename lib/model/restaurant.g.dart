@@ -19,12 +19,12 @@ Restaurant _$RestaurantFromJson(Map<String, dynamic> json) => Restaurant(
   schedule: (json['schedule'] as Map<String, dynamic>?)?.map(
     (k, e) => MapEntry(k, e as String),
   ),
-)..admin = (json['admin'] as num?)?.toInt();
+)..adminId = (json['admin_id'] as num?)?.toInt();
 
 Map<String, dynamic> _$RestaurantToJson(Restaurant instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'admin': instance.admin,
+      'admin_id': instance.adminId,
       'name': instance.name,
       'address': instance.address,
       'phone_number': instance.phoneNumber,
