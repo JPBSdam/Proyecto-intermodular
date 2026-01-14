@@ -1,10 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'restaurant.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  disallowUnrecognizedKeys: false,
+)
 class Restaurant {
   //ATTRIBUTES
   int? id;
+  int? admin; //aqui va el id del user propietario
   String? name;
   String? address;
   String? phoneNumber;
@@ -16,12 +20,22 @@ class Restaurant {
   Map<String, String>? schedule;
 
   //CONSTRUCTOR
-  Restaurant({this.id, this.name, this.address, this.phoneNumber,
-      this.description, this.email, this.capacity, this.urlImage, this.open,
-      this.schedule});
+  Restaurant({
+    this.id,
+    this.name,
+    this.address,
+    this.phoneNumber,
+    this.description,
+    this.email,
+    this.capacity,
+    this.urlImage,
+    this.open,
+    this.schedule,
+  });
 
   //JSONSERIALIZABLE
-  factory Restaurant.fromJson(Map<String, dynamic> json) => _$RestaurantFromJson(json);
+  factory Restaurant.fromJson(Map<String, dynamic> json) =>
+      _$RestaurantFromJson(json);
   Map<String, dynamic> toJson() => _$RestaurantToJson(this);
 
   //TOSTRING
