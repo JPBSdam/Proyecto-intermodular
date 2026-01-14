@@ -8,7 +8,7 @@ part 'restaurant.g.dart';
 class Restaurant {
   //ATTRIBUTES
   int? id;
-  int? admin; //aqui va el id del user propietario
+  int? adminId; //aqui va el id del user propietario
   String? name;
   String? address;
   String? phoneNumber;
