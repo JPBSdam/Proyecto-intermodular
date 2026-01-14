@@ -1,7 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'dish.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  disallowUnrecognizedKeys: false,
+)
 class Dish {
   //ATTRIBUTES
   int? id;
@@ -14,8 +17,15 @@ class Dish {
   //DateTime? createdAt; no creo que sea necesario guardar cuando se crea un plato?
 
   //CONSTRUCTOR
-  Dish({this.id, this.name, this.description, this.category, this.urlImage,
-      this.price, this.available});
+  Dish({
+    this.id,
+    this.name,
+    this.description,
+    this.category,
+    this.urlImage,
+    this.price,
+    this.available,
+  });
 
   //JSONSERIALIZABLE
   factory Dish.fromJson(Map<String, dynamic> json) => _$DishFromJson(json);
@@ -26,10 +36,4 @@ class Dish {
   String toString() {
     return 'Dish{id: $id, name: $name, description: $description, category: $category, urlImage: $urlImage, price: $price, available: $available}';
   }
-
-
-
-
-
-
 }

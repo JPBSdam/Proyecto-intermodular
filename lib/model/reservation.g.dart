@@ -8,11 +8,11 @@ part of 'reservation.dart';
 
 Reservation _$ReservationFromJson(Map<String, dynamic> json) => Reservation(
   id: (json['id'] as num?)?.toInt(),
-  userId: (json['userId'] as num?)?.toInt(),
+  userId: (json['user_id'] as num?)?.toInt(),
   seats: (json['seats'] as num?)?.toInt(),
-  reservationDate: json['reservationDate'] == null
+  reservationDate: json['reservation_date'] == null
       ? null
-      : DateTime.parse(json['reservationDate'] as String),
+      : DateTime.parse(json['reservation_date'] as String),
   state: json['state'] as String?,
   comments: json['comments'] as String?,
 );
@@ -20,9 +20,9 @@ Reservation _$ReservationFromJson(Map<String, dynamic> json) => Reservation(
 Map<String, dynamic> _$ReservationToJson(Reservation instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'userId': instance.userId,
+      'user_id': instance.userId,
       'seats': instance.seats,
-      'reservationDate': instance.reservationDate?.toIso8601String(),
+      'reservation_date': instance.reservationDate?.toIso8601String(),
       'state': instance.state,
       'comments': instance.comments,
     };

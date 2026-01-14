@@ -1,7 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'menu.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  disallowUnrecognizedKeys: false,
+)
 class Menu {
   //ATTRIBUTES
   int? id;
@@ -13,8 +16,14 @@ class Menu {
   //DateTime? createdAt; no creo que sea necesario guardar cuando se crea un menu?
 
   //CONSTRUCTOR
-  Menu({this.id, this.name, this.description, this.dishes, this.price,
-    this.available});
+  Menu({
+    this.id,
+    this.name,
+    this.description,
+    this.dishes,
+    this.price,
+    this.available,
+  });
 
   //JSONSERIALIZABLE
   factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);

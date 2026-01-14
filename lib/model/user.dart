@@ -1,7 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'user.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  disallowUnrecognizedKeys: false,
+)
 class User {
   //ATTRIBUTES
   int? id;
@@ -13,8 +16,14 @@ class User {
   //DateTime? createdAt; no se si sera necesario teniendo en cuenta los requisitos
 
   //CONSTRUCTOR
-  User({this.id, this.name, this.email, this.phoneNumber, this.role,
-      this.urlImage});
+  User({
+    this.id,
+    this.name,
+    this.email,
+    this.phoneNumber,
+    this.role,
+    this.urlImage,
+  });
 
   //JSONSERIALIZABLE
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
