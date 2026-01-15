@@ -83,5 +83,4 @@ class DefaultFirebaseOptions {
     authDomain: 'fir-proyecto-intermodular.firebaseapp.com',
     storageBucket: 'fir-proyecto-intermodular.firebasestorage.app',
   );
-
 }
