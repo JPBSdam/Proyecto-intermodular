@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Reservation {
   //ATTRIBUTES
   int? id;
@@ -17,6 +19,35 @@ class Reservation {
     this.state,
     this.comments,
   }); //DateTime? createdAt;
+
+  //FROMFIRESTORE
+  factory Reservation.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final map = snapshot.data();
+    Timestamp? ts = map?['reservationDate'] as Timestamp?;
+    return Reservation(
+      id: int.tryParse(snapshot.id),
+      userId: map?['userId'] as int?,
+      seats: map?['seats'] as int?,
+      reservationDate: ts?.toDate(),
+      state: map?['state'] as String?,
+      comments: map?['comments'] as String?,
+    );
+  }
+
+  //TOFIRESTORE
+  Map<String, dynamic> toFirestore() {
+    return {
+      if (userId != null) "userId": userId,
+      if (seats != null) "seats": seats,
+      if (reservationDate != null)
+        "reservationDate": Timestamp.fromDate(reservationDate!),
+      if (state != null) "state": state,
+      if (comments != null) "comments": comments,
+    };
+  }
 
   //TOSTRING
   @override
