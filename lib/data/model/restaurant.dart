@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Restaurant {
   //ATTRIBUTES
-  int? id;
-  int? adminId; //aqui va el id del user propietario
+  String? id;
+  String? adminId; //aqui va el id del user propietario
   String? name;
   String? address;
   String? phoneNumber;
@@ -38,8 +38,8 @@ class Restaurant {
     final rawSchedule = map?['schedule'] as Map<String, dynamic>?;
 
     return Restaurant(
-      id: int.tryParse(snapshot.id),
-      adminId: map?['adminId'] as int?,
+      id: snapshot.id,
+      adminId: map?['adminId'] as String?,
       name: map?['name'] as String?,
       address: map?['address'] as String?,
       phoneNumber: map?['phoneNumber'] as String?,
