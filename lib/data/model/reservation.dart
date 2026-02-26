@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Reservation {
   //ATTRIBUTES
-  int? id;
-  int? userId;
+  String? id;
+  String? userId;
   int? seats;
   DateTime?
   reservationDate; //creo que sera mas facil unificar fecha y hora, si hace falta, se cambia
@@ -28,8 +28,8 @@ class Reservation {
     final map = snapshot.data();
     Timestamp? ts = map?['reservationDate'] as Timestamp?;
     return Reservation(
-      id: int.tryParse(snapshot.id),
-      userId: map?['userId'] as int?,
+      id: snapshot.id,
+      userId: map?['userId'] as String?,
       seats: map?['seats'] as int?,
       reservationDate: ts?.toDate(),
       state: map?['state'] as String?,

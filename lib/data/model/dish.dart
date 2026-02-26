@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Dish {
   //ATTRIBUTES
-  int? id;
+  String? id;
   String? name;
   String? description;
   String? category;
@@ -29,7 +29,7 @@ class Dish {
   ) {
     final map = snapshot.data();
     return Dish(
-      id: int.tryParse(snapshot.id),
+      id: snapshot.id,
       name: map?['name'] as String?,
       description: map?['description'] as String?,
       category: map?['category'] as String?,
