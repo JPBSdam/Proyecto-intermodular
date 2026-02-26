@@ -1,10 +1,5 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'reservation.g.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class Reservation {
   //ATTRIBUTES
   int? id;
@@ -25,10 +20,34 @@ class Reservation {
     this.comments,
   }); //DateTime? createdAt;
 
-  //JSONSERIALIZABLE
-  factory Reservation.fromJson(Map<String, dynamic> json) =>
-      _$ReservationFromJson(json);
-  Map<String, dynamic> toJson() => _$ReservationToJson(this);
+  //FROMFIRESTORE
+  factory Reservation.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final map = snapshot.data();
+    Timestamp? ts = map?['reservationDate'] as Timestamp?;
+    return Reservation(
+      id: int.tryParse(snapshot.id),
+      userId: map?['userId'] as int?,
+      seats: map?['seats'] as int?,
+      reservationDate: ts?.toDate(),
+      state: map?['state'] as String?,
+      comments: map?['comments'] as String?,
+    );
+  }
+
+  //TOFIRESTORE
+  Map<String, dynamic> toFirestore() {
+    return {
+      if (userId != null) "userId": userId,
+      if (seats != null) "seats": seats,
+      if (reservationDate != null)
+        "reservationDate": Timestamp.fromDate(reservationDate!),
+      if (state != null) "state": state,
+      if (comments != null) "comments": comments,
+    };
+  }
 
   //TOSTRING
   @override

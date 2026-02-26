@@ -1,10 +1,5 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'user.g.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class User {
   //ATTRIBUTES
   int? id;
@@ -25,13 +20,30 @@ class User {
     this.urlImage,
   });
 
-  //JSONSERIALIZABLE
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  //FROMFIRESTORE
+  factory User.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final map = snapshot.data();
+    return User(
+      id: int.tryParse(snapshot.id),
+      name: map?['name'] as String?,
+      email: map?['email'] as String?,
+      phoneNumber: map?['phoneNumber'] as String?,
+      role: map?['role'] as String?,
+      urlImage: map?['urlImage'] as String?,
+    );
+  }
 
-  //TOSTRING
-  @override
-  String toString() {
-    return 'User{id: $id, name: $name, email: $email, phoneNumber: $phoneNumber, role: $role, urlImage: $urlImage}';
+  //TOFIRESTORE
+  Map<String, dynamic> toFirestore() {
+    return {
+      if (name != null) "name": name,
+      if (email != null) "email": email,
+      if (phoneNumber != null) "phoneNumber": phoneNumber,
+      if (role != null) "role": role,
+      if (urlImage != null) "urlImage": urlImage,
+    };
   }
 }
