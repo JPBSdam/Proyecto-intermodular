@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "941200508100",
+    "project_id": "fir-proyecto-intermodular",
+    "storage_bucket": "fir-proyecto-intermodular.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941200508100:android:7cd004a2809b4fc693b591",
+        "android_client_info": {
+          "package_name": "com.example.app_restaurante"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwGuvxxDp9tQFPQD7AGy55dYBnIoOLti4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
