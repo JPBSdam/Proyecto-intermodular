@@ -1,10 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'restaurant.g.dart';
-
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class Restaurant {
   //ATTRIBUTES
   int? id;
@@ -32,11 +25,6 @@ class Restaurant {
     this.open,
     this.schedule,
   });
-
-  //JSONSERIALIZABLE
-  factory Restaurant.fromJson(Map<String, dynamic> json) =>
-      _$RestaurantFromJson(json);
-  Map<String, dynamic> toJson() => _$RestaurantToJson(this);
 
   //TOSTRING
   @override

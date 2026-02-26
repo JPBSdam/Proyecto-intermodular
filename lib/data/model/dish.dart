@@ -1,10 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'dish.g.dart';
-
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class Dish {
   //ATTRIBUTES
   int? id;
@@ -26,10 +19,6 @@ class Dish {
     this.price,
     this.available,
   });
-
-  //JSONSERIALIZABLE
-  factory Dish.fromJson(Map<String, dynamic> json) => _$DishFromJson(json);
-  Map<String, dynamic> toJson() => _$DishToJson(this);
 
   //TOSTRING
   @override

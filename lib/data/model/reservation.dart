@@ -1,10 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'reservation.g.dart';
-
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class Reservation {
   //ATTRIBUTES
   int? id;
@@ -24,11 +17,6 @@ class Reservation {
     this.state,
     this.comments,
   }); //DateTime? createdAt;
-
-  //JSONSERIALIZABLE
-  factory Reservation.fromJson(Map<String, dynamic> json) =>
-      _$ReservationFromJson(json);
-  Map<String, dynamic> toJson() => _$ReservationToJson(this);
 
   //TOSTRING
   @override

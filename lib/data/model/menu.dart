@@ -1,10 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-part 'menu.g.dart';
-
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  disallowUnrecognizedKeys: false,
-)
 class Menu {
   //ATTRIBUTES
   int? id;
@@ -24,10 +17,6 @@ class Menu {
     this.price,
     this.available,
   });
-
-  //JSONSERIALIZABLE
-  factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);
-  Map<String, dynamic> toJson() => _$MenuToJson(this);
 
   //TOSTRING
   @override
