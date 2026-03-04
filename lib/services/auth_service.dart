@@ -31,6 +31,35 @@ class AuthService {
       throw 'Error inesperado al registrarse: $e';
     }
   }
+  // ==================== LOGIN CON GOOGLE ====================
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // Iniciar flujo de autenticación de Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // El usuario canceló el inicio de sesión
+        return null;
+      }
+
+      // Obtener detalles de autenticación
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Crear credencial para Firebase
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Iniciar sesión en Firebase con la credencial de Google
+      return await _auth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Error al iniciar sesión con Google: $e';
+    }
+  }
+
 
   // ==================== VERIFICAR SI ES USUARIO ANÓNIMO ====================
   bool isAnonymous() {
