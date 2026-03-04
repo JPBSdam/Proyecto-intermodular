@@ -18,6 +18,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _signOut() async {
+    try {
+      await _authService.signOut();
+      // El AuthWrapper se encargará de redirigir automáticamente al LoginPage
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cerrar sesión: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
