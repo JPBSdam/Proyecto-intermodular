@@ -55,7 +55,47 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+            if (isAnonymous)
+              Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.greenAccent),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Estás navegando como invitado. Algunas funciones están limitadas.',
+                        style: TextStyle(color: Colors.lightGreen),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (user != null && !isAnonymous)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const Icon(Icons.account_circle, size: 80),
+                    const SizedBox(height: 8),
+                    Text(
+                      '¡Hola! ¿Qué te apetece comer?',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      user.email ?? 'Usuario',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 20),
+            const Text('No para de pulsar el botón... No para no para...'),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
