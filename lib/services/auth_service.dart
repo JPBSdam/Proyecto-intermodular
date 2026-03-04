@@ -3,6 +3,35 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
 
+  // Instancias de Firebase Auth y Google Sign In
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  // Stream para escuchar cambios en el estado de autenticación
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // Obtener usuario actual
+  User? get currentUser => _auth.currentUser;
+
+  // ==================== REGISTRO CON EMAIL/PASSWORD ====================
+  Future<UserCredential?> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Error inesperado al registrarse: $e';
+    }
+  }
+
 
   // ==================== MANEJO DE ERRORES ====================
   String _handleAuthException(FirebaseAuthException e) {
