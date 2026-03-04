@@ -80,6 +80,16 @@ class AuthService {
     return _auth.currentUser?.isAnonymous ?? false;
   }
 
+  // ==================== RESTABLECER CONTRASEÑA ====================
+  Future<void> resetPassword({required String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Error al enviar correo de restablecimiento: $e';
+    }
+  }
   // ==================== MANEJO DE ERRORES ====================
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
