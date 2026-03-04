@@ -10,6 +10,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final _authService = AuthService();
   int _counter = 0;
 
   void _incrementCounter() {
