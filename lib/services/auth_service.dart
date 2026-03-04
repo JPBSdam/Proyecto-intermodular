@@ -61,6 +61,17 @@ class AuthService {
   }
 
 
+  // ==================== LOGIN ANÓNIMO ====================
+  Future<UserCredential?> signInAnonymously() async {
+    try {
+      return await _auth.signInAnonymously();
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Error al iniciar sesión anónimamente: $e';
+    }
+  }
+
   // ==================== CERRAR SESIÓN ====================
   Future<void> signOut() async {
     try {
