@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-
   // Instancias de Firebase Auth y Google Sign In
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -19,10 +18,8 @@ class AuthService {
     required String password,
   }) async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
@@ -63,7 +60,8 @@ class AuthService {
       }
 
       // Obtener detalles de autenticación
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Crear credencial para Firebase
       final credential = GoogleAuthProvider.credential(
@@ -79,7 +77,6 @@ class AuthService {
       throw 'Error al iniciar sesión con Google: $e';
     }
   }
-
 
   // ==================== LOGIN ANÓNIMO ====================
   Future<UserCredential?> signInAnonymously() async {
@@ -121,6 +118,7 @@ class AuthService {
       throw 'Error al enviar correo de restablecimiento: $e';
     }
   }
+
   // ==================== MANEJO DE ERRORES ====================
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
@@ -147,4 +145,3 @@ class AuthService {
     }
   }
 }
-

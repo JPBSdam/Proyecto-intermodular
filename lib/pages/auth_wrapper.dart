@@ -19,9 +19,7 @@ class AuthWrapper extends StatelessWidget {
         // Mientras se verifica el estado de autenticación
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -38,4 +36,3 @@ class AuthWrapper extends StatelessWidget {
     );
   }
 }
-
