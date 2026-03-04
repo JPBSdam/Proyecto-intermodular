@@ -61,6 +61,20 @@ class AuthService {
   }
 
 
+  // ==================== CERRAR SESIÓN ====================
+  Future<void> signOut() async {
+    try {
+      // Cerrar sesión de Google si está activa
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+      }
+      // Cerrar sesión de Firebase
+      await _auth.signOut();
+    } catch (e) {
+      throw 'Error al cerrar sesión: $e';
+    }
+  }
+
   // ==================== VERIFICAR SI ES USUARIO ANÓNIMO ====================
   bool isAnonymous() {
     return _auth.currentUser?.isAnonymous ?? false;
