@@ -32,6 +32,10 @@ class AuthService {
     }
   }
 
+  // ==================== VERIFICAR SI ES USUARIO ANÓNIMO ====================
+  bool isAnonymous() {
+    return _auth.currentUser?.isAnonymous ?? false;
+  }
 
   // ==================== MANEJO DE ERRORES ====================
   String _handleAuthException(FirebaseAuthException e) {
