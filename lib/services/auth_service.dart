@@ -31,6 +31,26 @@ class AuthService {
       throw 'Error inesperado al registrarse: $e';
     }
   }
+
+  // ==================== LOGIN CON EMAIL/PASSWORD ====================
+  Future<UserCredential?> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Error inesperado al iniciar sesión: $e';
+    }
+  }
+
   // ==================== LOGIN CON GOOGLE ====================
   Future<UserCredential?> signInWithGoogle() async {
     try {
