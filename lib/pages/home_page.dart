@@ -1,3 +1,4 @@
+import 'package:app_restaurante/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
