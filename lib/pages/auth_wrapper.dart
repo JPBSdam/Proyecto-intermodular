@@ -11,28 +11,37 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
+    try {
+      final authService = AuthService();
 
-    return StreamBuilder<User?>(
-      stream: authService.authStateChanges,
-      builder: (context, snapshot) {
-        // Mientras se verifica el estado de autenticación
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+      return StreamBuilder<User?>(
+        stream: authService.authStateChanges,
+        builder: (context, snapshot) {
+          // Mientras se verifica el estado de autenticación
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-        // Si hay un usuario autenticado
-        if (snapshot.hasData) {
-          // Aquí más adelante puedes añadir lógica para redirigir según el rol
-          // Por ahora, todos van al HomePage
-          return const MyHomePage(title: 'Restaurante');
-        }
+          // Si hay un usuario autenticado
+          if (snapshot.hasData) {
+            // Aquí más adelante puedes añadir lógica para redirigir según el rol
+            // Por ahora, todos van al HomePage
+            return const MyHomePage(title: 'Restaurante');
+          }
 
-        // Si no hay usuario autenticado, mostrar login
-        return const LoginPage();
-      },
-    );
+          // Si no hay usuario autenticado, mostrar login
+          return const LoginPage();
+        },
+      );
+    } catch (e) {
+      // En caso de error (ej: Firebase no inicializado en tests)
+      return const Scaffold(
+        body: Center(
+          child: Text('Error al inicializar la aplicación'),
+        ),
+      );
+    }
   }
 }
