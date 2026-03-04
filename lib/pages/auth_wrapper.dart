@@ -38,9 +38,7 @@ class AuthWrapper extends StatelessWidget {
     } catch (e) {
       // En caso de error (ej: Firebase no inicializado en tests)
       return const Scaffold(
-        body: Center(
-          child: Text('Error al inicializar la aplicación'),
-        ),
+        body: Center(child: Text('Error al inicializar la aplicación')),
       );
     }
   }
