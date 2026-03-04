@@ -1,4 +1,4 @@
-import 'package:app_restaurante/pages/home_page.dart';
+import 'package:app_restaurante/pages/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const AuthWrapper(), // Gestionar la Persistencia
     );
   }
 }
