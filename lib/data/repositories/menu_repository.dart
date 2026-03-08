@@ -10,11 +10,12 @@ class MenuRepository {
 
   // CREATE
   Future<void> create(Menu menu) async {
-    await _collection.add(menu.toFirestore());
+      final doc = await _collection.add(menu.toFirestore());
+      menu.id = doc.id;
   }
 
   // READ (all)
-  Stream<List<Menu>> getAll() {
+  Stream<List<Menu>> watchAll() {
     return _collection.snapshots().map((snapshot) =>
       snapshot.docs.map((doc) => Menu.fromFirestore(doc, null)).toList());
   }
@@ -34,5 +35,14 @@ class MenuRepository {
   // DELETE
   Future<void> delete(String id) async {
     await _collection.doc(id).delete();
+  }
+
+  // DELETE LIST
+  Future<void> deleteBatch(List<String> ids) async {
+  final batch = _collection.firestore.batch();
+  for (var id in ids) {
+    batch.delete(_collection.doc(id));
+  }
+  await batch.commit();
   }
 }
