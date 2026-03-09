@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home_viewmodel.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.title = 'SabrosApp'});
+
+  final String title;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -23,65 +25,155 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('SabrosApp - Home'),
-      ),
-      body: Consumer<HomeViewModel>(
-        builder: (context, viewModel, child) {
-          // Mostrar indicador de carga
-          if (viewModel.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer<HomeViewModel>(
+      builder: (context, viewModel, child) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            title: Text(widget.title),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Cerrar Sesión',
+                onPressed: () async {
+                  final success = await viewModel.signOut();
+                  if (!success) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(viewModel.errorMessage),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                  // Si success = true, AuthWrapper redirige automáticamente
+                },
+              ),
+            ],
+          ),
+          body: _buildBody(viewModel),
+        );
+      },
+    );
+  }
 
-          // Mostrar error si existe
-          if (viewModel.errorMessage.isNotEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildBody(HomeViewModel viewModel) {
+    // Mostrar indicador de carga
+    if (viewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Mostrar error si existe
+    if (viewModel.errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(viewModel.errorMessage),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => viewModel.loadHomeData(),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Mostrar contenido principal
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Banner de usuario anónimo
+          if (viewModel.isAnonymous)
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(viewModel.errorMessage),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => viewModel.loadHomeData(),
-                    child: const Text('Reintentar'),
+                  Icon(Icons.info_outline, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Estás navegando como invitado. Algunas funciones están limitadas.',
+                      style: TextStyle(color: Colors.deepOrange),
+                    ),
                   ),
                 ],
               ),
-            );
-          }
+            ),
 
-          // Mostrar contenido principal
-          return Center(
+          // Información del usuario autenticado
+          if (viewModel.currentUser != null && !viewModel.isAnonymous)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const Icon(Icons.account_circle, size: 80),
+                  const SizedBox(height: 8),
+                  Text(
+                    '¡Hola! ¿Qué te apetece comer?',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text(
+                    viewModel.displayName,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // Lista de menús
+          Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Welcome to SabrosApp!',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Text(
+                  'Menús disponibles:',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 32),
-                const Text('Menús disponibles:'),
                 const SizedBox(height: 16),
-                // Mostrar lista de menús
-                Expanded(
-                  child: ListView.builder(
+                if (viewModel.menus.isEmpty)
+                  const Center(child: Text('No hay menús disponibles'))
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: viewModel.menus.length,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(viewModel.menus[index]),
-                        leading: const Icon(Icons.restaurant_menu),
+                      return Card(
+                        child: ListTile(
+                          title: Text(viewModel.menus[index]),
+                          leading: const Icon(Icons.restaurant_menu),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            // TODO: Navegar a detalle del menú
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Seleccionaste: ${viewModel.menus[index]}',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
-                ),
               ],
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
