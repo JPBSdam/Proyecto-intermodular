@@ -1,11 +1,14 @@
-import 'package:app_restaurante/pages/home_page.dart';
-import 'package:app_restaurante/pages/login_page.dart';
 import 'package:app_restaurante/services/auth_service.dart';
+import 'package:app_restaurante/ui/views/auth/login_view.dart';
+import 'package:app_restaurante/ui/views/home_screen.dart';
+import 'package:app_restaurante/ui/viewmodels/home_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 /// Widget que gestiona la persistencia de sesión
 /// Escucha los cambios en el estado de autenticación y redirige automáticamente
+/// UBICACIÓN: core/navigation/ (lógica de routing, no es UI ni servicio)
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -26,13 +29,15 @@ class AuthWrapper extends StatelessWidget {
 
           // Si hay un usuario autenticado
           if (snapshot.hasData) {
-            // Aquí más adelante puedes añadir lógica para redirigir según el rol
-            // Por ahora, todos van al HomePage
-            return const MyHomePage(title: 'Restaurante');
+            // TODO: Añadir lógica de redirección según rol (Admin -> Panel / Cliente -> Home)
+            return ChangeNotifierProvider(
+              create: (_) => HomeViewModel(),
+              child: const HomeScreen(title: 'Restaurante'),
+            );
           }
 
           // Si no hay usuario autenticado, mostrar login
-          return const LoginPage();
+          return const LoginView();
         },
       );
     } catch (e) {
