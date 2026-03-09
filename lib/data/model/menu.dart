@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Menu {
   //ATTRIBUTES
-  int? id;
+  String? id;
   String? name;
   String? description;
   List<int>? dishes;
@@ -27,7 +27,7 @@ class Menu {
   ) {
     final map = snapshot.data();
     return Menu(
-      id: int.tryParse(snapshot.id), // si quieres id numérico
+      id: snapshot.id,
       name: map?['name'] as String?,
       description: map?['description'] as String?,
       dishes: map?['dishes'] != null

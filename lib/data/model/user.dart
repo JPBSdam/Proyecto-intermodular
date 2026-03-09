@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
   //ATTRIBUTES
-  int? id;
+  String? id;
   String? name;
   String? email;
   String? phoneNumber;
@@ -27,7 +27,7 @@ class User {
   ) {
     final map = snapshot.data();
     return User(
-      id: int.tryParse(snapshot.id),
+      id: snapshot.id,
       name: map?['name'] as String?,
       email: map?['email'] as String?,
       phoneNumber: map?['phoneNumber'] as String?,
@@ -36,7 +36,8 @@ class User {
     );
   }
 
-  //TOFIRESTORE
+  //TOFIRESTOREgit status
+
   Map<String, dynamic> toFirestore() {
     return {
       if (name != null) "name": name,

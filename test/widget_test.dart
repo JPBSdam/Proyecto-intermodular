@@ -1,9 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:app_restaurante/my_app.dart';
 
 void main() {
   group('App Tests', () {
+
+    // Test básico que verifica que el framework funciona
+    testWidgets('Flutter test framework is working', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Text('Test'))),
+      );
+
+      expect(find.byType(Scaffold), findsOneWidget);
+      expect(find.text('Test'), findsOneWidget);
+    });
+
     setUpAll(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
       try {
