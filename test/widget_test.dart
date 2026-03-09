@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('App Tests', () {
     // Test básico que verifica que el framework funciona
-    testWidgets('Flutter test framework is working',
-        (WidgetTester tester) async {
+    testWidgets('Flutter test framework is working', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: Text('Test'))),
       );
@@ -16,11 +17,7 @@ void main() {
 
     testWidgets('Counter increments smoke test', (WidgetTester tester) async {
       // Test simple de contador sin Firebase
-      await tester.pumpWidget(
-        MaterialApp(
-          home: _TestCounterWidget(),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: _TestCounterWidget()));
 
       // Verificar que el contador comienza en 0
       expect(find.text('0'), findsOneWidget);
@@ -60,7 +57,10 @@ class _TestCounterWidgetState extends State<_TestCounterWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
-            Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
           ],
         ),
       ),
