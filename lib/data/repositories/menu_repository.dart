@@ -2,7 +2,6 @@ import 'package:app_restaurante/data/model/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MenuRepository {
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
@@ -10,14 +9,22 @@ class MenuRepository {
 
   // CREATE
   Future<void> create(Menu menu) async {
-      final doc = await _collection.add(menu.toFirestore());
-      menu.id = doc.id;
+    final doc = await _collection.add(menu.toFirestore());
+    menu.id = doc.id;
   }
 
   // READ (all)
   Stream<List<Menu>> watchAll() {
-    return _collection.snapshots().map((snapshot) =>
-      snapshot.docs.map((doc) => Menu.fromFirestore(doc, null)).toList());
+    return _collection.snapshots().map(
+      (snapshot) =>
+          snapshot.docs.map((doc) => Menu.fromFirestore(doc, null)).toList(),
+    );
+  }
+
+  Future<List<Menu>> getAll() async {
+    final snapshot = await _collection.get();
+
+    return snapshot.docs.map((doc) => Menu.fromFirestore(doc, null)).toList();
   }
 
   // READ (one)
@@ -39,10 +46,10 @@ class MenuRepository {
 
   // DELETE LIST
   Future<void> deleteBatch(List<String> ids) async {
-  final batch = _collection.firestore.batch();
-  for (var id in ids) {
-    batch.delete(_collection.doc(id));
-  }
-  await batch.commit();
+    final batch = _collection.firestore.batch();
+    for (var id in ids) {
+      batch.delete(_collection.doc(id));
+    }
+    await batch.commit();
   }
 }
