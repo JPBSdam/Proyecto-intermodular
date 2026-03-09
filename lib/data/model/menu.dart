@@ -5,7 +5,7 @@ class Menu {
   String? id;
   String? name;
   String? description;
-  List<int>? dishes;
+  List<String>? dishes;
   double? price;
   bool? available;
   //DateTime? createdAt; no creo que sea necesario guardar cuando se crea un menu?
@@ -31,7 +31,7 @@ class Menu {
       name: map?['name'] as String?,
       description: map?['description'] as String?,
       dishes: map?['dishes'] != null
-          ? List<int>.from(map?['dishes'] ?? [])
+          ? List<String>.from(map?['dishes'] ?? [])
           : null,
       price: (map?['price'] as num?)?.toDouble(),
       available: map?['available'] as bool?,
