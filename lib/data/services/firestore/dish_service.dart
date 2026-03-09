@@ -11,6 +11,10 @@ class DishService {
     return _repository.watchAll();
   }
 
+  Future<List<Dish>> getAllDishes() async {
+    return await _repository.getAll();
+  }
+
   Future<Dish?> getDishById(String id) async {
     try {
       return await _repository.getById(id);
@@ -50,18 +54,6 @@ class DishService {
       throw 'Error al eliminar el plato: $e';
     }
   }
-
-  Future<void> clearDishesBatch() async {
-  try {
-    final dishes = await _repository.watchAll().first;
-    final ids = dishes.where((d) => d.id != null).map((d) => d.id!).toList();
-    await _repository.deleteBatch(ids);
-  } on FirebaseException catch (e) {
-    throw _handleFirestoreException(e);
-  } catch (e) {
-    throw 'Error al limpiar platos con batch: $e';
-  }
-}
 
   String _handleFirestoreException(FirebaseException e) {
     switch (e.code) {
