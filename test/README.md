@@ -92,6 +92,24 @@ test('toFirestore convierte correctamente a Map', () {
 
 ---
 
+### 2. **Tests de ViewModels** (`test/ui/viewmodels/`)
+
+Verifican la lógica de negocio de la UI:
+- Estado inicial correcto
+- Cambios de estado durante operaciones
+- Notificaciones con `notifyListeners()`
+- Manejo de errores
+- Reset de datos
+
+**Ejemplo:**
+```dart
+test('loadHomeData carga menús correctamente', () async {
+  await viewModel.loadHomeData();
+  expect(viewModel.menus, isNotEmpty);
+});
+```
+
+---
 
 ## 🚀 Comandos para ejecutar Tests
 
