@@ -1,4 +1,4 @@
-import 'package:app_restaurante/services/auth_service.dart';
+import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
 /// ViewModel para la pantalla de Login
