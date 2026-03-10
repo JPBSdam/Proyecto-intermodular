@@ -93,7 +93,7 @@ test('toFirestore convierte correctamente a Map', () {
 ---
 
 ### 2. **Tests de ViewModels** (`test/ui/viewmodels/`)
-
+** PENDIENTE DE IMPLANTAR **
 Verifican la lógica de negocio de la UI:
 - Estado inicial correcto
 - Cambios de estado durante operaciones
