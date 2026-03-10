@@ -1,8 +1,8 @@
 import 'package:app_restaurante/core/navigation/auth_wrapper.dart';
 import 'package:app_restaurante/ui/views/auth/login_view.dart';
 import 'package:app_restaurante/ui/views/auth/register_view.dart';
-import 'package:app_restaurante/ui/views/home_screen.dart';
-import 'package:app_restaurante/ui/viewmodels/home_viewmodel.dart';
+import 'package:app_restaurante/ui/views/home/home_view.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'app_routes.dart';
@@ -24,7 +24,7 @@ final router = GoRouter(
       path: '/home',
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => HomeViewModel(),
-        child: const HomeScreen(title: 'Restaurante'),
+        child: const HomeView(title: 'Restaurante'),
       ),
     ),
   ],
