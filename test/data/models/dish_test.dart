@@ -1,4 +1,5 @@
 import 'package:app_restaurante/data/model/dish.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -48,6 +49,39 @@ void main() {
       expect(map['available'], true);
       expect(map.containsKey('id'), false); // id no debe estar en toFirestore
     });
+
+    test(
+      'fromFirestore obtiene id desde snapshot.id (sin id en payload)',
+      () async {
+        // Arrange
+        final firestore = FakeFirebaseFirestore();
+        final docRef = firestore.collection('dishes').doc('1');
+
+        await docRef.set({
+          // El id NO se guarda en el payload; Firestore lo da en snapshot.id
+          'name': 'Paella',
+          'description': 'Paella valenciana',
+          'category': 'Principales',
+          'urlImage': 'https://example.com/paella.jpg',
+          'price': 15.50,
+          'available': true,
+        });
+
+        final snapshot = await docRef.get();
+
+        // Act
+        final dish = Dish.fromFirestore(snapshot, null);
+
+        // Assert
+        expect(dish.id, '1');
+        expect(dish.name, 'Paella');
+        expect(dish.description, 'Paella valenciana');
+        expect(dish.category, 'Principales');
+        expect(dish.urlImage, 'https://example.com/paella.jpg');
+        expect(dish.price, 15.50);
+        expect(dish.available, true);
+      },
+    );
 
     test('toFirestore omite campos nulos', () {
       // Arrange
