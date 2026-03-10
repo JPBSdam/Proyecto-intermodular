@@ -1,7 +1,7 @@
-import 'package:app_restaurante/services/auth_service.dart';
+import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/ui/views/auth/login_view.dart';
-import 'package:app_restaurante/ui/views/home_screen.dart';
-import 'package:app_restaurante/ui/viewmodels/home_viewmodel.dart';
+import 'package:app_restaurante/ui/views/home/home_view.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +32,7 @@ class AuthWrapper extends StatelessWidget {
             // TODO: Añadir lógica de redirección según rol (Admin -> Panel / Cliente -> Home)
             return ChangeNotifierProvider(
               create: (_) => HomeViewModel(),
-              child: const HomeScreen(title: 'Restaurante'),
+              child: const HomeView(title: 'Restaurante'),
             );
           }
 
