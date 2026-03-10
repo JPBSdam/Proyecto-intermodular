@@ -6,8 +6,21 @@
 flutter test
 # Output: 00:01 +20: All tests passed!
 ```
-
 ---
+**Nota**: los tests deben facilitar y mejorar la lógica de nuestro programa, si esto nos supone  un bloqueo o problema, los tests pueden omitirse de forma sencilla para evitar que rompan el workflow:
+- Omitir un solo test:
+```
+test('Descripción del test que quiero omitir', () {
+  // Código del test
+}, skip: true); // <--- El test se omitirá
+```
+- Omitir un grupo completo de tests:
+```
+group('Grupo de tests a omitir', () {
+  test('Test 1', () {...});
+  test('Test 2', () {...});
+}, skip: true); // <--- Todo el grupo se omitirá
+```
 
 ## 📂 Estructura de Tests
 
@@ -47,6 +60,7 @@ Los tests siguen el patrón **AAA** (Arrange-Act-Assert):
 Verifican que los modelos de datos funcionen correctamente:
 - ✅ Creación de objetos con el constructor
 - ✅ Conversión a Firestore (`toFirestore()`)
+- ✅ Conversión desde Firestore (`fromFirestore()`)
 - ✅ Manejo de campos nulos
 - ✅ Método `toString()`
 - ✅ Validaciones de datos
@@ -65,25 +79,19 @@ test('toFirestore convierte correctamente a Map', () {
   expect(map['price'], 15.50);
 });
 ```
+### 👀 Uso de la dependencia `fake_cloud_firestore`
 
-### 2. **Tests de ViewModels** (`test/ui/viewmodels/`)
+`fake_cloud_firestore` es una dependencia de desarrollo que proporciona una implementación simulada de Firebase Firestore en memoria. Es esencial para testear modelos y servicios sin depender de una base de datos real:
 
-Verifican la lógica de negocio de la UI:
-- ✅ Estado inicial correcto
-- ✅ Cambios de estado durante operaciones
-- ✅ Notificaciones con `notifyListeners()`
-- ✅ Manejo de errores
-- ✅ Reset de datos
-
-**Ejemplo:**
-```dart
-test('loadHomeData carga menús correctamente', () async {
-  await viewModel.loadHomeData();
-  expect(viewModel.menus, isNotEmpty);
-});
-```
+**¿Por qué es necesaria en este proyecto?**
+- **Tests aislados**: Evita conexiones a Firebase durante los tests y por ende, evitamos trastocar datos reales en la base de datos.
+- **Velocidad**: Los tests se ejecutan sin latencia de red.
+- **Consistencia**: Resultados predecibles y reproducibles.
+- **CI/CD**: Permite ejecutar tests en pipelines sin credenciales de Firebase (como nuestro workflow de github actions).
+- **Desarrollo local**: No requiere configuración de Firebase real.
 
 ---
+
 
 ## 🚀 Comandos para ejecutar Tests
 

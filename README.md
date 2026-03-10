@@ -81,6 +81,7 @@ lib/
 - **google_sign_in** (^6.2.2): Login con Google
 - **json_annotation** (^4.9.0): Serialización JSON
 - **cupertino_icons** (^1.0.8): Iconos de iOS
+- **fake_cloud_firestore** (^4.0.0): Mock de Firestore para pruebas
 ---
 ## 🔄 GitHub Actions
 
