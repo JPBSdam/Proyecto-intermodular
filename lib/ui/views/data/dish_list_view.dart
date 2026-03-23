@@ -31,7 +31,7 @@ class DishesListView extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            //context.go(AppRoutes.dishForm());
+            context.go(AppRoutes.dishFormCreate());
           },
           tooltip: 'Añadir Plato',
           child: const Icon(Icons.add),
@@ -60,7 +60,7 @@ class DishesListView extends StatelessWidget {
           subtitle: Text(dish.category ?? ''),
           trailing: Text(dish.price?.toStringAsFixed(2) ?? '-'),
           onTap: () {
-            //context.go(AppRoutes.dishDetail(dish.id!));
+            context.go(AppRoutes.dishDetail(dish.id!));
           },
         );
       },
