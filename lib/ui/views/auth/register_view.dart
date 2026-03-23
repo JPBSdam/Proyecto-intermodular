@@ -170,21 +170,17 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => RegisterViewModel(),
-      child: Consumer<RegisterViewModel>(
-        builder: (context, viewModel, _) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Registro')),
-            body: LoadingOverlay(
-              isLoading: viewModel.isLoading,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildForm(viewModel),
-              ),
-            ),
-          );
-        },
+    //se ha movido la creación del viewmodel al router
+    final viewmodel = context.watch<RegisterViewModel>();
+
+    return LoadingOverlay(
+      isLoading: viewmodel.isLoading,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Registro')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _buildForm(viewmodel),
+        ),
       ),
     );
   }

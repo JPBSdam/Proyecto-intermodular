@@ -21,23 +21,25 @@ class _DishDetailViewState extends State<DishDetailView> {
   Dish? _dish;
   bool _isLoading = true;
   String _error = '';
-  late final DishViewModel _dishViewModel;
 
   @override
   void initState() {
     super.initState();
-    _dishViewModel = context.read<DishViewModel>();
-    _loadDish();
+    // Leer el viewmodel directamente del contexto
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final viewmodel = context.read<DishViewModel>();
+      _loadDish(viewmodel);
+    });
   }
 
-  Future<void> _loadDish() async {
+  Future<void> _loadDish(DishViewModel viewmodel) async {
     setState(() {
       _isLoading = true;
       _error = '';
     });
 
     try {
-      final dish = await _dishViewModel.fetchDishById(widget.dishId);
+      final dish = await viewmodel.fetchDishById(widget.dishId);
       setState(() => _dish = dish);
     } catch (e) {
       setState(() => _error = 'Error al cargar el plato: $e');
@@ -46,7 +48,7 @@ class _DishDetailViewState extends State<DishDetailView> {
     }
   }
 
-  Future<void> _deleteDish() async {
+  Future<void> _deleteDish(DishViewModel viewmodel) async {
     if (_dish == null) return;
 
     final confirm = await showDialogYesNo(
@@ -55,15 +57,16 @@ class _DishDetailViewState extends State<DishDetailView> {
     );
 
     if (confirm == true && context.mounted) {
-      await _dishViewModel.deleteDish(_dish!.id!);
+      await viewmodel.deleteDish(_dish!.id!);
       if (mounted) context.go(AppRoutes.dishes);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget bodyContent;
+    final vm = context.watch<DishViewModel>();
 
+    Widget bodyContent;
     if (_error.isNotEmpty) {
       bodyContent = Center(child: Text(_error));
     } else if (_dish == null) {
@@ -98,11 +101,13 @@ class _DishDetailViewState extends State<DishDetailView> {
             if (_dish != null && (_dish!.id?.isNotEmpty ?? false))
               IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: _deleteDish,
+                onPressed: () => _deleteDish(vm),
               ),
             IconButton(
               onPressed: () {
-                context.go(AppRoutes.dishFormEdit(_dish!.id!));
+                if (_dish != null && _dish!.id != null) {
+                  context.go(AppRoutes.dishFormEdit(_dish!.id!));
+                }
               },
               icon: const Icon(Icons.edit),
             ),
