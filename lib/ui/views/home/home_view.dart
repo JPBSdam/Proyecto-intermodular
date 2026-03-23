@@ -1,5 +1,6 @@
-import 'package:app_restaurante/core/widgets/snackbars.dart';
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
@@ -34,10 +35,11 @@ class _HomeViewState extends State<HomeView> {
                   final success = await viewModel.signOut();
                   if (!success) {
                     if (context.mounted) {
-                      showSnackBar(
-                        context,
-                        viewModel.errorMessage,
-                        error: true,
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(viewModel.errorMessage),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   }
@@ -119,6 +121,36 @@ class _HomeViewState extends State<HomeView> {
                 ],
               ),
             ),
+
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.restaurant),
+                    label: const Text("Ver Platos"),
+                    onPressed: () {
+                      context.go(AppRoutes.dishes);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.menu_book),
+                    label: const Text("Ver Menús"),
+                    onPressed: () {
+                      context.go(AppRoutes.menus);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
