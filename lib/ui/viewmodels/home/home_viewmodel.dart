@@ -10,12 +10,10 @@ class HomeViewModel extends ChangeNotifier {
 
   // Estado de carga de menús
   bool _isLoading = false;
-  List<String> _menus = [];
   String _errorMessage = '';
 
   // Getters - Menús
   bool get isLoading => _isLoading;
-  List<String> get menus => _menus;
   String get errorMessage => _errorMessage;
 
   // Getters - Información del usuario
@@ -23,27 +21,6 @@ class HomeViewModel extends ChangeNotifier {
   bool get isAnonymous => _authService.isAnonymous();
   String get displayName =>
       currentUser?.email ?? currentUser?.displayName ?? 'Invitado';
-
-  // ==================== CARGA DE DATOS ====================
-  Future<void> loadHomeData() async {
-    _isLoading = true;
-    _errorMessage = '';
-    notifyListeners();
-
-    try {
-      // Código provisional de muestra para la interfaz
-      // Simulamos una carga de datos (luego conectaremos con Firebase)
-      await Future.delayed(const Duration(seconds: 2));
-
-      _menus = ['Menú del Día', 'Menú Vegetariano', 'Menú Especial'];
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Error al cargar datos: $e';
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
 
   // ==================== CERRAR SESIÓN ====================
   Future<bool> signOut() async {
@@ -58,14 +35,6 @@ class HomeViewModel extends ChangeNotifier {
       _setLoading(false);
       return false;
     }
-  }
-
-  // ==================== RESET ====================
-  void resetData() {
-    _menus = [];
-    _errorMessage = '';
-    _isLoading = false;
-    notifyListeners();
   }
 
   // ==================== HELPERS INTERNOS ====================
