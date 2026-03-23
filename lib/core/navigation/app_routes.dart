@@ -8,19 +8,13 @@ class AppRoutes {
 
   // ────── DISHES ──────
   static const String dishes = '/dishes';
-
   static String dishDetail(String id) => '$dishes/detail/$id';
-
-  // Separadas (como en el router)
   static String dishFormCreate() => '$dishes/form';
   static String dishFormEdit(String id) => '$dishes/form/$id';
 
   // ────── MENUS ──────
   static const String menus = '/menus';
-
   static String menuDetail(String id) => '$menus/detail/$id';
-
-  // Separadas (como en el router)
   static String menuFormCreate() => '$menus/form';
   static String menuFormEdit(String id) => '$menus/form/$id';
 }
