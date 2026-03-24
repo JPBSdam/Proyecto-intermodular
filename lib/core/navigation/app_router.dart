@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
+import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -160,9 +161,7 @@ final GoRouter appRouter = GoRouter(
         child: const MenuListView(),
       ),
     ),
-
-    /* 
-    /* GoRoute(
+    GoRoute(
       path: '/menus/form',
       builder: (context, state) => MultiProvider(
         providers: [
@@ -175,9 +174,8 @@ final GoRouter appRouter = GoRouter(
         ],
         child: const MenuFormView(),
       ),
-    ) */, */
-
-    /* GoRoute(
+    ),
+    GoRoute(
       path: '/menus/form/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
@@ -193,7 +191,7 @@ final GoRouter appRouter = GoRouter(
           child: MenuFormView(menuId: id),
         );
       },
-    ), */
+    ),
     GoRoute(
       path: '/menus/detail/:id',
       builder: (context, state) {
