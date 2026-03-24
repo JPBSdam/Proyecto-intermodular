@@ -53,7 +53,8 @@ class _DishDetailViewState extends State<DishDetailView> {
 
     final confirm = await showDialogYesNo(
       context,
-      "¿Estás seguro de que quieres eliminar este plato?",
+      title: 'Eliminar $_dish',
+      cuestion: "¿Estás seguro de que quieres eliminar este plato?",
     );
 
     if (confirm == true && context.mounted) {

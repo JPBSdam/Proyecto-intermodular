@@ -122,7 +122,9 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                 onPressed: () async {
                   final confirm = await showDialogYesNo(
                     context,
-                    "¿Estás seguro de que quieres eliminar este menú?",
+                    title: 'Eliminar $_menu',
+                    cuestion:
+                        "¿Estás seguro de que quieres eliminar este menú?",
                   );
                   if (confirm == true && context.mounted) {
                     await _menuViewModel.deleteMenu(_menu!.id!);

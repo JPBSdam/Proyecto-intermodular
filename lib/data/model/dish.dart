@@ -50,10 +50,4 @@ class Dish {
       if (available != null) "available": available,
     };
   }
-
-  //TOSTRING
-  @override
-  String toString() {
-    return 'Dish{id: $id, name: $name, description: $description, category: $category, urlImage: $urlImage, price: $price, available: $available}';
-  }
 }
