@@ -8,6 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de formulario de Menú.
+/// - Permite crear un nuevo menú o editar uno existente.
+/// - Lista todos los platos disponibles usando `DishViewModel`
+///   para poder seleccionar los que formarán parte del menú.
+/// - Muestra un formulario con campos de nombre, precio y selección de platos.
+/// - Al guardar o actualizar, llama a los métodos CRUD de `MenuViewModel`.
+/// - Utiliza `LoadingOverlay` para indicar carga mientras se realiza alguna operación.
+
 class MenuFormView extends StatefulWidget {
   final String? menuId;
 

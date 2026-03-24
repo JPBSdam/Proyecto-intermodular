@@ -2,9 +2,13 @@ import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-/// ViewModel para la pantalla de Home
-/// Gestiona el estado y la lógica de negocio de la UI
-/// Integra lógica de autenticación y carga de menús
+/// ViewModel de la pantalla Home
+/// Gestiona el estado y la lógica de la UI relacionada con el usuario:
+///  - Proporciona información del usuario actual (nombre, anonimato)
+///  - Controla la operación de cierre de sesión
+///  - Mantiene estado de carga y mensajes de error
+///  - Integra AuthService para operaciones de autenticación
+
 class HomeViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
 

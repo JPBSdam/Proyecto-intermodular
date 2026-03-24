@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de lista de platos.
+/// Muestra todos los platos disponibles usando DishViewModel para obtener datos de Firestore.
+/// Permite navegar a la vista de detalle de un plato o crear un nuevo plato.
+/// Incluye manejo de estado de carga y errores mediante LoadingOverlay.
+
 class DishesListView extends StatelessWidget {
   const DishesListView({super.key});
 
