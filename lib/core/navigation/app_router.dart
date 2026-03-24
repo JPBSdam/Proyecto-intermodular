@@ -30,7 +30,20 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 // Services
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 
-// Hace que GoRouter reaccione a cambios en FirebaseAuth
+/// Router global de la aplicación.
+///
+/// - Controla la autenticación:
+///  • No logeado → redirige a /login
+///  • Logeado → evita acceso a /login y /register
+///
+/// - Reacciona a cambios de sesión con FirebaseAuth (login/logout)
+///
+/// - Cada ruta crea su propio ViewModel con Provider
+///  (se construye al entrar y se destruye al salir)
+///
+/// - Define todas las rutas y navegación de la app
+
+// Hace que GoRouter reaccione a cambios en stream: FirebaseAuth.instance.authStateChanges()
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _subscription = stream.listen((_) => notifyListeners());
@@ -83,6 +96,7 @@ final GoRouter appRouter = GoRouter(
   routes: [
     // ────── HOME ──────
     GoRoute(
+      //USO: context.go(AppRoutes.home)
       path: AppRoutes.home,
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => HomeViewModel(),
@@ -92,6 +106,7 @@ final GoRouter appRouter = GoRouter(
 
     // ────── AUTH ──────
     GoRoute(
+      //USO: context.go(AppRoutes.login)
       path: AppRoutes.login,
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => LoginViewModel(),
@@ -99,6 +114,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      //USO: context.go(AppRoutes.register)
       path: AppRoutes.register,
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => RegisterViewModel(),
@@ -108,6 +124,7 @@ final GoRouter appRouter = GoRouter(
 
     // ────── DISHES ──────
     GoRoute(
+      //USO: context.go(AppRoutes.dishes)
       path: AppRoutes.dishes,
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => DishViewModel(DishService())..watchDishes(),
@@ -116,6 +133,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
+      //USO: context.go(AppRoutes.dishFormCreate())
       path: '/dishes/form',
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => DishViewModel(DishService()),
@@ -124,6 +142,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
+      //USO: context.go(AppRoutes.dishFormEdit('platoID'))
       path: '/dishes/form/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
@@ -135,6 +154,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
+      //USO: context.go(AppRoutes.dishDetail('platoID'))
       path: '/dishes/detail/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
@@ -147,6 +167,7 @@ final GoRouter appRouter = GoRouter(
 
     // ────── MENUS ──────
     GoRoute(
+      //USO: context.go(AppRoutes.menus)
       path: AppRoutes.menus,
       builder: (context, state) => MultiProvider(
         providers: [
@@ -162,6 +183,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      //USO: context.go(AppRoutes.menuFormCreate())
       path: '/menus/form',
       builder: (context, state) => MultiProvider(
         providers: [
@@ -176,6 +198,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      //USO: context.go(AppRoutes.menuFormEdit('menuID'))
       path: '/menus/form/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
@@ -193,6 +216,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
+      //USO: context.go(AppRoutes.menuDetail('menuID'))
       path: '/menus/detail/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
