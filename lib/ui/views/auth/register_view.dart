@@ -3,7 +3,11 @@ import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Vista de Registro - UI pura sin lógica de negocio
+/// Pantalla de Registro
+/// Muestra el formulario para crear una cuenta nueva con email y contraseña.
+/// Gestiona la validación de campos, interacción con RegisterViewModel y
+/// muestra errores mediante SnackBar. La lógica de negocio está en el ViewModel.
+
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 

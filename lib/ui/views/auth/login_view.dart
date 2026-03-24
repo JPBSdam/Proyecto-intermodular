@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Vista de Login - UI pura sin lógica de negocio
+/// Pantalla de Login
+/// Muestra el formulario de inicio de sesión con email, Google o modo anónimo.
+/// Gestiona la validación de campos, interacción con LoginViewModel y
+/// muestra errores mediante SnackBar. La lógica de negocio está en el ViewModel.
+
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 

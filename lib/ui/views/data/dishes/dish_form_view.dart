@@ -7,6 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 
+/// Pantalla de formulario para crear o editar un plato.
+/// - Si `dishId` es nulo, se crea un nuevo plato.
+/// - Si `dishId` no es nulo, carga el plato existente y permite editarlo.
+/// - Gestiona nombre, descripción, precio y categoría del plato.
+/// - Usa DishViewModel para interactuar con Firestore y manejar estado, errores y carga.
+
 class DishFormView extends StatefulWidget {
   final String? dishId;
 

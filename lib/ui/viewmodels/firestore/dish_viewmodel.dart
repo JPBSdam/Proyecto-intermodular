@@ -3,6 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 
+/// ViewModel que gestiona la lógica de negocio y estado de los platos (Dish)
+/// Se encarga de:
+///  - Escuchar cambios en tiempo real de los platos desde Firestore
+///  - Realizar operaciones CRUD (crear, actualizar, eliminar)
+///  - Mantener estado de carga y mensajes de error
+///  - Exponer datos y estado a la UI mediante getters y ChangeNotifier
+
 class DishViewModel extends ChangeNotifier {
   final DishService _service;
 

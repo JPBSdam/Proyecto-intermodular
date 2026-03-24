@@ -6,6 +6,14 @@ import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:flutter/foundation.dart';
 
+/// ViewModel que gestiona la lógica de negocio y estado de los menús (Menu)
+/// Se encarga de:
+///  - Escuchar cambios en tiempo real de los menús desde Firestore
+///  - Realizar operaciones CRUD (crear, actualizar, eliminar)
+///  - Obtener los platos asociados a cada menú usando DishService
+///  - Mantener estado de carga y mensajes de error
+///  - Exponer datos y estado a la UI mediante getters y ChangeNotifier
+
 class MenuViewModel extends ChangeNotifier {
   final MenuService _menuService;
   final DishService _dishService;

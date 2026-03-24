@@ -8,6 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de detalle de un plato específico.
+/// - Carga la información del plato usando `DishViewModel` según `dishId`.
+/// - Permite editar o eliminar el plato si existe.
+/// - Muestra nombre, categoría, precio, disponibilidad y descripción.
+/// - Usa un `LoadingOverlay` para indicar la carga y maneja errores de forma local.
+
 class DishDetailView extends StatefulWidget {
   final String dishId;
 

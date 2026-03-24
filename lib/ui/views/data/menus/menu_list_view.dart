@@ -6,6 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de lista de menús.
+/// - Muestra todos los menús disponibles usando `MenuViewModel`.
+/// - Permite navegar a los detalles de cada menú al pulsar un ítem.
+/// - Incluye botón flotante para crear un nuevo menú.
+/// - Maneja la carga con `LoadingOverlay` y muestra errores locales.
+
 class MenuListView extends StatelessWidget {
   const MenuListView({super.key});
 

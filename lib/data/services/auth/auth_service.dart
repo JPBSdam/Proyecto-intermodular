@@ -1,6 +1,25 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+/// Servicio de autenticación que encapsula toda la interacción con FirebaseAuth
+/// y Google Sign-In.
+///
+/// - Gestiona:
+///   • Registro y login con email/password
+///   • Login con Google y anónimo
+///   • Cierre de sesión y recuperación de contraseña
+///
+/// - Expone:
+///   • Un stream (`authStateChanges`) para reaccionar a cambios de sesión
+///   • El usuario actual y su estado (ej: anónimo)
+///
+/// - Manejo de errores:
+///   • Centralizado mediante `_handleErrors`
+///   • Traduce excepciones de Firebase a mensajes legibles
+///
+/// Actúa como capa intermedia entre Firebase y la aplicación,
+/// manteniendo la lógica de autenticación desacoplada de la UI.
+
 class AuthService {
   // Instancias (dependencias)
   final FirebaseAuth _auth = FirebaseAuth.instance;

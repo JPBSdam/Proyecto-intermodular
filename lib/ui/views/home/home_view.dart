@@ -4,6 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
+/// Pantalla principal de la aplicación
+/// Muestra información del usuario, indica si es anónimo,
+/// permite navegar a la lista de platos y menús,
+/// y proporciona la opción de cerrar sesión.
+/// La lógica de negocio y estado se maneja mediante HomeViewModel.
+
 class HomeView extends StatefulWidget {
   const HomeView({super.key, this.title = 'SabrosApp'});
 

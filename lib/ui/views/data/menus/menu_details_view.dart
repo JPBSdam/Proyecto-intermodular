@@ -10,6 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de detalle de Menú.
+/// - Muestra la información de un menú específico: nombre, descripción,
+///   precio, disponibilidad y lista de platos incluidos.
+/// - Permite editar o eliminar el menú usando `MenuViewModel`.
+/// - Obtiene los datos de los platos incluidos desde `DishViewModel`.
+/// - Utiliza `LoadingOverlay` para indicar carga mientras se recuperan
+///   los datos o se ejecuta alguna acción.
+
 class MenuDetailView extends StatefulWidget {
   final String menuId;
 
