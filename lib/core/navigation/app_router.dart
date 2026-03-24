@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -108,37 +111,104 @@ final GoRouter appRouter = GoRouter(
         create: (_) => DishViewModel(DishService())..watchDishes(),
         child: const DishesListView(),
       ),
-      routes: [
-        GoRoute(
-          path: 'form', //USO context.go(AppRoutes.dishFormCreate())
-          builder: (context, state) => ChangeNotifierProvider(
-            create: (_) => DishViewModel(DishService()),
-            child: const DishFormView(),
-          ),
-        ),
-        GoRoute(
-          path:
-              'form/:id', //USO context.go(AppRoutes.dishFormEdit('id del plato a editar'))
-          builder: (context, state) {
-            final id = state.pathParameters['id']!;
-            return ChangeNotifierProvider(
-              create: (_) => DishViewModel(DishService()),
-              child: DishFormView(dishId: id),
-            );
-          },
-        ),
-        GoRoute(
-          path:
-              'detail/:id', //USO context.go(AppRoutes.dishDetail('id del plato'))
-          builder: (context, state) {
-            final id = state.pathParameters['id']!;
-            return ChangeNotifierProvider(
-              create: (_) => DishViewModel(DishService()),
-              child: DishDetailView(dishId: id),
-            );
-          },
-        ),
-      ],
     ),
+
+    GoRoute(
+      path: AppRoutes.dishFormCreate(),
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) => DishViewModel(DishService()),
+        child: const DishFormView(),
+      ),
+    ),
+
+    GoRoute(
+      path: AppRoutes.dishFormEdit(':id'),
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => DishViewModel(DishService()),
+          child: DishFormView(dishId: id),
+        );
+      },
+    ),
+
+    GoRoute(
+      path: AppRoutes.dishDetail(':id'),
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => DishViewModel(DishService()),
+          child: DishDetailView(dishId: id),
+        );
+      },
+    ),
+
+    // ────── MENUS ──────
+    GoRoute(
+      path: AppRoutes.menus,
+      builder: (context, state) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) =>
+                MenuViewModel(MenuService(), DishService())..watchMenus(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => DishViewModel(DishService())..watchDishes(),
+          ),
+        ],
+        child: const MenuListView(),
+      ),
+    ),
+    /* 
+    /* GoRoute(
+      path: AppRoutes.menuFormCreate(),
+      builder: (context, state) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => MenuViewModel(MenuService(), DishService()),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => DishViewModel(DishService())..watchDishes(),
+          ),
+        ],
+        child: const MenuFormView(),
+      ),
+    ) */, */
+
+    /* GoRoute(
+      path: AppRoutes.menuFormEdit(':id'),
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (_) => MenuViewModel(MenuService(), DishService()),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => DishViewModel(DishService())..watchDishes(),
+            ),
+          ],
+          child: MenuFormView(menuId: id),
+        );
+      },
+    ), */
+
+    /* GoRoute(
+      path: AppRoutes.menuDetail(':id'),
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (_) => MenuViewModel(MenuService(), DishService()),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => DishViewModel(DishService())..watchDishes(),
+            ),
+          ],
+          child: MenuDetailView(menuId: id),
+        );
+      },
+    ), */
   ],
 );
