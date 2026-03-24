@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 ///   • title: título del diálogo
 ///   • cuestion: mensaje a mostrar
 ///
-/// - Devuelve un Future<bool?>:
+/// - Devuelve:
 ///   • true → el usuario confirma (Sí)
 ///   • null → el usuario cancela o pulsa "No"
 ///
