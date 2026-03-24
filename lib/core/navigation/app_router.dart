@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -114,7 +115,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
-      path: AppRoutes.dishFormCreate(),
+      path: '/dishes/form',
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => DishViewModel(DishService()),
         child: const DishFormView(),
@@ -122,7 +123,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
-      path: AppRoutes.dishFormEdit(':id'),
+      path: '/dishes/form/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ChangeNotifierProvider(
@@ -133,7 +134,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(
-      path: AppRoutes.dishDetail(':id'),
+      path: '/dishes/detail/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ChangeNotifierProvider(
@@ -159,9 +160,10 @@ final GoRouter appRouter = GoRouter(
         child: const MenuListView(),
       ),
     ),
+
     /* 
     /* GoRoute(
-      path: AppRoutes.menuFormCreate(),
+      path: '/menus/form',
       builder: (context, state) => MultiProvider(
         providers: [
           ChangeNotifierProvider(
@@ -176,7 +178,7 @@ final GoRouter appRouter = GoRouter(
     ) */, */
 
     /* GoRoute(
-      path: AppRoutes.menuFormEdit(':id'),
+      path: '/menus/form/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return MultiProvider(
@@ -192,9 +194,8 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ), */
-
-    /* GoRoute(
-      path: AppRoutes.menuDetail(':id'),
+    GoRoute(
+      path: '/menus/detail/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return MultiProvider(
@@ -209,6 +210,6 @@ final GoRouter appRouter = GoRouter(
           child: MenuDetailView(menuId: id),
         );
       },
-    ), */
+    ),
   ],
 );
