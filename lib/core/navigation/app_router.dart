@@ -12,9 +12,9 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/ui/views/auth/login_view.dart';
 import 'package:app_restaurante/ui/views/auth/register_view.dart';
 import 'package:app_restaurante/ui/views/home/home_view.dart';
-import 'package:app_restaurante/ui/views/data/dish_list_view.dart';
-import 'package:app_restaurante/ui/views/data/dish_details_view.dart';
-import 'package:app_restaurante/ui/views/data/dish_form_view.dart';
+import 'package:app_restaurante/ui/views/data/dishes/dish_list_view.dart';
+import 'package:app_restaurante/ui/views/data/dishes/dish_details_view.dart';
+import 'package:app_restaurante/ui/views/data/dishes/dish_form_view.dart';
 
 // ViewModels
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -25,7 +25,7 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 // Services
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 
-/// 🔁 Hace que GoRouter reaccione a cambios en FirebaseAuth
+// Hace que GoRouter reaccione a cambios en FirebaseAuth
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _subscription = stream.listen((_) => notifyListeners());
@@ -44,10 +44,12 @@ final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
 
   refreshListenable: GoRouterRefreshStream(
-    FirebaseAuth.instance.authStateChanges(),
+    FirebaseAuth.instance
+        .authStateChanges(), // recarga cuando se producen cambios de user
   ),
 
   redirect: (context, state) {
+    //cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
 
     final isLogin = state.uri.toString() == AppRoutes.login;
@@ -64,6 +66,7 @@ final GoRouter appRouter = GoRouter(
     return null;
   },
 
+  //pantalla que muestra errores de rutas
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(
       title: const Text('Ruta no encontrada'),
@@ -107,14 +110,15 @@ final GoRouter appRouter = GoRouter(
       ),
       routes: [
         GoRoute(
-          path: 'form',
+          path: 'form', //USO context.go(AppRoutes.dishFormCreate())
           builder: (context, state) => ChangeNotifierProvider(
             create: (_) => DishViewModel(DishService()),
             child: const DishFormView(),
           ),
         ),
         GoRoute(
-          path: 'form/:id',
+          path:
+              'form/:id', //USO context.go(AppRoutes.dishFormEdit('id del plato a editar'))
           builder: (context, state) {
             final id = state.pathParameters['id']!;
             return ChangeNotifierProvider(
@@ -124,7 +128,8 @@ final GoRouter appRouter = GoRouter(
           },
         ),
         GoRoute(
-          path: 'detail/:id',
+          path:
+              'detail/:id', //USO context.go(AppRoutes.dishDetail('id del plato'))
           builder: (context, state) {
             final id = state.pathParameters['id']!;
             return ChangeNotifierProvider(
