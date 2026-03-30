@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Overlay reutilizable para bloquear la UI y mostrar una carga centrada.
+
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;

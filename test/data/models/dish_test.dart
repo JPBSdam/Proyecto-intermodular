@@ -96,19 +96,5 @@ void main() {
       expect(map.containsKey('category'), false);
       expect(map.containsKey('price'), false);
     });
-
-    test('toString devuelve representación correcta', () {
-      // Arrange
-      final dish = Dish(id: '1', name: 'Paella', price: 15.50);
-
-      // Act
-      final result = dish.toString();
-
-      // Assert
-      expect(result, contains('Dish{'));
-      expect(result, contains('id: 1'));
-      expect(result, contains('name: Paella'));
-      expect(result, contains('price: 15.5'));
-    });
   });
 }

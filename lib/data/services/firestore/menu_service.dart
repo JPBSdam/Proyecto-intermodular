@@ -2,60 +2,59 @@ import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/data/repositories/menu_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Servicio de gestión de menús que sirve como intermediario entre la aplicación
+/// y el repositorio de datos (`MenuRepository`).
+///
+/// - Responsabilidades:
+///   • Proporcionar operaciones CRUD sobre `Menu`
+///   • Exponer un stream reactivo de menús (`watchMenus`)
+///
+/// - Arquitectura:
+///   • Mantiene la lógica de negocio separada de la capa de acceso a datos
+///   • Delega la persistencia y consultas al repositorio
+///
+/// - Manejo de errores:
+///   • Centralizado mediante `_handleErrors`
+///   • Traduce excepciones de Firebase a mensajes legibles para la UI
+///
+/// Facilita el desacoplamiento entre la UI y Firestore, promoviendo código
+/// más mantenible y escalable.
+
 class MenuService {
-  final MenuRepository _repository;
+  // Singleton repository
+  final MenuRepository _repository = MenuRepository();
 
-  MenuService(this._repository);
+  // ─── Streams ─────────────────────────────
+  Stream<List<Menu>> watchMenus() => _repository.watchAll();
 
-  Stream<List<Menu>> watchMenus() {
-    return _repository.watchAll();
-  }
+  // ─── Métodos CRUD ────────────────────────
+  Future<List<Menu>> getAllMenus() async =>
+      _handleErrors(() => _repository.getAll());
 
-  Future<List<Menu>> getAllDishes() async {
-    return await _repository.getAll();
-  }
+  Future<Menu?> getMenuById(String id) async =>
+      _handleErrors(() => _repository.getById(id));
 
-  Future<Menu?> getMenuById(String id) async {
+  Future<void> createMenu(Menu menu) async =>
+      _handleErrors(() => _repository.create(menu));
+
+  Future<void> updateMenu(Menu menu) async =>
+      _handleErrors(() => _repository.update(menu));
+
+  Future<void> deleteMenu(String id) async =>
+      _handleErrors(() => _repository.delete(id));
+
+  // ─── Manejo de errores ─── Esto es como un decorador para los metodos que recibe
+  Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
-      return await _repository.getById(id);
+      return await action();
     } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
+      throw _mapFirebaseException(e);
     } catch (e) {
-      throw 'Error al obtener el menú: $e';
+      throw 'Error inesperado: $e';
     }
   }
 
-  Future<void> createMenu(Menu menu) async {
-    try {
-      await _repository.create(menu);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al crear el menú: $e';
-    }
-  }
-
-  Future<void> updateMenu(Menu menu) async {
-    try {
-      await _repository.update(menu);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al actualizar el menú: $e';
-    }
-  }
-
-  Future<void> deleteMenu(String id) async {
-    try {
-      await _repository.delete(id);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al eliminar el menú: $e';
-    }
-  }
-
-  String _handleFirestoreException(FirebaseException e) {
+  String _mapFirebaseException(FirebaseException e) {
     switch (e.code) {
       case 'permission-denied':
         return 'No tienes permisos para realizar esta operación.';

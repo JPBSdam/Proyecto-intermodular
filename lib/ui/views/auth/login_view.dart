@@ -1,10 +1,15 @@
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
-import 'package:app_restaurante/ui/views/auth/register_view.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Vista de Login - UI pura sin lógica de negocio
+/// Pantalla de Login
+/// Muestra el formulario de inicio de sesión con email, Google o modo anónimo.
+/// Gestiona la validación de campos, interacción con LoginViewModel y
+/// muestra errores mediante SnackBar. La lógica de negocio está en el ViewModel.
+
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -56,9 +61,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _goToRegister() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const RegisterView()));
+    context.go(AppRoutes.register);
   }
 
   // ─── Widgets del formulario ───────────────────────────────────────────────────
@@ -162,21 +165,20 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => LoginViewModel(),
-      child: Consumer<LoginViewModel>(
-        builder: (context, viewModel, _) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Iniciar Sesión')),
-            body: LoadingOverlay(
-              isLoading: viewModel.isLoading,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildForm(viewModel),
-              ),
-            ),
-          );
-        },
+    //se ha movido la creación del viewmodel al router
+    final viewModel = context.watch<LoginViewModel>();
+
+    return LoadingOverlay(
+      isLoading: viewModel.isLoading,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Iniciar Sesión')),
+        body: LoadingOverlay(
+          isLoading: viewModel.isLoading,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _buildForm(viewModel),
+          ),
+        ),
       ),
     );
   }

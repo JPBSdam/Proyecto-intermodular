@@ -67,19 +67,5 @@ void main() {
       // Assert
       expect(menu.dishes, isEmpty);
     });
-
-    test('toString devuelve representación correcta', () {
-      // Arrange
-      final menu = Menu(id: '1', name: 'Menú del Día', price: 12.99);
-
-      // Act
-      final result = menu.toString();
-
-      // Assert
-      expect(result, contains('Menu{'));
-      expect(result, contains('id: 1'));
-      expect(result, contains('name: Menú del Día'));
-      expect(result, contains('price: 12.99'));
-    });
   });
 }

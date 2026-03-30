@@ -1,8 +1,13 @@
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
-/// ViewModel para la pantalla de Registro
-/// Gestiona el estado y la lógica de negocio de la UI
+/// ViewModel que gestiona el estado y la lógica de negocio de la pantalla de Registro.
+///
+/// - Se encarga del registro de usuarios mediante email y contraseña.
+/// - Mantiene el estado de carga (`isLoading`) y posibles errores (`errorMessage`) para la UI.
+/// - Interactúa con `AuthService` y notifica cambios a la interfaz mediante `ChangeNotifier`.
+/// - Centraliza la lógica de manejo de errores de la UI durante el registro.
+
 class RegisterViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
 

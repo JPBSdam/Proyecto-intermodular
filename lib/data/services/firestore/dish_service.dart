@@ -2,60 +2,59 @@ import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/repositories/dish_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Servicio de gestión de platos que actúa como intermediario entre
+/// la aplicación y el repositorio (capa de acceso a datos).
+///
+/// - Responsabilidades:
+///   • Proporcionar operaciones CRUD sobre Dish
+///   • Exponer un stream reactivo de platos (`watchDishes`)
+///
+/// - Arquitectura:
+///   • Delega el acceso a datos en `DishRepository`
+///   • Mantiene la lógica de negocio separada de la capa de datos
+///
+/// - Manejo de errores:
+///   • Centralizado mediante `_handleErrors`
+///   • Traduce excepciones de Firebase a mensajes legibles
+///
+/// Permite desacoplar la UI del acceso a Firestore y facilita
+/// el mantenimiento y la escalabilidad del código.
+
 class DishService {
-  final DishRepository _repository;
+  // Singleton repository
+  final DishRepository _repository = DishRepository();
 
-  DishService(this._repository);
+  // ─── Streams ─────────────────────────────
+  Stream<List<Dish>> watchDishes() => _repository.watchAll();
 
-  Stream<List<Dish>> watchDishes() {
-    return _repository.watchAll();
-  }
+  // ─── Métodos CRUD ────────────────────────
+  Future<List<Dish>> getAllDishes() async =>
+      _handleErrors(() => _repository.getAll());
 
-  Future<List<Dish>> getAllDishes() async {
-    return await _repository.getAll();
-  }
+  Future<Dish?> getDishById(String id) async =>
+      _handleErrors(() => _repository.getById(id));
 
-  Future<Dish?> getDishById(String id) async {
+  Future<void> createDish(Dish dish) async =>
+      _handleErrors(() => _repository.create(dish));
+
+  Future<void> updateDish(Dish dish) async =>
+      _handleErrors(() => _repository.update(dish));
+
+  Future<void> deleteDish(String id) async =>
+      _handleErrors(() => _repository.delete(id));
+
+  // ─── Manejo de errores ─── Esto es como un decorador para los metodos que recibe
+  Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
-      return await _repository.getById(id);
+      return await action();
     } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
+      throw _mapFirebaseException(e);
     } catch (e) {
-      throw 'Error al obtener el plato: $e';
+      throw 'Error inesperado: $e';
     }
   }
 
-  Future<void> createDish(Dish dish) async {
-    try {
-      await _repository.create(dish);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al crear el plato: $e';
-    }
-  }
-
-  Future<void> updateDish(Dish dish) async {
-    try {
-      await _repository.update(dish);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al actualizar el plato: $e';
-    }
-  }
-
-  Future<void> deleteDish(String id) async {
-    try {
-      await _repository.delete(id);
-    } on FirebaseException catch (e) {
-      throw _handleFirestoreException(e);
-    } catch (e) {
-      throw 'Error al eliminar el plato: $e';
-    }
-  }
-
-  String _handleFirestoreException(FirebaseException e) {
+  String _mapFirebaseException(FirebaseException e) {
     switch (e.code) {
       case 'permission-denied':
         return 'No tienes permisos para realizar esta operación.';

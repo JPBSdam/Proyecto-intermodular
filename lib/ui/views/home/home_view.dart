@@ -1,6 +1,14 @@
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
+
+/// Pantalla principal de la aplicación
+/// Muestra información del usuario, indica si es anónimo,
+/// permite navegar a la lista de platos y menús,
+/// y proporciona la opción de cerrar sesión.
+/// La lógica de negocio y estado se maneja mediante HomeViewModel.
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key, this.title = 'SabrosApp'});
@@ -15,12 +23,6 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    // Cargar datos cuando se inicia la pantalla
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<HomeViewModel>().loadHomeData();
-      }
-    });
   }
 
   @override
@@ -74,10 +76,6 @@ class _HomeViewState extends State<HomeView> {
             const SizedBox(height: 16),
             Text(viewModel.errorMessage),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => viewModel.loadHomeData(),
-              child: const Text('Reintentar'),
-            ),
           ],
         ),
       );
@@ -131,45 +129,31 @@ class _HomeViewState extends State<HomeView> {
             ),
 
           const SizedBox(height: 20),
-
-          // Lista de menús
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Menús disponibles:',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                if (viewModel.menus.isEmpty)
-                  const Center(child: Text('No hay menús disponibles'))
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: viewModel.menus.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                          title: Text(viewModel.menus[index]),
-                          leading: const Icon(Icons.restaurant_menu),
-                          trailing: const Icon(Icons.arrow_forward_ios),
-                          onTap: () {
-                            // TODO: Navegar a detalle del menú
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Seleccionaste: ${viewModel.menus[index]}',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.restaurant),
+                    label: const Text("Ver Platos"),
+                    onPressed: () {
+                      context.go(AppRoutes.dishes);
                     },
                   ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.menu_book),
+                    label: const Text("Ver Menús"),
+                    onPressed: () {
+                      context.go(AppRoutes.menus);
+                    },
+                  ),
+                ),
               ],
             ),
           ),

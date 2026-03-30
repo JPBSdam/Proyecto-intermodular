@@ -48,10 +48,4 @@ class Menu {
       if (available != null) "available": available,
     };
   }
-
-  //TOSTRING
-  @override
-  String toString() {
-    return 'Menu{id: $id, name: $name, description: $description, dishes: $dishes, price: $price, available: $available}';
-  }
 }
