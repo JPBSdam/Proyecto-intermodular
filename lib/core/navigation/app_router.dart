@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
@@ -66,15 +67,23 @@ final GoRouter appRouter = GoRouter(
         .authStateChanges(), // recarga cuando se producen cambios de user
   ),
 
-  redirect: (context, state) {
+  redirect: (context, state) async {
     //cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
+    final userService = context.read<UserService>();
 
     final isLogin = state.uri.toString() == AppRoutes.login;
     final isRegister = state.uri.toString() == AppRoutes.register;
 
     if (user == null && !isLogin && !isRegister) {
       return AppRoutes.login;
+    }
+
+    // Crear/asegurar usuario en Firestore solo una vez por sesión
+    final userInitialized = context.read<_UserInitFlag>();
+    if (user != null && !userInitialized.value) {
+      userInitialized.value = true;
+      await userService.ensureUserExistsFromAuth(user);
     }
 
     if (user != null && (isLogin || isRegister)) {
@@ -235,3 +244,8 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+
+// ─── FLAG PARA CONTROLAR LA INICIALIZACIÓN DEL USUARIO ───
+class _UserInitFlag with ChangeNotifier {
+  bool value = false;
+}
