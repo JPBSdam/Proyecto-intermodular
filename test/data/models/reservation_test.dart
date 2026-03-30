@@ -85,27 +85,5 @@ void main() {
       expect(convertedDate.hour, originalDate.hour);
       expect(convertedDate.minute, originalDate.minute);
     });
-
-    test('toString devuelve representación correcta', () {
-      // Arrange
-      final date = DateTime(2026, 3, 15, 20, 30);
-      final reservation = Reservation(
-        id: 'res1',
-        userId: 'user1',
-        seats: 4,
-        reservationDate: date,
-        state: 'confirmada',
-      );
-
-      // Act
-      final result = reservation.toString();
-
-      // Assert
-      expect(result, contains('Reservation{'));
-      expect(result, contains('id: res1'));
-      expect(result, contains('userId: user1'));
-      expect(result, contains('seats: 4'));
-      expect(result, contains('state: confirmada'));
-    });
   });
 }

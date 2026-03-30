@@ -48,10 +48,4 @@ class Reservation {
       if (comments != null) "comments": comments,
     };
   }
-
-  //TOSTRING
-  @override
-  String toString() {
-    return 'Reservation{id: $id, userId: $userId, seats: $seats, reservationDate: $reservationDate, state: $state, comments: $comments}';
-  }
 }

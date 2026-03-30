@@ -69,10 +69,4 @@ class Restaurant {
       if (schedule != null) "schedule": schedule,
     };
   }
-
-  //TOSTRING
-  @override
-  String toString() {
-    return 'Restaurant{id: $id, name: $name, address: $address, phoneNumber: $phoneNumber, description: $description, email: $email, capacity: $capacity, urlImage: $urlImage, open: $open, schedule: $schedule}';
-  }
 }
