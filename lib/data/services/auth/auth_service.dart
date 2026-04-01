@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Servicio de autenticación que encapsula toda la interacción con FirebaseAuth
@@ -51,9 +52,10 @@ class AuthService {
   );
 
   Future<UserCredential?> signInWithGoogle() async {
-    return _handleErrors(() async {
+    try {
       final googleUser = await _googleSignIn.signIn();
 
+      // El usuario cerró el diálogo o pulsó atrás: no es un error.
       if (googleUser == null) return null;
 
       final googleAuth = await googleUser.authentication;
@@ -63,8 +65,18 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      return _auth.signInWithCredential(credential);
-    });
+      return await _auth.signInWithCredential(credential);
+    } on PlatformException catch (e) {
+      final code = e.code.toLowerCase();
+      if (code == 'sign_in_canceled' || code == 'canceled' || code == 'cancelled') {
+        return null;
+      }
+      throw 'Error inesperado: ${e.message ?? e.code}';
+    } on FirebaseAuthException catch (e) {
+      throw _mapAuthException(e);
+    } catch (e) {
+      throw 'Error inesperado: $e';
+    }
   }
 
   Future<UserCredential?> signInAnonymously() =>
