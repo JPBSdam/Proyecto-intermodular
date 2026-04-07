@@ -59,6 +59,11 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
+// ─── FLAG PARA CONTROLAR LA INICIALIZACIÓN DEL USUARIO ───
+class _UserInitFlag with ChangeNotifier {
+  bool value = false;
+}
+
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
 
@@ -244,8 +249,3 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
-
-// ─── FLAG PARA CONTROLAR LA INICIALIZACIÓN DEL USUARIO ───
-class _UserInitFlag with ChangeNotifier {
-  bool value = false;
-}
