@@ -7,6 +7,11 @@ class UserService {
   // Singleton repository
   final UserRepository _repository = UserRepository();
 
+  // ─── Streams ─────────────────────────────
+  Stream<User?> watchUser(String uid) {
+    return _repository.watchById(uid);
+  }
+
   // ─── Métodos CRUD ────────────────────────
   Future<User?> getUserById(String id) async =>
       _handleErrors(() => _repository.getById(id));

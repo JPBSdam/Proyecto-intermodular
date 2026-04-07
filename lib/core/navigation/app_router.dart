@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
+import 'package:app_restaurante/ui/views/data/profile/user_form_view.dart';
+import 'package:app_restaurante/ui/views/data/profile/user_profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -134,6 +137,26 @@ final GoRouter appRouter = GoRouter(
         create: (_) => RegisterViewModel(),
         child: RegisterView(),
       ),
+    ),
+
+    // ────── USER PROFILE ──────
+    GoRoute(
+      //USO: context.go(AppRoutes.profile)
+      path: AppRoutes.profile,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) => UserViewModel(),
+        child: const UserProfileView(),
+      ),
+    ),
+    GoRoute(
+      path: '/profile/form/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => UserViewModel(),
+          child: UserFormView(userId: id),
+        );
+      },
     ),
 
     // ────── DISHES ──────

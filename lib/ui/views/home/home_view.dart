@@ -154,6 +154,17 @@ class _HomeViewState extends State<HomeView> {
                     },
                   ),
                 ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.menu_book),
+                    label: const Text("Ver Mi perfil"),
+                    onPressed: () {
+                      context.go(AppRoutes.profile);
+                    },
+                  ),
+                ),
               ],
             ),
           ),
