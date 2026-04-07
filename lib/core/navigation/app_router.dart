@@ -62,11 +62,9 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-// ─── FLAG PARA CONTROLAR LA INICIALIZACIÓN DEL USUARIO ───
-class _UserInitFlag with ChangeNotifier {
-  bool value = false;
-}
-
+// ─── INSTANCIAS GLOBALES ───
+final UserService userService = UserService();
+bool userInitialized = false;
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
 
@@ -76,24 +74,23 @@ final GoRouter appRouter = GoRouter(
   ),
 
   redirect: (context, state) async {
-    //cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
-    final userService = context.read<UserService>();
 
     final isLogin = state.uri.toString() == AppRoutes.login;
     final isRegister = state.uri.toString() == AppRoutes.register;
 
+    // 🔒 No autenticado → login
     if (user == null && !isLogin && !isRegister) {
       return AppRoutes.login;
     }
 
-    // Crear/asegurar usuario en Firestore solo una vez por sesión
-    final userInitialized = context.read<_UserInitFlag>();
-    if (user != null && !userInitialized.value) {
-      userInitialized.value = true;
+    // 🔥 Crear usuario en Firestore SOLO UNA VEZ
+    if (user != null && !userInitialized) {
+      userInitialized = true;
       await userService.ensureUserExistsFromAuth(user);
     }
 
+    // 🔁 Evitar volver a login/register si ya está autenticado
     if (user != null && (isLogin || isRegister)) {
       return AppRoutes.home;
     }

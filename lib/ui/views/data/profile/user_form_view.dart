@@ -4,6 +4,7 @@ import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class UserFormView extends StatefulWidget {
@@ -53,7 +54,7 @@ class _UserFormViewState extends State<UserFormView> {
     _phoneController.text = user.phoneNumber ?? '';
   }
 
-  Future<void> _apply(UserViewModel vm) async {
+  Future<void> _apply(UserViewModel viewmodel) async {
     if (!_formKey.currentState!.validate()) return;
 
     final updatedUser = User(
@@ -65,30 +66,33 @@ class _UserFormViewState extends State<UserFormView> {
       urlImage: _user?.urlImage,
     );
 
-    await vm.updateUser(updatedUser);
+    await viewmodel.updateUser(updatedUser);
 
-    if (mounted && vm.error.isEmpty) {
-      Navigator.pop(context);
+    if (mounted && viewmodel.error.isEmpty) {
+      context.pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<UserViewModel>();
+    final viewmodel = context.watch<UserViewModel>();
 
     return LoadingOverlay(
-      isLoading: vm.isLoading,
+      isLoading: viewmodel.isLoading,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Editar perfil'),
           actions: const [HomeButton()],
         ),
-        body: Padding(padding: const EdgeInsets.all(16), child: _buildForm(vm)),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _buildForm(viewmodel),
+        ),
       ),
     );
   }
 
-  Widget _buildForm(UserViewModel vm) {
+  Widget _buildForm(UserViewModel viewmodel) {
     return Form(
       key: _formKey,
       child: Column(
@@ -108,16 +112,19 @@ class _UserFormViewState extends State<UserFormView> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _apply(vm),
+                  onPressed: () => _apply(viewmodel),
                   child: const Text('Actualizar'),
                 ),
               ),
             ],
           ),
-          if (vm.error.isNotEmpty)
+          if (viewmodel.error.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text(vm.error, style: const TextStyle(color: Colors.red)),
+              child: Text(
+                viewmodel.error,
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
         ],
       ),
