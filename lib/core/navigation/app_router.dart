@@ -67,20 +67,19 @@ final GoRouter appRouter = GoRouter(
   ),
 
   redirect: (context, state) {
-    //cuando recarga, redirige siguiendo la lógica de aquí dentro
+    // cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
 
-    final isLogin = state.uri.toString() == AppRoutes.login;
-    final isRegister = state.uri.toString() == AppRoutes.register;
+    final isLoginOrRegister =
+        state.uri.toString() == AppRoutes.login ||
+        state.uri.toString() == AppRoutes.register;
 
-    if (user == null && !isLogin && !isRegister) {
-      return AppRoutes.login;
-    }
-
-    if (user != null && (isLogin || isRegister)) {
+    // Si hay usuario real (no anónimo) intentando ir a login/register → home
+    if (user != null && !user.isAnonymous && isLoginOrRegister) {
       return AppRoutes.home;
     }
 
+    // El resto (invitados, anónimos, etc.) puede acceder a cualquier ruta libremente
     return null;
   },
 
