@@ -31,6 +31,10 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 // Services
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 
+import '../../ui/viewmodels/firestore/user_viewmodel.dart';
+import '../../ui/views/data/profile/user_form_view.dart';
+import '../../ui/views/data/profile/user_profile_view.dart';
+
 /// Router global de la aplicación.
 ///
 /// - Controla la autenticación:
