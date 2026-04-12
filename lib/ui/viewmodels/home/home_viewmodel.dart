@@ -23,6 +23,11 @@ class HomeViewModel extends ChangeNotifier {
   // Getters - Información del usuario
   User? get currentUser => _authService.currentUser;
   bool get isAnonymous => _authService.isAnonymous();
+
+  /// true si el usuario NO está autenticado con una cuenta real:
+  /// es decir, si currentUser es null o si está en modo anónimo.
+  bool get isGuest => currentUser == null || isAnonymous;
+
   String get displayName =>
       currentUser?.email ?? currentUser?.displayName ?? 'Invitado';
 

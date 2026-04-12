@@ -2,12 +2,9 @@ import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
-import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
-import 'package:app_restaurante/ui/views/data/profile/user_form_view.dart';
-import 'package:app_restaurante/ui/views/data/profile/user_profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -74,6 +71,7 @@ final GoRouter appRouter = GoRouter(
   ),
 
   redirect: (context, state) async {
+    // cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
 
     final isLogin = state.uri.toString() == AppRoutes.login;
@@ -95,6 +93,7 @@ final GoRouter appRouter = GoRouter(
       return AppRoutes.home;
     }
 
+    // El resto (invitados, anónimos, etc.) puede acceder a cualquier ruta libremente
     return null;
   },
 

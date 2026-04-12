@@ -43,7 +43,9 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _handleGoogleLogin(LoginViewModel viewModel) async {
     final success = await viewModel.signInWithGoogle();
-    if (!success && mounted) _showError(viewModel.errorMessage);
+    if (!success && mounted && viewModel.errorMessage != null) {
+      _showError(viewModel.errorMessage);
+    }
   }
 
   Future<void> _handleAnonymousLogin(LoginViewModel viewModel) async {
