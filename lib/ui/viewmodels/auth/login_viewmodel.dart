@@ -71,6 +71,22 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
+  // ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+  Future<bool> resetPassword({required String email}) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _authService.resetPassword(email: email.trim());
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
   // ==================== HELPERS INTERNOS ====================
   void _setLoading(bool value) {
     _isLoading = value;

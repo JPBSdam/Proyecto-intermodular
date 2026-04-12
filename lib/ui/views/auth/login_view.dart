@@ -1,5 +1,6 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -54,16 +55,76 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _showError(String? message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message ?? 'Error desconocido'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    showSnackBar(context, message ?? 'Error desconocido', error: true);
   }
 
   void _goToRegister() {
     context.go(AppRoutes.register);
+  }
+
+  Future<void> _showForgotPasswordDialog(LoginViewModel viewModel) async {
+    final emailController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Recuperar contraseña'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Introduce tu email para recuperar la contraseña.',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+                hintText: 'tu@email.com',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (emailController.text.isEmpty) {
+                Navigator.pop(dialogContext);
+                _showError('Por favor ingresa tu email.');
+                emailController.dispose();
+                return;
+              }
+
+              Navigator.pop(dialogContext);
+              final success = await viewModel.resetPassword(
+                email: emailController.text,
+              );
+
+              if (mounted) {
+                if (success) {
+                  showSnackBar(
+                    context,
+                    'Email de recuperación enviado. Revisa tu bandeja.',
+                    success: true,
+                  );
+                } else {
+                  _showError(viewModel.errorMessage ?? 'Error al enviar email');
+                }
+              }
+              emailController.dispose();
+            },
+            child: const Text('Enviar'),
+          ),
+        ],
+      ),
+    );
   }
 
   // ─── Widgets del formulario ───────────────────────────────────────────────────
@@ -135,9 +196,22 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildRegisterLink(LoginViewModel viewModel) {
-    return TextButton(
-      onPressed: viewModel.isLoading ? null : _goToRegister,
-      child: const Text('¿No tienes cuenta? Únete a SabrosApp!'),
+    return Column(
+      children: [
+        TextButton(
+          onPressed: viewModel.isLoading ? null : _goToRegister,
+          child: const Text('¿No tienes cuenta? Únete a SabrosApp!'),
+        ),
+        TextButton(
+          onPressed: viewModel.isLoading
+              ? null
+              : () => _showForgotPasswordDialog(viewModel),
+          child: const Text(
+            '¿Olvidaste tu contraseña?',
+            style: TextStyle(color: Colors.deepOrange),
+          ),
+        ),
+      ],
     );
   }
 
@@ -174,12 +248,9 @@ class _LoginViewState extends State<LoginView> {
       isLoading: viewModel.isLoading,
       child: Scaffold(
         appBar: AppBar(title: const Text('Iniciar Sesión')),
-        body: LoadingOverlay(
-          isLoading: viewModel.isLoading,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildForm(viewModel),
-          ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _buildForm(viewModel),
         ),
       ),
     );
