@@ -68,7 +68,9 @@ class AuthService {
       return await _auth.signInWithCredential(credential);
     } on PlatformException catch (e) {
       final code = e.code.toLowerCase();
-      if (code == 'sign_in_canceled' || code == 'canceled' || code == 'cancelled') {
+      if (code == 'sign_in_canceled' ||
+          code == 'canceled' ||
+          code == 'cancelled') {
         return null;
       }
       throw 'Error inesperado: ${e.message ?? e.code}';

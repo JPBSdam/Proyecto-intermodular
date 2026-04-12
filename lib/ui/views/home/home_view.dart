@@ -64,8 +64,11 @@ class _HomeViewState extends State<HomeView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.account_circle_outlined,
-                    size: 64, color: Colors.grey),
+                const Icon(
+                  Icons.account_circle_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
                 const SizedBox(height: 8),
                 const Text(
                   'Accede a tu cuenta',
@@ -114,7 +117,9 @@ class _HomeViewState extends State<HomeView> {
                 Text(
                   viewModel.displayName,
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
