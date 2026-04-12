@@ -62,6 +62,17 @@ class RestaurantRepository {
     return Restaurant.fromFirestore(snapshot.docs.first, null);
   }
 
+  Stream<Restaurant?> watchByAdminId(String adminId) {
+    return _collection
+        .where('adminId', isEqualTo: adminId)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) return null;
+          return Restaurant.fromFirestore(snapshot.docs.first, null);
+        });
+  }
+
   // ─── UPDATE ────────────────────────────────────────────
   Future<void> update(Restaurant restaurant) async {
     if (restaurant.id == null) {
