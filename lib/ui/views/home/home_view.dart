@@ -35,27 +35,119 @@ class _HomeViewState extends State<HomeView> {
             title: Text(widget.title),
             actions: [
               IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'Cerrar Sesión',
-                onPressed: () async {
-                  final success = await viewModel.signOut();
-                  if (!success) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(viewModel.errorMessage),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                  // Si success = true, AuthWrapper redirige automáticamente
-                },
+                icon: const Icon(Icons.account_circle),
+                tooltip: 'Perfil',
+                onPressed: () => _showProfileSheet(context, viewModel),
               ),
             ],
           ),
           body: _buildBody(viewModel),
         );
+      },
+    );
+  }
+
+  /// Muestra un bottom sheet diferente según el estado de autenticación:
+  /// - Invitado / anónimo → opciones para iniciar sesión o registrarse
+  /// - Autenticado → nombre/email y opción de cerrar sesión
+  void _showProfileSheet(BuildContext context, HomeViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        if (viewModel.isGuest) {
+          // ── Invitado / anónimo ──────────────────────────────────────
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.account_circle_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Accede a tu cuenta',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Inicia sesión o regístrate para gestionar tus reservas y perfil.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.push(AppRoutes.login);
+                    },
+                    child: const Text('Iniciar Sesión'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.push(AppRoutes.register);
+                    },
+                    child: const Text('Registrarse'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // ── Usuario autenticado ─────────────────────────────────────
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.account_circle, size: 64),
+                const SizedBox(height: 8),
+                Text(
+                  viewModel.displayName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final success = await viewModel.signOut();
+                      if (!success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(viewModel.errorMessage),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       },
     );
   }
@@ -85,31 +177,8 @@ class _HomeViewState extends State<HomeView> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Banner de usuario anónimo
-          if (viewModel.isAnonymous)
-            Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.orange),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Estás navegando como invitado. Algunas funciones están limitadas.',
-                      style: TextStyle(color: Colors.deepOrange),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Información del usuario autenticado
-          if (viewModel.currentUser != null && !viewModel.isAnonymous)
+          // Saludo personalizado si está autenticado con cuenta real
+          if (!viewModel.isGuest)
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -117,12 +186,39 @@ class _HomeViewState extends State<HomeView> {
                   const Icon(Icons.account_circle, size: 80),
                   const SizedBox(height: 8),
                   Text(
-                    '¡Hola! ¿Qué te apetece comer?',
+                    '¡Hola, ${viewModel.displayName}!',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(
-                    viewModel.displayName,
+                    '¿Qué te apetece comer hoy?',
                     style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+
+          // Banner informativo para invitados (anónimos o sin cuenta)
+          if (viewModel.isGuest)
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.orange),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Explora nuestra carta sin cuenta. ¡Inicia sesión para reservar!',
+                      style: TextStyle(color: Colors.deepOrange),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push(AppRoutes.login),
+                    child: const Text('Entrar'),
                   ),
                 ],
               ),
