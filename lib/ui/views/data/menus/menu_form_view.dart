@@ -42,7 +42,7 @@ class _MenuFormViewState extends State<MenuFormView> {
 
   Future<void> _loadMenu() async {
     final menuViewModel = context.read<MenuViewModel>();
-    final dishViewModel = context.read<DishViewModel>();
+    final dishViewModel = context.watch<DishViewModel>();
 
     // Escuchar platos si no lo está haciendo ya
     if (!dishViewModel.isWatchingDishes) dishViewModel.watchDishes();
@@ -93,7 +93,7 @@ class _MenuFormViewState extends State<MenuFormView> {
   }
 
   Widget _buildForm(MenuViewModel viewModel) {
-    final dishViewModel = context.read<DishViewModel>();
+    final dishViewModel = context.watch<DishViewModel>();
 
     return Form(
       key: _formKey,
