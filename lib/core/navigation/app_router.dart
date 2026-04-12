@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
@@ -30,6 +31,10 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 // Services
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 
+import '../../ui/viewmodels/firestore/user_viewmodel.dart';
+import '../../ui/views/data/profile/user_form_view.dart';
+import '../../ui/views/data/profile/user_profile_view.dart';
+
 /// Router global de la aplicación.
 ///
 /// - Controla la autenticación:
@@ -58,6 +63,9 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
+// ─── INSTANCIAS GLOBALES ───
+final UserService userService = UserService();
+bool userInitialized = false;
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
 
@@ -66,16 +74,26 @@ final GoRouter appRouter = GoRouter(
         .authStateChanges(), // recarga cuando se producen cambios de user
   ),
 
-  redirect: (context, state) {
+  redirect: (context, state) async {
     // cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
 
-    final isLoginOrRegister =
-        state.uri.toString() == AppRoutes.login ||
-        state.uri.toString() == AppRoutes.register;
+    final isLogin = state.uri.toString() == AppRoutes.login;
+    final isRegister = state.uri.toString() == AppRoutes.register;
 
-    // Si hay usuario real (no anónimo) intentando ir a login/register → home
-    if (user != null && !user.isAnonymous && isLoginOrRegister) {
+    // 🔒 No autenticado → login
+    if (user == null && !isLogin && !isRegister) {
+      return AppRoutes.login;
+    }
+
+    // 🔥 Crear usuario en Firestore SOLO UNA VEZ
+    if (user != null && !userInitialized) {
+      userInitialized = true;
+      await userService.ensureUserExistsFromAuth(user);
+    }
+
+    // 🔁 Evitar volver a login/register si ya está autenticado
+    if (user != null && (isLogin || isRegister)) {
       return AppRoutes.home;
     }
 
@@ -119,6 +137,26 @@ final GoRouter appRouter = GoRouter(
         create: (_) => RegisterViewModel(),
         child: RegisterView(),
       ),
+    ),
+
+    // ────── USER PROFILE ──────
+    GoRoute(
+      //USO: context.go(AppRoutes.profile)
+      path: AppRoutes.profile,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) => UserViewModel(),
+        child: const UserProfileView(),
+      ),
+    ),
+    GoRoute(
+      path: '/profile/form/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => UserViewModel(),
+          child: UserFormView(userId: id),
+        );
+      },
     ),
 
     // ────── DISHES ──────

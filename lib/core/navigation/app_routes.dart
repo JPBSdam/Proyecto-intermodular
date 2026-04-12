@@ -14,6 +14,10 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
 
+  // ────── USER PROFILE ──────
+  static const String profile = '/profile';
+  static String profileEdit(String id) => '/profile/form/$id';
+
   // ────── DISHES ──────
   static const String dishes = '/dishes';
   static String dishDetail(String id) => '$dishes/detail/$id';
