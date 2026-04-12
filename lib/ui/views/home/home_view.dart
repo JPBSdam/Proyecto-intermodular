@@ -223,6 +223,10 @@ class _HomeViewState extends State<HomeView> {
                 Text(restaurant.phoneNumber!),
               ],
             ),
+          ElevatedButton(
+            onPressed: () => context.go(AppRoutes.restaurantForm),
+            child: const Text("Editar restaurante"),
+          ),
         ],
       ),
     );

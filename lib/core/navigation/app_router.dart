@@ -7,6 +7,7 @@ import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dar
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
+import 'package:app_restaurante/ui/views/data/restaurant/restaurant_form_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -164,6 +165,16 @@ final GoRouter appRouter = GoRouter(
           child: UserFormView(userId: id),
         );
       },
+    ),
+
+    // ────── RESTAURANT ──────
+    GoRoute(
+      path: AppRoutes.restaurantForm,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) =>
+            RestaurantViewModel(RestaurantService())..watchRestaurant(),
+        child: const RestaurantFormView(),
+      ),
     ),
 
     // ────── DISHES ──────
