@@ -8,5 +8,5 @@ jobs:
     with:
       channel: 'stable'
       run_ios: false
-      run_android_build: true
-      upload_apk: true
+      run_android_build: false
+      upload_apk: false
