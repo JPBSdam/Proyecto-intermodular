@@ -21,8 +21,8 @@ El proyecto sigue el patrón **Clean Architecture** con las siguientes capas:
 ```
 lib/
 ├── data/                    # Capa de datos
-│   ├── model/               # Modelos de datos (Dish, Menu, Reservation, User, Restaurant)
-│   ├── repositories/        # DAOs para acceso a datos (DishRepository, MenuRepository)
+│   ├── model/               # Modelos de datos (Dish, Menu, User, Reservation)
+│   ├── repositories/        # DAOs para acceso a datos
 │   └── services/            # Servicios de Firebase
 │       ├── auth/            # Autenticación (AuthService)
 │       └── firestore/       # Firestore (DishService, MenuService)
@@ -74,7 +74,7 @@ lib/
 ## 📦 Dependencias Principales
 (En desarrollo)
 - **firebase_core** (^4.3.0): Inicialización de Firebase
-- **firebase_auth** (^6.1.4): Autenticación de usuarios
+- **firebase_auth** (^6.1.4): Autenticación de usuarios (Email, Google, Anónimo)
 - **cloud_firestore** (^6.1.2): Base de datos en tiempo real
 - **go_router** (^17.0.1): Navegación declarativa con rutas
 - **provider** (^6.1.5+1): Gestión de estado reactivo
