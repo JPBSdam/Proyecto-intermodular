@@ -40,6 +40,7 @@ class DishViewModel extends ChangeNotifier {
       (dishes) {
         _dishes = dishes;
         _setLoading(false);
+        notifyListeners();
       },
       onError: (e) {
         _errorMessage = 'Error al cargar los platos: $e';
