@@ -86,7 +86,7 @@ class _HomeViewState extends State<HomeView> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(AppRoutes.login);
+                      context.go(AppRoutes.login);
                     },
                     child: const Text('Iniciar Sesión'),
                   ),
@@ -97,7 +97,7 @@ class _HomeViewState extends State<HomeView> {
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(AppRoutes.register);
+                      context.go(AppRoutes.register);
                     },
                     child: const Text('Registrarse'),
                   ),
@@ -217,7 +217,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => context.push(AppRoutes.login),
+                    onPressed: () => context.go(AppRoutes.login),
                     child: const Text('Entrar'),
                   ),
                 ],
