@@ -75,29 +75,36 @@ final GoRouter appRouter = GoRouter(
   ),
 
   redirect: (context, state) async {
-    // cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
+    final path = state.uri.toString();
 
-    final isLogin = state.uri.toString() == AppRoutes.login;
-    final isRegister = state.uri.toString() == AppRoutes.register;
+    final isLogin = path == AppRoutes.login;
+    final isRegister = path == AppRoutes.register;
 
-    // 🔒 No autenticado → login
-    if (user == null && !isLogin && !isRegister) {
+    // 🔒 Rutas protegidas (solo perfil) → requieren autenticación
+    final isProtected = path.startsWith(AppRoutes.profile);
+    if (user == null && isProtected) {
       return AppRoutes.login;
     }
 
-    // 🔥 Crear usuario en Firestore SOLO UNA VEZ
+    // 🔄 Reiniciar flag al cerrar sesión para que el próximo login
+    //    vuelva a registrar al usuario en Firestore si es necesario
+    if (user == null) {
+      userInitialized = false;
+    }
+
+    // 🔥 Crear usuario en Firestore SOLO UNA VEZ por sesión
     if (user != null && !userInitialized) {
       userInitialized = true;
       await userService.ensureUserExistsFromAuth(user);
     }
 
-    // 🔁 Evitar volver a login/register si ya está autenticado
+    // Evitar volver a login/register si ya está autenticado
     if (user != null && (isLogin || isRegister)) {
       return AppRoutes.home;
     }
 
-    // El resto (invitados, anónimos, etc.) puede acceder a cualquier ruta libremente
+    // Home, platos y menús son públicos (invitados bienvenidos)
     return null;
   },
 
@@ -117,7 +124,7 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.home,
       builder: (context, state) => ChangeNotifierProvider(
         create: (_) => HomeViewModel(),
-        child: const HomeView(title: 'Restaurante'),
+        child: const HomeView(title: 'SabrosApp'),
       ),
     ),
 
