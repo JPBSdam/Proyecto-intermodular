@@ -79,7 +79,7 @@ class _UserProfileViewState extends State<UserProfileView> {
       isLoading: _isLoading,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Perfil"),
+          title: const Text('Perfil'),
           actions: [
             IconButton(
               icon: const Icon(Icons.edit),

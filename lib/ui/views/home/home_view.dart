@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,9 +31,8 @@ class _HomeViewState extends State<HomeView> {
     return Consumer<HomeViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
-          appBar: AppBar(
+          appBar: SabrosAppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text(widget.title),
             actions: [
               IconButton(
                 icon: const Icon(Icons.account_circle),

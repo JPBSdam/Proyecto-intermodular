@@ -1,6 +1,9 @@
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 /// Pantalla de Registro
@@ -180,7 +183,14 @@ class _RegisterViewState extends State<RegisterView> {
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Registro')),
+        appBar: SabrosAppBar(
+          pageTitle: 'Registro',
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Volver al inicio de sesión',
+            onPressed: () => context.go(AppRoutes.login),
+          ),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: _buildForm(viewmodel),
