@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
+import '../../../core/widgets/verification_banner.dart';
+
 /// Pantalla principal de la aplicación
 /// Muestra información del usuario, indica si es anónimo,
 /// permite navegar a la lista de platos y menús,
@@ -19,10 +21,28 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+// Utilizamos WidgetsBindingObserver para reaccionar a cambios en el estado de la app como salir de la app para verificar el email.
+class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    // Añadimos el observador cuando se crea el widget
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    // Quitamos el observador cuando se destruye el widget
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Al volver a la app, comprobamos si ya se ha verificado el email
+      context.read<HomeViewModel>().checkEmailVerification();
+    }
   }
 
   @override
@@ -41,7 +61,9 @@ class _HomeViewState extends State<HomeView> {
               ),
             ],
           ),
-          body: _buildBody(viewModel),
+          body: Column(
+            children: [const VerificationBanner(), _buildBody(viewModel)],
+          ),
         );
       },
     );
