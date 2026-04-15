@@ -30,6 +30,16 @@ class RegisterViewModel extends ChangeNotifier {
         email: email.trim(),
         password: password,
       );
+
+      // Enviar correo de verificación después del registro exitoso
+      try {
+        await _authService.sendEmailVerification();
+      } catch (e) {
+        // Registramos el error para que la UI pueda saberlo, pero permitimos continuar
+        // ya que el usuario puede re-enviar el correo desde la Home más tarde.
+        _setError('Error al enviar el correo de verificación: $e');
+      }
+
       _setLoading(false);
       return true;
     } catch (e) {
