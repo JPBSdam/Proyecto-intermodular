@@ -38,17 +38,19 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   Future<void> _load() async {
     try {
       final r = await ReservationService().getById(widget.reservationId);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _reservation = r;
           _loading = false;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = '$e';
           _loading = false;
         });
+      }
     }
   }
 
