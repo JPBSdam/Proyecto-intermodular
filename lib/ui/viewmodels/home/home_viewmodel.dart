@@ -31,6 +31,24 @@ class HomeViewModel extends ChangeNotifier {
   String get displayName =>
       currentUser?.email ?? currentUser?.displayName ?? 'Invitado';
 
+  bool get isEmailVerified => currentUser?.emailVerified ?? false;
+
+  // ==================== VERIFICACIÓN DE CORREO ====================
+  Future<void> checkEmailVerification() async {
+    if (currentUser != null && !isEmailVerified) {
+      await currentUser!.reload(); // refresca los datos desde Firebase
+      notifyListeners(); // Si emailVerified cambió a true, el banner desaparecerá solo
+    }
+  }
+
+  Future<void> resendVerificationEmail() async {
+    try {
+      await _authService.sendEmailVerification();
+    } catch (e) {
+      _setError('Error al reenviar el correo: $e');
+    }
+  }
+
   // ==================== CERRAR SESIÓN ====================
   Future<bool> signOut() async {
     _setLoading(true);
