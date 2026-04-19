@@ -277,5 +277,49 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+
+    // ────── RESERVATIONS ──────
+    GoRoute(
+      //USO: context.go(AppRoutes.reservations)
+      path: AppRoutes.reservations,
+      builder: (context, state) {
+        // NOTA ROLES: cuando roles estén implantados, si es admin → userId = null
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationListView(userId: userId),
+        );
+      },
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationFormCreate())
+      path: '/reservations/form',
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) => ReservationViewModel(ReservationService()),
+        child: const ReservationFormView(),
+      ),
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationFormEdit('reservaID'))
+      path: '/reservations/form/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationFormView(reservationId: id),
+        );
+      },
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationDetail('reservaID'))
+      path: '/reservations/detail/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationDetailView(reservationId: id),
+        );
+      },
+    ),
   ],
 );
