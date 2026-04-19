@@ -29,4 +29,10 @@ class AppRoutes {
   static String menuDetail(String id) => '$menus/detail/$id';
   static String menuFormCreate() => '$menus/form';
   static String menuFormEdit(String id) => '$menus/form/$id';
+
+  // ────── RESERVATIONS ──────
+  static const String reservations = '/reservations';
+  static String reservationDetail(String id) => '$reservations/detail/$id';
+  static String reservationFormCreate() => '$reservations/form';
+  static String reservationFormEdit(String id) => '$reservations/form/$id';
 }
