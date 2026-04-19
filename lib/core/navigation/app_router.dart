@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_detail_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_form_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
