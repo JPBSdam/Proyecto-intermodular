@@ -2,6 +2,9 @@ on:
   push:
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   call-reusable:
     uses: 3592917/ci-templates/.github/workflows/flutter-reusable.yml@main
