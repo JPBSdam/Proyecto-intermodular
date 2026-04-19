@@ -47,6 +47,36 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  /// Muestra un diálogo informativo si el usuario intenta acceder a funciones
+  /// que requieren autenticación (reservas, perfil), pero está en estado de invitado.
+  void _showLoginRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Inicia sesión para continuar'),
+          content: const Text(
+            'Necesitas iniciar sesión para acceder a esta función. ¿Deseas hacerlo ahora?',
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(AppRoutes.login);
+              },
+              child: const Text('Iniciar Sesión'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Más tarde'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// Muestra un bottom sheet diferente según el estado de autenticación:
   /// - Invitado / anónimo → opciones para iniciar sesión o registrarse
   /// - Autenticado → nombre/email y opción de cerrar sesión
@@ -261,6 +291,37 @@ class _HomeViewState extends State<HomeView> {
                     },
                   ),
                 ),
+                const SizedBox(height: 12),
+
+                // ── Reservas ── visible para TODOS
+                // Si no está autenticado → dialog informativo y redirige a login
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_month),
+                    label: const Text('Hacer una reserva'),
+                    onPressed: () {
+                      if (viewModel.isGuest) {
+                        _showLoginRequiredDialog(context);
+                      } else {
+                        context.go(AppRoutes.reservationFormCreate());
+                      }
+                    },
+                  ),
+                ),
+
+                // ── Mis reservas ── solo si está autenticado
+                if (!viewModel.isGuest) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.list_alt),
+                      label: const Text('Mis reservas'),
+                      onPressed: () => context.go(AppRoutes.reservations),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
