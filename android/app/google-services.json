@@ -14,11 +14,27 @@
       },
       "oauth_client": [
         {
+          "client_id": "941200508100-7cpljm5g3102gg57ti2fblkc98qs9mgn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "8740150d107442155a15c97fa0cb0485ad2e8d26"
+          }
+        },
+        {
           "client_id": "941200508100-8tir6iom0h0e36uh3oanbv3176hr3kau.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.app_restaurante",
             "certificate_hash": "a6d5f19cef385f96aa94ab46670681f72af8cdb8"
+          }
+        },
+        {
+          "client_id": "941200508100-mglh1r6e7i3d8po17u0soo8j5bf322kd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "a9382f77aef2914f1b708c075e48f06ad13353d3"
           }
         },
         {
