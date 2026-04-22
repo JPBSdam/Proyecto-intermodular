@@ -72,7 +72,7 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void _goBackToLogin() {
-    Navigator.of(context).pop();
+    context.go(AppRoutes.login);
   }
 
   void _togglePasswordVisibility() {
