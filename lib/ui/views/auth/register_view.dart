@@ -1,6 +1,8 @@
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 /// Pantalla de Registro
@@ -61,7 +63,7 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void _goBackToLogin() {
-    Navigator.of(context).pop();
+    context.go(AppRoutes.login);
   }
 
   void _togglePasswordVisibility() {
