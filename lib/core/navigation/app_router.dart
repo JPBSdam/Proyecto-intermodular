@@ -96,7 +96,7 @@ final GoRouter appRouter = GoRouter(
     }
 
     // 🔁 Evitar volver a login/register si ya está autenticado
-    if (user != null && (isLogin || isRegister)) {
+    if (user != null && !user.isAnonymous && (isLogin || isRegister)) {
       return AppRoutes.home;
     }
 
