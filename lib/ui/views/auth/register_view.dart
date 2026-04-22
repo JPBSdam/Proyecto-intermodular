@@ -50,8 +50,10 @@ class _RegisterViewState extends State<RegisterView> {
       return;
     }
 
-    // El AuthWrapper redirigirá automáticamente
-    _goBackToLogin();
+    // Mostrar mensaje de verificación de correo
+    _showSuccess(
+      '¡Registro exitoso! Verifica tu correo para activar tu cuenta.',
+    );
   }
 
   void _showError(String? message) {
@@ -60,6 +62,12 @@ class _RegisterViewState extends State<RegisterView> {
         content: Text(message ?? 'Error desconocido'),
         backgroundColor: Colors.red,
       ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
