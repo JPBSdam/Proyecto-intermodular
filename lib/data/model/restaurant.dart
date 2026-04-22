@@ -45,7 +45,7 @@ class Restaurant {
       phoneNumber: map?['phoneNumber'] as String?,
       description: map?['description'] as String?,
       email: map?['email'] as String?,
-      capacity: map?['capacity'] as int?,
+      capacity: (map?['capacity'] as num?)?.toInt(),
       urlImage: map?['urlImage'] as String?,
       open: map?['open'] as bool?,
       schedule: rawSchedule?.map(
