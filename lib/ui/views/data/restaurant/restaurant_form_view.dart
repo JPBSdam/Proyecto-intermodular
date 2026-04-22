@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/data/model/restaurant.dart';
@@ -23,32 +24,37 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
   late TextEditingController _imageController;
 
   bool _open = false;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
 
-    final vm = context.read<RestaurantViewModel>();
-    final r = vm.restaurant;
-
-    _nameController = TextEditingController(text: r?.name ?? '');
-    _addressController = TextEditingController(text: r?.address ?? '');
-    _phoneController = TextEditingController(text: r?.phoneNumber ?? '');
-    _emailController = TextEditingController(text: r?.email ?? '');
-    _descriptionController = TextEditingController(text: r?.description ?? '');
-    _capacityController = TextEditingController(
-      text: r?.capacity?.toString() ?? '',
-    );
-    _imageController = TextEditingController(text: r?.urlImage ?? '');
-    _open = r?.open ?? false;
+    // ⚠️ Inicializamos VACÍO (los datos llegan luego)
+    _nameController = TextEditingController();
+    _addressController = TextEditingController();
+    _phoneController = TextEditingController();
+    _emailController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _capacityController = TextEditingController();
+    _imageController = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<RestaurantViewModel>();
 
+    // ✅ Rellenar cuando llegue Firestore (solo una vez)
+    if (!_initialized && vm.restaurant != null) {
+      _fillForm(vm.restaurant!);
+      _initialized = true;
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Restaurante"), actions: [HomeButton()]),
+      appBar: AppBar(
+        title: const Text("Restaurante"),
+        actions: const [HomeButton()],
+      ),
       body: vm.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -105,6 +111,8 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     );
   }
 
+  // ─────────────────────────────
+  // 🔧 FIELD BUILDER (sin obligatorio)
   Widget _buildField(
     TextEditingController controller,
     String label, {
@@ -116,34 +124,82 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
         controller: controller,
         keyboardType: type,
         decoration: InputDecoration(labelText: label),
-        validator: (value) =>
-            value == null || value.isEmpty ? "Campo obligatorio" : null,
+
+        // ✅ Validación flexible
+        validator: (value) {
+          if (label == "Email" &&
+              value != null &&
+              value.isNotEmpty &&
+              !value.contains("@")) {
+            return "Email inválido";
+          }
+          return null;
+        },
       ),
     );
   }
 
+  // ─────────────────────────────
+  // 🔄 RELLENAR FORMULARIO
+  void _fillForm(Restaurant r) {
+    _nameController.text = r.name ?? '';
+    _addressController.text = r.address ?? '';
+    _phoneController.text = r.phoneNumber ?? '';
+    _emailController.text = r.email ?? '';
+    _descriptionController.text = r.description ?? '';
+    _capacityController.text = r.capacity?.toString() ?? '';
+    _imageController.text = r.urlImage ?? '';
+    _open = r.open ?? false;
+  }
+
+  // ─────────────────────────────
+  // 💾 GUARDAR CON FALLBACK
   Future<void> _save(RestaurantViewModel vm) async {
     if (!_formKey.currentState!.validate()) return;
 
+    final current = vm.restaurant;
+
     final restaurant = Restaurant(
-      id: vm.restaurant?.id,
-      name: _nameController.text,
-      address: _addressController.text,
-      phoneNumber: _phoneController.text,
-      email: _emailController.text,
-      description: _descriptionController.text,
-      capacity: int.tryParse(_capacityController.text),
-      urlImage: _imageController.text,
+      id: current?.id,
+
+      // ✅ fallback si el campo está vacío
+      name: _nameController.text.isEmpty ? current?.name : _nameController.text,
+
+      address: _addressController.text.isEmpty
+          ? current?.address
+          : _addressController.text,
+
+      phoneNumber: _phoneController.text.isEmpty
+          ? current?.phoneNumber
+          : _phoneController.text,
+
+      email: _emailController.text.isEmpty
+          ? current?.email
+          : _emailController.text,
+
+      description: _descriptionController.text.isEmpty
+          ? current?.description
+          : _descriptionController.text,
+
+      capacity: _capacityController.text.isEmpty
+          ? current?.capacity
+          : int.tryParse(_capacityController.text),
+
+      urlImage: _imageController.text.isEmpty
+          ? current?.urlImage
+          : _imageController.text,
+
       open: _open,
     );
 
-    if (vm.restaurant == null) {
+    if (current == null) {
       await vm.createRestaurant(restaurant);
     } else {
       await vm.updateRestaurant(restaurant);
     }
 
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    showSnackBar(context, 'restaurante actualizado', success: true);
   }
 
   @override
