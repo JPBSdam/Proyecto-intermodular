@@ -71,7 +71,52 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  // ==================== HELPERS INTERNOS ====================
+  // ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+  Future<bool> resetPassword({required String email}) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _authService.resetPassword(email: email.trim());
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  // ==================== VERIFICACIÓN DE CORREO ====================
+  /// Envía un nuevo correo de verificación al usuario actual
+  Future<bool> resendEmailVerification() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _authService.sendEmailVerification();
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Recarga el estado del usuario para comprobar si el correo ha sido verificado
+  Future<bool> checkEmailVerification() async {
+    try {
+      await _authService.reloadUser();
+      return _authService.isEmailVerified;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
+  /// Obtiene si el correo del usuario actual está verificado
+  bool get isEmailVerified => _authService.isEmailVerified;
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
