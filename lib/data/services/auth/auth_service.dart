@@ -94,6 +94,16 @@ class AuthService {
   Future<void> resetPassword({required String email}) =>
       _handleErrors(() => _auth.sendPasswordResetEmail(email: email));
 
+  /// Envía un correo de verificación al usuario actual
+  Future<void> sendEmailVerification() =>
+      _handleErrors(() => _auth.currentUser!.sendEmailVerification());
+
+  /// Recarga el usuario actual para obtener el estado más reciente de verificación
+  Future<void> reloadUser() => _handleErrors(() => _auth.currentUser!.reload());
+
+  /// Comprueba si el correo del usuario actual está verificado
+  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
+
   // ─── Manejo de errores ────────────────────
 
   Future<T> _handleErrors<T>(Future<T> Function() action) async {
