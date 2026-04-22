@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
+import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
 import 'package:app_restaurante/ui/views/data/reservations/reservation_detail_view.dart';
 import 'package:app_restaurante/ui/views/data/reservations/reservation_form_view.dart';
 import 'package:app_restaurante/ui/views/data/reservations/reservation_list_view.dart';
+import 'package:app_restaurante/ui/views/data/restaurant/restaurant_form_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -104,12 +107,12 @@ final GoRouter appRouter = GoRouter(
       await userService.ensureUserExistsFromAuth(user);
     }
 
-    // Evitar volver a login/register si ya está autenticado
-    if (user != null && (isLogin || isRegister)) {
+    // 🔁 Evitar volver a login/register si ya está autenticado
+    if (user != null && !user.isAnonymous && (isLogin || isRegister)) {
       return AppRoutes.home;
     }
 
-    // Home, platos y menús son públicos (invitados bienvenidos)
+    // El resto (invitados, anónimos, etc.) puede acceder a cualquier ruta libremente
     return null;
   },
 
@@ -125,10 +128,15 @@ final GoRouter appRouter = GoRouter(
   routes: [
     // ────── HOME ──────
     GoRoute(
-      //USO: context.go(AppRoutes.home)
       path: AppRoutes.home,
-      builder: (context, state) => ChangeNotifierProvider(
-        create: (_) => HomeViewModel(),
+      builder: (context, state) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HomeViewModel()),
+          ChangeNotifierProvider(
+            create: (_) =>
+                RestaurantViewModel(RestaurantService())..watchRestaurant(),
+          ),
+        ],
         child: const HomeView(title: 'SabrosApp'),
       ),
     ),
@@ -169,6 +177,16 @@ final GoRouter appRouter = GoRouter(
           child: UserFormView(userId: id),
         );
       },
+    ),
+
+    // ────── RESTAURANT ──────
+    GoRoute(
+      path: AppRoutes.restaurantForm,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) =>
+            RestaurantViewModel(RestaurantService())..watchRestaurant(),
+        child: const RestaurantFormView(),
+      ),
     ),
 
     // ────── DISHES ──────

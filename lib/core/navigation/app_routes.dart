@@ -18,6 +18,9 @@ class AppRoutes {
   static const String profile = '/profile';
   static String profileEdit(String id) => '/profile/form/$id';
 
+  // ────── RESTAURANT ──────
+  static const restaurantForm = '/restaurant/form';
+
   // ────── DISHES ──────
   static const String dishes = '/dishes';
   static String dishDetail(String id) => '$dishes/detail/$id';

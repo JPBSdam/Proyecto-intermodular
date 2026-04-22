@@ -1,5 +1,6 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -204,6 +205,85 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildRestaurantSection(BuildContext context) {
+    final restaurantVM = context.watch<RestaurantViewModel>();
+    final restaurant = restaurantVM.restaurant;
+
+    if (restaurantVM.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (restaurantVM.errorMessage.isNotEmpty) {
+      return Text(
+        restaurantVM.errorMessage,
+        style: const TextStyle(color: Colors.red),
+      );
+    }
+
+    if (restaurant == null) {
+      return const Text("No hay información del restaurante");
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            restaurant.name ?? 'Sin nombre',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+
+          if (restaurant.description != null) Text(restaurant.description!),
+
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Icon(
+                restaurant.open == true ? Icons.check_circle : Icons.cancel,
+                color: restaurant.open == true ? Colors.green : Colors.red,
+              ),
+              const SizedBox(width: 6),
+              Text(restaurant.open == true ? "Abierto" : "Cerrado"),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          if (restaurant.address != null)
+            Row(
+              children: [
+                const Icon(Icons.location_on, size: 18),
+                const SizedBox(width: 6),
+                Expanded(child: Text(restaurant.address!)),
+              ],
+            ),
+
+          if (restaurant.phoneNumber != null)
+            Row(
+              children: [
+                const Icon(Icons.phone, size: 18),
+                const SizedBox(width: 6),
+                Text(restaurant.phoneNumber!),
+              ],
+            ),
+          ElevatedButton(
+            onPressed: () => context.go(AppRoutes.restaurantForm),
+            child: const Text("Editar restaurante"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBody(HomeViewModel viewModel) {
     // Mostrar indicador de carga
     if (viewModel.isLoading) {
@@ -344,6 +424,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                     ),
                   ),
                 ],
+                const SizedBox(height: 24),
+                _buildRestaurantSection(context),
               ],
             ),
           ),
