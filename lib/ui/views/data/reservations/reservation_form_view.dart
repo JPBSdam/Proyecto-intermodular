@@ -1,5 +1,5 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
@@ -58,7 +58,6 @@ class _ReservationFormViewState extends State<ReservationFormView> {
           _reservation = found;
           _seats = found.seats ?? 1;
           _hasBaby = found.hasBaby ?? false;
-          // feat: carga babyCount al editar
           _babyCount = found.babyCount ?? 1;
           _commentsController.text = found.comments ?? '';
           _selectedDate = found.reservationDate;
@@ -76,6 +75,14 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       initialDate: _selectedDate ?? now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: Theme.of(context).colorScheme.copyWith(
+            primary: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        child: child!,
+      ),
     );
     if (date == null || !mounted) return;
 
@@ -83,6 +90,12 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_selectedDate ?? now),
       initialEntryMode: TimePickerEntryMode.input, // reloj digital
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
     );
     if (time == null || !mounted) return;
 
@@ -134,11 +147,15 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       showSnackBar(
         context,
         _reservation == null
-            ? '¡Reserva enviada! En breve confirmaremos tu solicitud 🎉'
-            : 'Reserva actualizada correctamente ✅',
+            ? '¡Reserva enviada! En breve confirmaremos tu solicitud'
+            : 'Reserva actualizada correctamente',
         success: true,
       );
-      context.go(AppRoutes.home);
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(AppRoutes.home);
+      }
     }
   }
 
@@ -146,142 +163,151 @@ class _ReservationFormViewState extends State<ReservationFormView> {
   Widget build(BuildContext context) {
     final vm = context.watch<ReservationViewModel>();
     final isEditing = _reservation != null;
+    final theme = Theme.of(context);
 
     return LoadingOverlay(
       isLoading: vm.isLoading || _loadingEdit,
       child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text(isEditing ? 'Editar reserva' : 'Nueva reserva'),
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: 'Volver al inicio',
-            onPressed: () => context.go(AppRoutes.home),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
           ),
-          actions: const [HomeButton()],
+          title: Text(
+            isEditing ? 'EDITAR RESERVA' : 'NUEVA RESERVA',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Fecha y hora ──────────────────────────────────────────
-                const Text(
-                  'Fecha y hora',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_today),
-                  label: Text(
-                    _selectedDate != null
-                        ? '${_selectedDate!.day.toString().padLeft(2, '0')}/'
-                              '${_selectedDate!.month.toString().padLeft(2, '0')}/'
-                              '${_selectedDate!.year}  '
-                              '${_selectedDate!.hour.toString().padLeft(2, '0')}:'
-                              '${_selectedDate!.minute.toString().padLeft(2, '0')}'
-                        : 'Seleccionar fecha y hora',
-                  ),
-                  onPressed: _pickDateTime,
-                ),
-                const SizedBox(height: 24),
-
-                // ── Número de personas (contador) ─────────────────────────
-                const Text(
-                  'Número de personas',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton.filled(
-                      icon: const Icon(Icons.remove),
-                      onPressed: _seats > 1
-                          ? () => setState(() => _seats--)
-                          : null,
+                _buildSectionTitle('FECHA Y HORA'),
+                const SizedBox(height: 12),
+                AppCard(
+                  padding: EdgeInsets.zero,
+                  onTap: _pickDateTime,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.calendar_today,
+                      color: theme.colorScheme.primary,
                     ),
-                    const SizedBox(width: 28),
-                    Text(
-                      '$_seats',
-                      style: const TextStyle(
-                        fontSize: 32,
+                    title: Text(
+                      _selectedDate != null
+                          ? '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year}'
+                          : 'Seleccionar fecha',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: Text(
+                      _selectedDate != null
+                          ? '${_selectedDate!.hour.toString().padLeft(2, '0')}:${_selectedDate!.minute.toString().padLeft(2, '0')}'
+                          : '--:--',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 28),
-                    IconButton.filled(
-                      icon: const Icon(Icons.add),
-                      onPressed: _seats < 20
-                          ? () => setState(() => _seats++)
-                          : null,
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                Card(
-                  margin: EdgeInsets.zero,
+                const SizedBox(height: 32),
+
+                _buildSectionTitle('COMENSALES'),
+                const SizedBox(height: 12),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _counterButton(
+                        Icons.remove,
+                        _seats > 1 ? () => setState(() => _seats--) : null,
+                      ),
+                      Text(
+                        '$_seats',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      _counterButton(
+                        Icons.add,
+                        _seats < 20 ? () => setState(() => _seats++) : null,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                AppCard(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
-                      CheckboxListTile(
+                      SwitchListTile(
                         value: _hasBaby,
-                        onChanged: (v) => setState(() => _hasBaby = v ?? false),
-                        title: const Text('Venimos con bebé'),
-                        subtitle: const Text(
-                          'Necesitamos espacio para carricoche',
-                          style: TextStyle(fontSize: 12),
+                        onChanged: (v) => setState(() => _hasBaby = v),
+                        title: const Text(
+                          '¿Necesitas espacio para carrito?',
+                          style: TextStyle(fontSize: 14),
                         ),
-                        secondary: const Icon(Icons.child_friendly),
-                        controlAffinity: ListTileControlAffinity.leading,
+                        secondary: Icon(
+                          Icons.child_friendly,
+                          color: _hasBaby
+                              ? theme.colorScheme.primary
+                              : Colors.grey,
+                        ),
                       ),
                       if (_hasBaby) ...[
                         const Divider(height: 1),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
+                          padding: const EdgeInsets.all(16),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Icon(
-                                Icons.baby_changing_station,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 12),
-                              const Text(
-                                '¿Cuántos bebés?',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              const Spacer(),
-                              IconButton.filled(
-                                icon: const Icon(Icons.remove),
-                                onPressed: _babyCount > 1
-                                    ? () => setState(() => _babyCount--)
-                                    : null,
-                              ),
-                              const SizedBox(width: 16),
-                              Text(
-                                '$_babyCount',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              IconButton.filled(
-                                icon: const Icon(Icons.add),
-                                onPressed: _babyCount < 10
-                                    ? () => setState(() => _babyCount++)
-                                    : null,
+                              const Text('Número de bebés'),
+                              Row(
+                                children: [
+                                  _counterButton(
+                                    Icons.remove,
+                                    _babyCount > 1
+                                        ? () => setState(() => _babyCount--)
+                                        : null,
+                                    mini: true,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Text(
+                                      '$_babyCount',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  _counterButton(
+                                    Icons.add,
+                                    _babyCount < 10
+                                        ? () => setState(() => _babyCount++)
+                                        : null,
+                                    mini: true,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -290,39 +316,84 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
-                // ── Comentarios ───────────────────────────────────────────
+                _buildSectionTitle('COMENTARIOS ADICIONALES'),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _commentsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Comentarios / peticiones especiales',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 24),
-
-                ElevatedButton(
-                  onPressed: () => _submit(vm),
-                  child: Text(
-                    isEditing ? 'Actualizar reserva' : 'Solicitar reserva',
-                  ),
-                ),
-
-                if (vm.errorMessage.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(
-                      vm.errorMessage,
-                      style: const TextStyle(color: Colors.red),
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: 'Alergias, preferencias de mesa...',
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 40),
+
+                FilledButton(
+                  onPressed: () => _submit(vm),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    isEditing ? 'GUARDAR CAMBIOS' : 'SOLICITAR RESERVA',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 100),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary.withAlpha(200),
+        letterSpacing: 1.1,
+      ),
+    );
+  }
+
+  Widget _counterButton(
+    IconData icon,
+    VoidCallback? onPressed, {
+    bool mini = false,
+  }) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withAlpha(100),
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        padding: EdgeInsets.all(mini ? 4 : 12),
       ),
     );
   }

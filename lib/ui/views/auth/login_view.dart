@@ -52,7 +52,9 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _handleGoogleLogin(LoginViewModel viewModel) async {
     final success = await viewModel.signInWithGoogle();
-    if (!success && mounted && viewModel.errorMessage != null) {
+    if (success) {
+      if (mounted) context.go(AppRoutes.home);
+    } else if (mounted && viewModel.errorMessage != null) {
       _showError(viewModel.errorMessage);
     }
   }
