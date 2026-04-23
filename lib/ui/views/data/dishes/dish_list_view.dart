@@ -31,7 +31,7 @@ class DishesListView extends StatelessWidget {
       // tener un setter del value tambien global y llamarlo cada vez que haga falta
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Lista de Platos"),
+          title: const Text('Lista de Platos'),
           actions: const [HomeButton()],
         ),
         floatingActionButton: FloatingActionButton(

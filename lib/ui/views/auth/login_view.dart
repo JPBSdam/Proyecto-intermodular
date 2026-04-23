@@ -1,5 +1,6 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -247,7 +248,14 @@ class _LoginViewState extends State<LoginView> {
     return LoadingOverlay(
       isLoading: viewModel.isLoading,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Iniciar Sesión')),
+        appBar: SabrosAppBar(
+          pageTitle: 'Iniciar Sesión',
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Volver al inicio',
+            onPressed: () => context.go(AppRoutes.home),
+          ),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: _buildForm(viewModel),
