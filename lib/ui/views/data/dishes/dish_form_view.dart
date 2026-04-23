@@ -1,4 +1,6 @@
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/app_logo_title.dart';
+import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -6,12 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
-
-/// Pantalla de formulario para crear o editar un plato.
-/// - Si `dishId` es nulo, se crea un nuevo plato.
-/// - Si `dishId` no es nulo, carga el plato existente y permite editarlo.
-/// - Gestiona nombre, descripción, precio y categoría del plato.
-/// - Usa DishViewModel para interactuar con Firestore y manejar estado, errores y carga.
 
 class DishFormView extends StatefulWidget {
   final String? dishId;
@@ -24,22 +20,25 @@ class DishFormView extends StatefulWidget {
 
 class _DishFormViewState extends State<DishFormView> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _descController;
-  late TextEditingController _priceController;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
 
   String _selectedCategory = 'Entrante';
-  final List<String> _categories = ['Entrante', 'Principal', 'Postre', 'Otro'];
+  final List<String> _categories = [
+    'Entrante',
+    'Principal',
+    'Postre',
+    'Bebida',
+    'Otro',
+  ];
+  String? _imageUrl;
 
   Dish? _dish;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
-    _descController = TextEditingController();
-    _priceController = TextEditingController();
-
     if (widget.dishId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final viewmodel = context.read<DishViewModel>();
@@ -62,10 +61,11 @@ class _DishFormViewState extends State<DishFormView> {
     _nameController.text = dish.name ?? '';
     _descController.text = dish.description ?? '';
     _priceController.text = dish.price?.toString() ?? '';
+    _imageUrl = dish.urlImage;
     _selectedCategory = _categories.contains(dish.category)
         ? dish.category!
         : 'Entrante';
-    setState(() {}); // actualizar dropdown
+    setState(() {});
   }
 
   Future<void> _apply(DishViewModel viewmodel) async {
@@ -73,10 +73,12 @@ class _DishFormViewState extends State<DishFormView> {
 
     final newDish = Dish(
       id: _dish?.id,
-      name: _nameController.text,
-      description: _descController.text,
+      name: _nameController.text.trim(),
+      description: _descController.text.trim(),
       price: double.tryParse(_priceController.text),
       category: _selectedCategory,
+      urlImage: _imageUrl,
+      available: _dish?.available ?? true,
     );
 
     if (_dish == null) {
@@ -85,79 +87,201 @@ class _DishFormViewState extends State<DishFormView> {
       await viewmodel.updateDish(newDish);
     }
 
-    if (mounted && viewmodel.errorMessage.isEmpty) context.pop();
+    if (mounted && viewmodel.errorMessage.isEmpty) {
+      showSnackBar(
+        context,
+        isEditing ? 'Plato actualizado' : 'Plato creado',
+        success: true,
+      );
+      context.pop();
+    }
   }
+
+  bool get isEditing => _dish != null;
 
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<DishViewModel>();
-    final isEditing = _dish != null;
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text(isEditing ? 'Editar Plato' : 'Añadir Plato'),
-          actions: const [HomeButton()],
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            onPressed: () => context.pop(),
+          ),
+          title: const AppLogoTitle(),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: _buildForm(viewmodel, isEditing),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildImageSelector(primaryColor),
+                const SizedBox(height: 32),
+
+                AppTextField(
+                  controller: _nameController,
+                  label: 'Nombre del plato',
+                  hint: 'Ej: Salmón al Grill',
+                  icon: Icons.restaurant_menu,
+                  validator: (v) => v == null || v.isEmpty
+                      ? 'El nombre es obligatorio'
+                      : null,
+                ),
+
+                const SizedBox(height: 24),
+                _buildDropdownLabel('CATEGORÍA'),
+                _buildCustomDropdown(primaryColor),
+
+                const SizedBox(height: 24),
+                AppTextField(
+                  controller: _priceController,
+                  label: 'Precio (€)',
+                  hint: '0.00',
+                  icon: Icons.euro,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) => v == null || double.tryParse(v) == null
+                      ? 'Precio no válido'
+                      : null,
+                ),
+
+                const SizedBox(height: 24),
+                AppTextField(
+                  controller: _descController,
+                  label: 'Descripción',
+                  hint: 'Describe los ingredientes...',
+                  icon: Icons.description_outlined,
+                  maxLines: 4,
+                ),
+
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () => _apply(viewmodel),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      isEditing ? 'GUARDAR CAMBIOS' : 'CREAR PLATO',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildForm(DishViewModel viewmodel, bool isEditing) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Nombre'),
-            validator: (v) => v == null || v.isEmpty ? 'Obligatorio' : null,
+  Widget _buildDropdownLabel(String label) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: theme.colorScheme.onSurfaceVariant,
+          letterSpacing: 1.1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDropdown(Color primaryColor) {
+    final theme = Theme.of(context);
+    return AppCard(
+      padding: EdgeInsets.zero,
+      borderRadius: 15,
+      showBorder: false,
+      child: DropdownButtonFormField<String>(
+        key: ValueKey(_selectedCategory),
+        initialValue: _selectedCategory,
+        items: _categories
+            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+            .toList(),
+        onChanged: (v) => setState(() => _selectedCategory = v!),
+        decoration: InputDecoration(
+          prefixIcon: Icon(
+            Icons.category_outlined,
+            color: primaryColor,
+            size: 22,
           ),
-          TextFormField(
-            controller: _descController,
-            decoration: const InputDecoration(labelText: 'Descripción'),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
-          TextFormField(
-            controller: _priceController,
-            decoration: const InputDecoration(labelText: 'Precio'),
-            keyboardType: TextInputType.number,
-            validator: (v) => v == null || double.tryParse(v) == null
-                ? 'Introduce un número válido'
-                : null,
+          filled: true,
+          fillColor: theme.colorScheme.surface,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageSelector(Color primaryColor) {
+    final theme = Theme.of(context);
+    return Center(
+      child: GestureDetector(
+        // TODO implementar selector de imagen
+        onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
+        child: AppCard(
+          padding: EdgeInsets.zero,
+          borderRadius: 20,
+          child: SizedBox(
+            width: double.infinity,
+            height: 160,
+            child: _imageUrl != null && _imageUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(_imageUrl!, fit: BoxFit.cover),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        size: 40,
+                        color: primaryColor,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Añadir foto',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedCategory,
-            items: _categories
-                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                .toList(),
-            onChanged: (v) => setState(() => _selectedCategory = v!),
-            decoration: const InputDecoration(labelText: 'Categoría'),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _apply(viewmodel),
-                  child: Text(isEditing ? 'Actualizar' : 'Guardar'),
-                ),
-              ),
-            ],
-          ),
-          if (viewmodel.errorMessage.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                viewmodel.errorMessage,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
