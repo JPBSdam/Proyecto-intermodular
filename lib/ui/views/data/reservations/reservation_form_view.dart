@@ -132,7 +132,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
     final isEditing = _reservation != null;
 
     return LoadingOverlay(
-      isLoading: vm.isLoading,
+      isLoading: vm.isLoading || _loadingEdit,
       child: Scaffold(
         appBar: AppBar(
           title: Text(isEditing ? 'Editar reserva' : 'Nueva reserva'),
