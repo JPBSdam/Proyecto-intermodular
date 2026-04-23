@@ -329,7 +329,11 @@ class AppDrawer extends StatelessWidget {
       ),
       onTap: () async {
         Navigator.pop(context);
-        await auth.signOut();
+        if (isAnonymous) {
+          context.push(AppRoutes.login);
+        } else {
+          await auth.signOut();
+        }
       },
     );
   }

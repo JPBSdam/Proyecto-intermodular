@@ -83,15 +83,16 @@ class AppUserAvatar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const SizedBox(height: 8),
                 Icon(
                   Icons.account_circle_outlined,
                   size: 64,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.primary,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
-                  'Accede a tu cuenta',
-                  style: theme.textTheme.titleLarge?.copyWith(
+                  '¡Bienvenido!',
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -103,15 +104,35 @@ class AppUserAvatar extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
                       context.push(AppRoutes.login);
                     },
-                    child: const Text('Iniciar Sesión'),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('INICIAR SESIÓN'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.push(AppRoutes.register);
+                  },
+                  child: Text(
+                    'Crear una cuenta nueva',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
