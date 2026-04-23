@@ -59,6 +59,7 @@ class Reservation {
       state: map?['state'] as String?,
       comments: map?['comments'] as String?,
       hasBaby: map?['hasBaby'] as bool?,
+      babyCount: map?['babyCount'] as int?,
       createdAt: (map?['createdAt'] as Timestamp?)?.toDate(),
     );
   }
