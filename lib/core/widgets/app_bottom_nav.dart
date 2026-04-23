@@ -1,11 +1,11 @@
-import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
 /// Widget de navegación inferior unificado para SabrosApp.
-///
-/// Controla la navegación entre las secciones principales.
+/// Diferencia visualmente entre Admin (Gestión) y Usuario (Reserva).
 class AppBottomNav extends StatelessWidget {
   /// Índice de la pestaña actualmente seleccionada.
   final int currentIndex;
@@ -16,10 +16,13 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final authService = AuthService();
-    final bool isGuest = authService.currentUser?.isAnonymous ?? true;
 
-    // Definición de las pestañas disponibles
+    // Usamos HomeViewModel para conocer el rol y estado de invitado
+    final homeVM = context.watch<HomeViewModel>();
+    final bool isGuest = homeVM.isGuest;
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
+
+    // Definición dinámica de las pestañas
     final List<_BottomNavItem> allItems = [
       _BottomNavItem(
         icon: Icons.home_outlined,
@@ -28,18 +31,30 @@ class AppBottomNav extends StatelessWidget {
         route: AppRoutes.home,
       ),
       _BottomNavItem(
-        icon: Icons.menu_book_outlined,
-        activeIcon: Icons.menu_book,
+        icon: Icons.restaurant_menu_outlined,
+        activeIcon: Icons.restaurant_menu,
         label: 'CARTA',
         route: AppRoutes.dishes,
       ),
+
+      // Pestaña dinámica central
       if (!isGuest)
-        _BottomNavItem(
-          icon: Icons.calendar_today_outlined,
-          activeIcon: Icons.calendar_today,
-          label: 'RESERVA',
-          route: AppRoutes.reservationFormCreate(),
-        ),
+        isAdmin
+            ? _BottomNavItem(
+                icon: Icons.assignment_outlined,
+                activeIcon: Icons.assignment,
+                label: 'RESERVAS', // Vista de gestión para Admin
+                route: AppRoutes.reservations,
+                badgeCount:
+                    0, // Aquí irá el contador de pendientes próximamente
+              )
+            : _BottomNavItem(
+                icon: Icons.calendar_today_outlined,
+                activeIcon: Icons.calendar_today,
+                label: 'RESERVA',
+                route: AppRoutes.reservationFormCreate(),
+              ),
+
       _BottomNavItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
@@ -47,9 +62,6 @@ class AppBottomNav extends StatelessWidget {
         route: AppRoutes.profile,
       ),
     ];
-
-    // Ajustar el currentIndex si es necesario (por ejemplo, si se oculta una pestaña)
-    // En este caso, asumimos que el currentIndex pasado es relativo a la lista filtrada.
 
     return Container(
       decoration: BoxDecoration(
@@ -75,11 +87,17 @@ class AppBottomNav extends StatelessWidget {
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 11,
+          letterSpacing: 0.5,
         ),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         items: allItems.map((item) {
           return BottomNavigationBarItem(
-            icon: Icon(item.icon),
+            icon: item.badgeCount != null && item.badgeCount! > 0
+                ? Badge(
+                    label: Text(item.badgeCount.toString()),
+                    child: Icon(item.icon),
+                  )
+                : Icon(item.icon),
             activeIcon: Icon(item.activeIcon),
             label: item.label,
           );
@@ -94,11 +112,13 @@ class _BottomNavItem {
   final IconData activeIcon;
   final String label;
   final String route;
+  final int? badgeCount;
 
   _BottomNavItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
     required this.route,
+    this.badgeCount,
   });
 }

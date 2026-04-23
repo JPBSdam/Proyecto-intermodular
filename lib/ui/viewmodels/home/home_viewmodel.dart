@@ -38,8 +38,9 @@ class HomeViewModel extends ChangeNotifier {
     if (isGuest) return 'Invitado';
     if (_userName != null && _userName!.isNotEmpty) return _userName!;
     if (currentUser?.displayName != null &&
-        currentUser!.displayName!.isNotEmpty)
+        currentUser!.displayName!.isNotEmpty) {
       return currentUser!.displayName!;
+    }
     return currentUser?.email ?? 'Usuario';
   }
 
