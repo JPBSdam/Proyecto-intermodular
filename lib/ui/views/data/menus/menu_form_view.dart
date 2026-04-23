@@ -1,5 +1,8 @@
+import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
@@ -68,21 +71,16 @@ class _MenuFormViewState extends State<MenuFormView> {
     return LoadingOverlay(
       isLoading: menuViewModel.isLoading,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7F7),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: SabrosAppBar(
+          pageTitle: _menu == null ? 'Nuevo Menú' : 'Editar Menú',
           leading: IconButton(
-            icon: Icon(Icons.close, color: primaryColor),
+            icon: const Icon(Icons.close),
             onPressed: () => context.pop(),
-          ),
-          title: Text(
-            _menu == null ? 'Nuevo Menú' : 'Editar Menú',
-            style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Form(
             key: _formKey,
             child: Column(
@@ -96,18 +94,20 @@ class _MenuFormViewState extends State<MenuFormView> {
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Ponle un nombre' : null,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 AppTextField(
                   controller: _priceController,
                   label: 'Precio (€)',
                   hint: '0.00',
                   icon: Icons.euro,
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   validator: (v) => v == null || double.tryParse(v) == null
                       ? 'Precio inválido'
                       : null,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 AppTextField(
                   controller: _descController,
                   label: 'Descripción (Opcional)',
@@ -118,25 +118,29 @@ class _MenuFormViewState extends State<MenuFormView> {
                 const SizedBox(height: 32),
                 _buildDishSelector(primaryColor),
                 const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: () => _apply(menuViewModel),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () => _apply(menuViewModel),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    elevation: 4,
-                  ),
-                  child: Text(
-                    _menu == null ? 'CREAR MENÚ' : 'ACTUALIZAR MENÚ',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
+                    child: Text(
+                      _menu == null ? 'CREAR MENÚ' : 'ACTUALIZAR MENÚ',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -147,6 +151,7 @@ class _MenuFormViewState extends State<MenuFormView> {
 
   Widget _buildDishSelector(Color primaryColor) {
     final dishViewModel = context.watch<DishViewModel>();
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,33 +160,23 @@ class _MenuFormViewState extends State<MenuFormView> {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             'SELECCIONA LOS PLATOS',
-            style: TextStyle(
-              fontSize: 11,
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: theme.colorScheme.onSurfaceVariant,
               letterSpacing: 1.1,
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(5),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        AppCard(
+          padding: EdgeInsets.zero,
+          borderRadius: 20,
           child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: dishViewModel.dishes.length,
             separatorBuilder: (_, __) => Divider(
               height: 1,
-              color: Colors.grey.shade100,
+              color: theme.colorScheme.outlineVariant.withAlpha(50),
               indent: 20,
               endIndent: 20,
             ),
@@ -192,14 +187,15 @@ class _MenuFormViewState extends State<MenuFormView> {
               return CheckboxListTile(
                 title: Text(
                   dish.name ?? '',
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 subtitle: Text(
                   dish.category ?? '',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 value: isSelected,
                 activeColor: primaryColor,
@@ -226,12 +222,7 @@ class _MenuFormViewState extends State<MenuFormView> {
   Future<void> _apply(MenuViewModel viewModel) async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDishes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecciona al menos un plato'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      showSnackBar(context, 'Selecciona al menos un plato');
       return;
     }
 
@@ -244,47 +235,20 @@ class _MenuFormViewState extends State<MenuFormView> {
       available: _menu?.available ?? true,
     );
 
-    try {
-      if (_menu == null) {
-        await viewModel.addMenu(newMenu);
-      } else {
-        await viewModel.updateMenu(newMenu);
-      }
+    await (_menu == null
+        ? viewModel.addMenu(newMenu)
+        : viewModel.updateMenu(newMenu));
 
-      if (mounted) {
-        if (viewModel.errorMessage.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _menu == null
-                    ? '¡Menú creado con éxito!'
-                    : '¡Menú actualizado correctamente!',
-              ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          );
-          context.pop();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(viewModel.errorMessage),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.redAccent,
-          ),
+    if (mounted) {
+      if (viewModel.errorMessage.isEmpty) {
+        showSnackBar(
+          context,
+          _menu == null ? '¡Menú creado con éxito!' : '¡Menú actualizado!',
+          success: true,
         );
+        context.pop();
+      } else {
+        showSnackBar(context, viewModel.errorMessage);
       }
     }
   }

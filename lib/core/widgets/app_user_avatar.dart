@@ -2,36 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
-import 'package:app_restaurante/data/services/auth/auth_service.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
 /// Avatar de usuario unificado que se muestra en la AppBar.
-///
-/// Al pulsar sobre él, despliega un BottomSheet con información rápida del perfil
-/// y acciones comunes (Editar, Cerrar Sesión).
+/// Utiliza HomeViewModel como fuente única de verdad.
 class AppUserAvatar extends StatelessWidget {
   const AppUserAvatar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final userViewModel = context.watch<UserViewModel>();
-    final authService = AuthService();
-    final firebaseUser = authService.currentUser;
-    final bool isGuest = firebaseUser?.isAnonymous ?? true;
+    // Escuchamos el HomeViewModel (nuestra fuente global de sesión)
+    final homeVM = context.watch<HomeViewModel>();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Foto o icono de avatar
+    // Foto o icono de avatar según el estado del HomeViewModel
     Widget avatarChild;
-    if (userViewModel.user?.urlImage != null &&
-        userViewModel.user!.urlImage!.isNotEmpty) {
+    if (homeVM.photoUrl != null && homeVM.photoUrl!.isNotEmpty) {
       avatarChild = ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Image.network(
-          userViewModel.user!.urlImage!,
+          homeVM.photoUrl!,
           fit: BoxFit.cover,
           width: 36,
           height: 36,
+          errorBuilder: (_, __, ___) => Icon(
+            Icons.account_circle_outlined,
+            color: colorScheme.primary,
+            size: 24,
+          ),
         ),
       );
     } else {
@@ -43,8 +42,7 @@ class AppUserAvatar extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () =>
-          _showProfileSheet(context, userViewModel, isGuest, authService),
+      onTap: () => _showProfileSheet(context, homeVM),
       child: Padding(
         padding: const EdgeInsets.only(right: 16),
         child: Container(
@@ -60,15 +58,11 @@ class AppUserAvatar extends StatelessWidget {
     );
   }
 
-  void _showProfileSheet(
-    BuildContext context,
-    UserViewModel userVM,
-    bool isGuest,
-    AuthService auth,
-  ) {
+  void _showProfileSheet(BuildContext context, HomeViewModel homeVM) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final bool isAdmin = userVM.user?.role == 'admin';
+    final bool isGuest = homeVM.isGuest;
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     showModalBottomSheet(
       context: context,
@@ -147,10 +141,10 @@ class AppUserAvatar extends StatelessWidget {
                 CircleAvatar(
                   radius: 36,
                   backgroundColor: colorScheme.surfaceContainerHighest,
-                  backgroundImage: (userVM.user?.urlImage != null)
-                      ? NetworkImage(userVM.user!.urlImage!)
+                  backgroundImage: (homeVM.photoUrl != null)
+                      ? NetworkImage(homeVM.photoUrl!)
                       : null,
-                  child: (userVM.user?.urlImage == null)
+                  child: (homeVM.photoUrl == null)
                       ? Icon(
                           Icons.person,
                           size: 40,
@@ -163,7 +157,7 @@ class AppUserAvatar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      userVM.user?.name ?? 'Usuario',
+                      homeVM.displayName,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -196,7 +190,7 @@ class AppUserAvatar extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  userVM.user?.email ?? '',
+                  homeVM.email,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -205,7 +199,7 @@ class AppUserAvatar extends StatelessWidget {
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.person_outline),
-                  title: const Text('Editar mi perfil'),
+                  title: const Text('Mi Perfil'),
                   onTap: () {
                     Navigator.pop(context);
                     context.push(AppRoutes.profile);
@@ -221,8 +215,13 @@ class AppUserAvatar extends StatelessWidget {
                     ),
                   ),
                   onTap: () async {
-                    Navigator.pop(context);
-                    await auth.signOut();
+                    // Importante: No cerramos el diálogo manualmente antes,
+                    // dejamos que signOut maneje el estado.
+                    final success = await homeVM.signOut();
+                    if (success && context.mounted) {
+                      Navigator.pop(context);
+                      // El router redirigirá si es necesario
+                    }
                   },
                 ),
               ],

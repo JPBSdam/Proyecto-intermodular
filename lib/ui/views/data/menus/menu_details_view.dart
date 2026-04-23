@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/widgets/app_card.dart';
+import '../../../viewmodels/home/home_viewmodel.dart';
+
 class MenuDetailView extends StatefulWidget {
   final String menuId;
 
@@ -35,7 +38,11 @@ class _MenuDetailViewState extends State<MenuDetailView> {
   Widget build(BuildContext context) {
     final menuViewModel = context.watch<MenuViewModel>();
     final dishViewModel = context.watch<DishViewModel>();
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final homeVM = context.watch<HomeViewModel>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     // Buscamos el menú en tiempo real dentro de la lista del ViewModel
     final Menu? menu = menuViewModel.menus.cast<Menu?>().firstWhere(
@@ -58,22 +65,22 @@ class _MenuDetailViewState extends State<MenuDetailView> {
     return LoadingOverlay(
       isLoading: menuViewModel.isLoading || dishViewModel.isLoading,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7F7),
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: primaryColor),
+            icon: Icon(Icons.arrow_back, color: colorScheme.primary),
             onPressed: () => context.pop(),
           ),
           actions: [
-            if (menu != null) ...[
+            if (menu != null && isAdmin) ...[
               IconButton(
-                icon: Icon(Icons.edit_outlined, color: primaryColor),
+                icon: Icon(Icons.edit_outlined, color: colorScheme.primary),
                 onPressed: () => context.push(AppRoutes.menuFormEdit(menu.id!)),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                icon: Icon(Icons.delete_outline, color: colorScheme.error),
                 onPressed: () => _handleDelete(context, menuViewModel, menu),
               ),
             ],
@@ -82,35 +89,36 @@ class _MenuDetailViewState extends State<MenuDetailView> {
         body: menu == null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       menu.name ?? 'Menú Especial',
-                      style: TextStyle(
-                        fontSize: 32,
+                      style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: primaryColor,
+                        color: colorScheme.onSurface,
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 16,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: primaryColor.withAlpha(20),
+                        color: colorScheme.primary.withAlpha(25),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         '${menu.price?.toStringAsFixed(2) ?? "0.00"} €',
-                        style: TextStyle(
-                          color: primaryColor,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -118,27 +126,27 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                     _buildSectionHeader(
                       'Composición del Menú',
                       Icons.restaurant,
+                      theme,
                     ),
                     const SizedBox(height: 16),
                     if (menuDishes.isEmpty && !dishViewModel.isLoading)
                       Text(
                         "No hay platos seleccionados",
-                        style: TextStyle(color: Colors.grey.shade500),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       )
                     else
-                      ...menuDishes.map(
-                        (dish) => _buildDishTile(dish, primaryColor),
-                      ),
+                      ...menuDishes.map((dish) => _buildDishTile(dish, theme)),
                     const SizedBox(height: 32),
                     if (menu.description != null &&
                         menu.description!.isNotEmpty) ...[
-                      _buildSectionHeader('Notas', Icons.notes),
+                      _buildSectionHeader('Notas', Icons.notes, theme),
                       const SizedBox(height: 12),
                       Text(
                         menu.description!,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 16,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                           height: 1.5,
                         ),
                       ),
@@ -150,17 +158,17 @@ class _MenuDetailViewState extends State<MenuDetailView> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
+  Widget _buildSectionHeader(String title, IconData icon, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey.shade600),
+        Icon(icon, size: 18, color: colorScheme.primary.withAlpha(180)),
         const SizedBox(width: 8),
         Text(
           title.toUpperCase(),
-          style: TextStyle(
-            fontSize: 13,
+          style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade600,
+            color: colorScheme.onSurfaceVariant,
             letterSpacing: 1.2,
           ),
         ),
@@ -168,41 +176,35 @@ class _MenuDetailViewState extends State<MenuDetailView> {
     );
   }
 
-  Widget _buildDishTile(Dish dish, Color primaryColor) {
-    return Container(
+  Widget _buildDishTile(Dish dish, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: primaryColor.withAlpha(10),
+              color: colorScheme.primary.withAlpha(20),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.check, color: primaryColor, size: 18),
+            child: Icon(Icons.check, color: colorScheme.primary, size: 18),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               dish.name ?? '',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Text(
             dish.category ?? '',
-            style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

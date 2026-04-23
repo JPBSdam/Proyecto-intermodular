@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../viewmodels/home/home_viewmodel.dart';
+
 class DishDetailView extends StatefulWidget {
   final String dishId;
 
@@ -67,6 +69,8 @@ class _DishDetailViewState extends State<DishDetailView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final viewmodel = context.watch<DishViewModel>();
+    final homeVM = context.watch<HomeViewModel>();
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     return LoadingOverlay(
       isLoading: _isLoading,
@@ -106,18 +110,20 @@ class _DishDetailViewState extends State<DishDetailView> {
                       ),
                     ),
                     actions: [
-                      _buildActionCircle(
-                        icon: Icons.edit_outlined,
-                        color: colorScheme.primary,
-                        onPressed: () =>
-                            context.push(AppRoutes.dishFormEdit(_dish!.id!)),
-                      ),
-                      _buildActionCircle(
-                        icon: Icons.delete_outline,
-                        color: colorScheme.error,
-                        onPressed: () => _deleteDish(viewmodel),
-                      ),
-                      const SizedBox(width: 8),
+                      if (isAdmin) ...[
+                        _buildActionCircle(
+                          icon: Icons.edit_outlined,
+                          color: colorScheme.primary,
+                          onPressed: () =>
+                              context.push(AppRoutes.dishFormEdit(_dish!.id!)),
+                        ),
+                        _buildActionCircle(
+                          icon: Icons.delete_outline,
+                          color: colorScheme.error,
+                          onPressed: () => _deleteDish(viewmodel),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       stretchModes: const [

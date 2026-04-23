@@ -136,7 +136,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         children: [
           _buildHeroSection(viewModel),
           _buildSuggestionsSection(dishViewModel),
-          _buildRestaurantSection(context),
+          _buildRestaurantSection(context, viewModel),
           const SizedBox(height: 40),
         ],
       ),
@@ -326,9 +326,35 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   }
 
   Widget _buildSuggestionsSection(DishViewModel dishVM) {
-    if (dishVM.dishes.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    if (dishVM.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(40),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (dishVM.errorMessage.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          'No se pudieron cargar las sugerencias: ${dishVM.errorMessage}',
+          style: TextStyle(color: colorScheme.error),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    if (dishVM.dishes.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(40),
+        child: Center(
+          child: Text('No hay platos disponibles en este momento.'),
+        ),
+      );
+    }
 
     final randomDishes = List.of(dishVM.dishes)..shuffle();
     final suggestions = randomDishes.take(3).toList();
@@ -449,7 +475,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildRestaurantSection(BuildContext context) {
+  Widget _buildRestaurantSection(BuildContext context, HomeViewModel homeVM) {
     final restaurantVM = context.watch<RestaurantViewModel>();
     final restaurant = restaurantVM.restaurant;
     final theme = Theme.of(context);
@@ -460,6 +486,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     }
 
     final isOpen = restaurant.open == true;
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     return AppCard(
       margin: const EdgeInsets.all(24),
@@ -504,23 +531,26 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             Icons.phone_outlined,
             restaurant.phoneNumber ?? 'Sin teléfono',
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => context.push(AppRoutes.restaurantForm),
-              icon: const Icon(Icons.edit_outlined, size: 18),
-              label: const Text("Gestionar restaurante"),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                side: BorderSide(color: colorScheme.primary.withAlpha(50)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          // Solo mostrar botón de gestión si es ADMIN
+          if (isAdmin) ...[
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push(AppRoutes.restaurantForm),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text("Gestionar restaurante"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.primary,
+                  side: BorderSide(color: colorScheme.primary.withAlpha(50)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

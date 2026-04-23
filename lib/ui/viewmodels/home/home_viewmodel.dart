@@ -1,24 +1,29 @@
+import 'dart:async';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
+import 'package:app_restaurante/data/services/firestore/user_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-/// ViewModel de la pantalla Home
-/// Gestiona el estado y la lógica de la UI relacionada con el usuario:
-///  - Proporciona información del usuario actual (nombre, anonimato)
-///  - Controla la operación de cierre de sesión
-///  - Mantiene estado de carga y mensajes de error
-///  - Integra AuthService para operaciones de autenticación
-
+/// ViewModel de la pantalla Home y gestión de sesión global.
 class HomeViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Estado de carga de menús
+  // Estado del perfil (Firestore)
+  String _userRole = 'USER';
+  String? _userName;
+  String? _userPhotoUrl;
+
+  // Estado de UI
   bool _isLoading = false;
   String _errorMessage = '';
+  StreamSubscription? _userSubscription;
 
-  // Getters - Menús
+  // Getters
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
+  String get userRole => _userRole;
 
   // Getters - Información del usuario
   User? get currentUser => _authService.currentUser;
@@ -28,16 +33,91 @@ class HomeViewModel extends ChangeNotifier {
   /// es decir, si currentUser es null o si está en modo anónimo.
   bool get isGuest => currentUser == null || isAnonymous;
 
-  String get displayName =>
-      currentUser?.email ?? currentUser?.displayName ?? 'Invitado';
+  // Lógica de visualización: Prioridad Firestore > Auth > Email > Fallback
+  String get displayName {
+    if (isGuest) return 'Invitado';
+    if (_userName != null && _userName!.isNotEmpty) return _userName!;
+    if (currentUser?.displayName != null &&
+        currentUser!.displayName!.isNotEmpty)
+      return currentUser!.displayName!;
+    return currentUser?.email ?? 'Usuario';
+  }
 
+  String? get photoUrl {
+    if (isGuest) return null;
+    return _userPhotoUrl ?? currentUser?.photoURL;
+  }
+
+  String get email => currentUser?.email ?? '';
   bool get isEmailVerified => currentUser?.emailVerified ?? false;
 
-  // ==================== VERIFICACIÓN DE CORREO ====================
+  HomeViewModel() {
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    // 1. Carga inicial
+    _initUserStream(currentUser);
+
+    // 2. Escucha cambios de auth
+    _authService.authStateChanges.listen((user) {
+      _initUserStream(user);
+    });
+  }
+
+  void _initUserStream(User? user) {
+    _userSubscription?.cancel();
+
+    // Reset agresivo de datos al cambiar de usuario
+    _userRole = 'USER';
+    _userName = null;
+    _userPhotoUrl = null;
+    _errorMessage = '';
+
+    if (user != null && !user.isAnonymous) {
+      // Sincronización silenciosa con Firestore al detectar usuario real
+      UserService()
+          .ensureUserExistsFromAuth(user)
+          .catchError((e) => debugPrint("Sync Error: $e"));
+
+      // Notificamos el reset para que la UI limpie fotos antiguas de inmediato
+      notifyListeners();
+
+      _userSubscription = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .listen(
+            (doc) {
+              if (doc.exists) {
+                final data = doc.data();
+                _userRole = data?['role']?.toString().toUpperCase() ?? 'USER';
+                _userName = data?['name']?.toString();
+                _userPhotoUrl = data?['urlImage']?.toString();
+              }
+              notifyListeners();
+            },
+            onError: (e) {
+              debugPrint("Error Firestore Stream: $e");
+            },
+          );
+    } else {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
+  // ==================== ACCIONES ====================
+
   Future<void> checkEmailVerification() async {
-    if (currentUser != null && !isEmailVerified) {
-      await currentUser!.reload(); // refresca los datos desde Firebase
-      notifyListeners(); // Si emailVerified cambió a true, el banner desaparecerá solo
+    if (currentUser != null) {
+      await currentUser!.reload();
+      notifyListeners();
     }
   }
 
@@ -45,16 +125,22 @@ class HomeViewModel extends ChangeNotifier {
     try {
       await _authService.sendEmailVerification();
     } catch (e) {
-      _setError('Error al reenviar el correo: $e');
+      _setError('Error: $e');
     }
   }
 
   // ==================== CERRAR SESIÓN ====================
   Future<bool> signOut() async {
     _setLoading(true);
-
     try {
+      // 1. Cancelamos suscripción antes de nada
+      await _userSubscription?.cancel();
+      // 2. Cerramos sesión en Firebase
       await _authService.signOut();
+      // 3. Reseteamos datos localmente
+      _userRole = 'USER';
+      _userName = null;
+      _userPhotoUrl = null;
       _setLoading(false);
       return true;
     } catch (e) {
