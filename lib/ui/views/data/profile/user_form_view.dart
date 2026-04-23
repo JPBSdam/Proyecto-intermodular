@@ -1,9 +1,10 @@
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
-import 'package:app_restaurante/core/widgets/app_logo_title.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -112,21 +113,18 @@ class _UserFormViewState extends State<UserFormView> {
   Widget build(BuildContext context) {
     final viewmodel = context.watch<UserViewModel>();
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: 'EDITAR PERFIL',
+          centerTitle: true,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => context.pop(),
           ),
-          title: const AppLogoTitle(),
-          centerTitle: true,
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -145,8 +143,14 @@ class _UserFormViewState extends State<UserFormView> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
+    final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
+    final effectivePhotoUrl =
+        (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
+        ? _user!.urlImage
+        : firebaseUser?.photoURL;
 
     return SizedBox(
       height: 140,
@@ -189,10 +193,12 @@ class _UserFormViewState extends State<UserFormView> {
                     radius: 60,
                     backgroundColor: colorScheme.surfaceContainerHighest,
                     backgroundImage:
-                        (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
-                        ? NetworkImage(_user!.urlImage!)
+                        (effectivePhotoUrl != null &&
+                            effectivePhotoUrl.isNotEmpty)
+                        ? NetworkImage(effectivePhotoUrl)
                         : null,
-                    child: (_user?.urlImage == null || _user!.urlImage!.isEmpty)
+                    child:
+                        (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
                         ? Icon(
                             Icons.person,
                             size: 70,
