@@ -90,8 +90,9 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     bool isAdmin,
   ) {
     if (_error.isNotEmpty) return Center(child: Text(_error));
-    if (_reservation == null)
+    if (_reservation == null) {
       return const Center(child: CircularProgressIndicator());
+    }
 
     final r = _reservation!;
     final date = r.reservationDate;
