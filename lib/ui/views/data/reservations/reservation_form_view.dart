@@ -216,16 +216,65 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                 // ── Bebé / carricoche ─────────────────────────────────────
                 Card(
                   margin: EdgeInsets.zero,
-                  child: CheckboxListTile(
-                    value: _hasBaby,
-                    onChanged: (v) => setState(() => _hasBaby = v ?? false),
-                    title: const Text('Venimos con bebé'),
-                    subtitle: const Text(
-                      'Necesitamos espacio para carricoche',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    secondary: const Icon(Icons.child_friendly),
-                    controlAffinity: ListTileControlAffinity.leading,
+                  child: Column(
+                    children: [
+                      CheckboxListTile(
+                        value: _hasBaby,
+                        onChanged: (v) =>
+                            setState(() => _hasBaby = v ?? false),
+                        title: const Text('Venimos con bebé'),
+                        subtitle: const Text(
+                          'Necesitamos espacio para carricoche',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        secondary: const Icon(Icons.child_friendly),
+                        controlAffinity: ListTileControlAffinity.leading,
+                      ),
+                      if (_hasBaby) ...[
+                        const Divider(height: 1),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.baby_changing_station,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                '¿Cuántos bebés?',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              const Spacer(),
+                              IconButton.filled(
+                                icon: const Icon(Icons.remove),
+                                onPressed: _babyCount > 1
+                                    ? () => setState(() => _babyCount--)
+                                    : null,
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                '$_babyCount',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton.filled(
+                                icon: const Icon(Icons.add),
+                                onPressed: _babyCount < 10
+                                    ? () => setState(() => _babyCount++)
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
