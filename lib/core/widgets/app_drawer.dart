@@ -94,11 +94,18 @@ class AppDrawer extends StatelessWidget {
                   _buildSectionTitle(context, 'ADMINISTRACIÓN'),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.admin_panel_settings_outlined,
-                    label: 'Gestión Reservas',
-                    route: "/admin/reservations",
+                    icon: Icons.storefront_outlined,
+                    label: 'Mi Restaurante',
+                    route: AppRoutes.restaurantForm,
                     currentPath: currentPath,
-                    // todo implementar
+                  ),
+                  _buildDrawerItem(
+                    context: context,
+                    icon: Icons.assignment_outlined,
+                    label: 'Gestión Reservas',
+                    route: AppRoutes.reservations,
+                    currentPath: currentPath,
+                    // TODO: Implementar contador real de reservas pendientes
                     trailing: _buildBadge(context, '3'),
                   ),
                 ],
