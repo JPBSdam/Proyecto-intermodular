@@ -7,8 +7,6 @@ import 'package:app_restaurante/data/services/firestore/reservation_service.dart
 /// - watchAll()      → admin (todas las reservas)
 /// - watchByUser()   → customer (solo las suyas)
 /// - confirmReservation / cancelReservation → cambios de estado
-///
-/// NOTA ROLES: la UI decide qué método de escucha usar según user.role
 
 class ReservationViewModel extends ChangeNotifier {
   final ReservationService _service;

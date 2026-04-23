@@ -109,9 +109,10 @@ class _DishFormViewState extends State<DishFormView> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: SabrosAppBar(
-          pageTitle: isEditing ? 'Editar Plato' : 'Nuevo Plato',
+          pageTitle: isEditing ? 'EDITAR PLATO' : 'NUEVO PLATO',
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => context.pop(),
           ),
         ),

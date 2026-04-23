@@ -73,9 +73,10 @@ class _MenuFormViewState extends State<MenuFormView> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: SabrosAppBar(
-          pageTitle: _menu == null ? 'Nuevo Menú' : 'Editar Menú',
+          pageTitle: _menu == null ? 'NUEVO MENÚ' : 'EDITAR MENÚ',
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => context.pop(),
           ),
         ),

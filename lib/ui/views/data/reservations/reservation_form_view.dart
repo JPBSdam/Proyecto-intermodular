@@ -1,6 +1,7 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
@@ -169,9 +170,8 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       isLoading: vm.isLoading || _loadingEdit,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: isEditing ? 'EDITAR RESERVA' : 'NUEVA RESERVA',
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -182,13 +182,6 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                 context.go(AppRoutes.home);
               }
             },
-          ),
-          title: Text(
-            isEditing ? 'EDITAR RESERVA' : 'NUEVA RESERVA',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
           ),
         ),
         body: SingleChildScrollView(

@@ -1,4 +1,5 @@
-import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
@@ -11,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../../../core/navigation/app_routes.dart';
 
 class ReservationDetailView extends StatefulWidget {
   final String reservationId;
@@ -62,23 +65,16 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       isLoading: _loading || vm.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: 'DETALLE RESERVA',
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => context.pop(),
           ),
-          title: Text(
-            'DETALLE RESERVA',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-          ),
         ),
         body: _buildBody(theme, colorScheme, vm, isAdmin),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 2),
       ),
     );
   }

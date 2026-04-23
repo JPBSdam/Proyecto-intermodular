@@ -4,10 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// - pending:   el cliente ha solicitado la reserva (pendiente de confirmación admin)
 /// - confirmed: el admin ha confirmado la reserva
 /// - cancelled: la reserva ha sido cancelada (por cliente o admin)
-///
-/// NOTA ROLES: cuando los roles estén implantados:
-///   - customer → puede cancelar/editar la suya si está 'pending'
-///   - admin    → puede confirmar o cancelar cualquier reserva
+
 class ReservationStatus {
   static const String pending = 'pending';
   static const String confirmed = 'confirmed';
