@@ -3,6 +3,7 @@ import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -56,15 +57,13 @@ class _UserProfileViewState extends State<UserProfileView> {
     final viewmodel = context.watch<UserViewModel>();
     final user = viewmodel.user;
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return LoadingOverlay(
       isLoading: _isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: 'MI PERFIL',
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -75,13 +74,6 @@ class _UserProfileViewState extends State<UserProfileView> {
                 context.go(AppRoutes.home);
               }
             },
-          ),
-          title: Text(
-            'MI PERFIL',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
           ),
         ),
         bottomNavigationBar: const AppBottomNav(currentIndex: 3),

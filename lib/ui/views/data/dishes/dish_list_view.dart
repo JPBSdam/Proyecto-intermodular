@@ -2,6 +2,7 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -64,9 +65,8 @@ class _DishesListViewState extends State<DishesListView> {
       isLoading: viewmodel.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: 'NUESTRA CARTA',
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -77,13 +77,6 @@ class _DishesListViewState extends State<DishesListView> {
                 context.go(AppRoutes.home);
               }
             },
-          ),
-          title: Text(
-            'NUESTRA CARTA',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
           ),
         ),
         bottomNavigationBar: const AppBottomNav(currentIndex: 1),

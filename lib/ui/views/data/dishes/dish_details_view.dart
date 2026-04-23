@@ -1,5 +1,6 @@
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/data/model/dish.dart';
@@ -101,7 +102,7 @@ class _DishDetailViewState extends State<DishDetailView> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
                         onPressed: () => context.pop(),
                       ),
                     ),
@@ -194,10 +195,11 @@ class _DishDetailViewState extends State<DishDetailView> {
                             ),
                             const SizedBox(height: 24),
                             Text(
-                              _dish!.name ?? 'Sin nombre',
+                              _dish!.name?.toUpperCase() ?? 'SIN NOMBRE',
                               style: theme.textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.onSurface,
+                                letterSpacing: 1.2,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -235,6 +237,7 @@ class _DishDetailViewState extends State<DishDetailView> {
                   ),
                 ],
               ),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
       ),
     );
   }

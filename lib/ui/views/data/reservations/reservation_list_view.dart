@@ -3,6 +3,7 @@ import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -43,7 +44,6 @@ class _ReservationListViewState extends State<ReservationListView> {
     final homeVM = context.watch<HomeViewModel>();
     final isAdmin = homeVM.userRole == 'ADMIN';
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     // Filtrar lista localmente
     final filteredList = vm.reservations.where((r) {
@@ -55,9 +55,8 @@ class _ReservationListViewState extends State<ReservationListView> {
       isLoading: vm.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
+        appBar: SabrosAppBar(
+          pageTitle: isAdmin ? 'GESTIÓN RESERVAS' : 'MIS RESERVAS',
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -68,13 +67,6 @@ class _ReservationListViewState extends State<ReservationListView> {
                 context.go(AppRoutes.home);
               }
             },
-          ),
-          title: Text(
-            isAdmin ? 'GESTIÓN RESERVAS' : 'MIS RESERVAS',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
           ),
         ),
         body: Column(
