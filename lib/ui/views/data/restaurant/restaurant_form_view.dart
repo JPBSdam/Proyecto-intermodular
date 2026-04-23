@@ -90,7 +90,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
               children: [
                 _buildImageSelector(colorScheme.primary),
                 const SizedBox(height: 32),
-                
+
                 _buildSectionTitle("DATOS GENERALES"),
                 AppTextField(
                   controller: _nameController,
@@ -109,7 +109,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                   icon: Icons.description_outlined,
                   maxLines: 3,
                 ),
-                
+
                 const SizedBox(height: 32),
                 _buildSectionTitle("LOCALIZACIÓN Y CONTACTO"),
                 AppTextField(

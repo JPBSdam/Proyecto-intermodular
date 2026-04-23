@@ -17,6 +17,10 @@ class ReservationViewModel extends ChangeNotifier {
   List<Reservation> _reservations = [];
   List<Reservation> get reservations => _reservations;
 
+  /// Retorna el número de reservas con estado 'pending'.
+  int get pendingCount =>
+      _reservations.where((r) => r.state == ReservationStatus.pending).length;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
 /// Widget de navegación inferior unificado para SabrosApp.
@@ -17,10 +18,19 @@ class AppBottomNav extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Usamos HomeViewModel para conocer el rol y estado de invitado
+    // Usamos ViewModels para conocer el estado
     final homeVM = context.watch<HomeViewModel>();
+    final reservationVM = context.watch<ReservationViewModel>();
+
     final bool isGuest = homeVM.isGuest;
     final bool isAdmin = homeVM.userRole == 'ADMIN';
+
+    // Aseguramos que si es Admin, el ViewModel esté escuchando
+    if (isAdmin && !reservationVM.isWatching) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        reservationVM.watchAll();
+      });
+    }
 
     // Definición dinámica de las pestañas
     final List<_BottomNavItem> allItems = [
@@ -43,10 +53,9 @@ class AppBottomNav extends StatelessWidget {
             ? _BottomNavItem(
                 icon: Icons.assignment_outlined,
                 activeIcon: Icons.assignment,
-                label: 'RESERVAS', // Vista de gestión para Admin
+                label: 'RESERVAS',
                 route: AppRoutes.reservations,
-                badgeCount:
-                    0, // Aquí irá el contador de pendientes próximamente
+                badgeCount: reservationVM.pendingCount,
               )
             : _BottomNavItem(
                 icon: Icons.calendar_today_outlined,
