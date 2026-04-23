@@ -107,9 +107,8 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             _Row('Comentarios', r.comments!),
           _Row('Estado', _stateLabel(r.state)),
           const SizedBox(height: 24),
-
-          // ── Editar (solo si está pendiente) ────────────────────────
-          if (r.state == ReservationStatus.pending) ...[
+          if (r.state == ReservationStatus.pending ||
+              r.state == ReservationStatus.confirmed) ...[
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
