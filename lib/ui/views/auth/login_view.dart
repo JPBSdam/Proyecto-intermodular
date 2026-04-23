@@ -52,7 +52,12 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _handleAnonymousLogin(LoginViewModel viewModel) async {
     final success = await viewModel.signInAnonymously();
-    if (!success && mounted) _showError(viewModel.errorMessage);
+    if (!mounted) return;
+    if (success) {
+      context.go(AppRoutes.home);
+    } else {
+      _showError(viewModel.errorMessage);
+    }
   }
 
   void _showError(String? message) {
