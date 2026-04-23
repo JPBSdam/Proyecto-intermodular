@@ -1,12 +1,17 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_details_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_form_view.dart';
 import 'package:app_restaurante/ui/views/data/menus/menu_list_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_detail_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_form_view.dart';
+import 'package:app_restaurante/ui/views/data/reservations/reservation_list_view.dart';
 import 'package:app_restaurante/ui/views/data/restaurant/restaurant_form_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -78,18 +83,25 @@ final GoRouter appRouter = GoRouter(
   ),
 
   redirect: (context, state) async {
-    // cuando recarga, redirige siguiendo la lógica de aquí dentro
     final user = FirebaseAuth.instance.currentUser;
+    final path = state.uri.toString();
 
-    final isLogin = state.uri.toString() == AppRoutes.login;
-    final isRegister = state.uri.toString() == AppRoutes.register;
+    final isLogin = path == AppRoutes.login;
+    final isRegister = path == AppRoutes.register;
 
-    // 🔒 No autenticado → login
-    if (user == null && !isLogin && !isRegister) {
+    // 🔒 Rutas protegidas (solo perfil) → requieren autenticación
+    final isProtected = path.startsWith(AppRoutes.profile);
+    if (user == null && isProtected) {
       return AppRoutes.login;
     }
 
-    // 🔥 Crear usuario en Firestore SOLO UNA VEZ
+    // 🔄 Reiniciar flag al cerrar sesión para que el próximo login
+    //    vuelva a registrar al usuario en Firestore si es necesario
+    if (user == null) {
+      userInitialized = false;
+    }
+
+    // 🔥 Crear usuario en Firestore SOLO UNA VEZ por sesión
     if (user != null && !userInitialized) {
       userInitialized = true;
       await userService.ensureUserExistsFromAuth(user);
@@ -125,7 +137,7 @@ final GoRouter appRouter = GoRouter(
                 RestaurantViewModel(RestaurantService())..watchRestaurant(),
           ),
         ],
-        child: const HomeView(title: 'Restaurante'),
+        child: const HomeView(title: 'SabrosApp'),
       ),
     ),
 
@@ -285,6 +297,50 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
           child: MenuDetailView(menuId: id),
+        );
+      },
+    ),
+
+    // ────── RESERVATIONS ──────
+    GoRoute(
+      //USO: context.go(AppRoutes.reservations)
+      path: AppRoutes.reservations,
+      builder: (context, state) {
+        // NOTA ROLES: cuando roles estén implantados, si es admin → userId = null
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationListView(userId: userId),
+        );
+      },
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationFormCreate())
+      path: '/reservations/form',
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (_) => ReservationViewModel(ReservationService()),
+        child: const ReservationFormView(),
+      ),
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationFormEdit('reservaID'))
+      path: '/reservations/form/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationFormView(reservationId: id),
+        );
+      },
+    ),
+    GoRoute(
+      //USO: context.go(AppRoutes.reservationDetail('reservaID'))
+      path: '/reservations/detail/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
+          child: ReservationDetailView(reservationId: id),
         );
       },
     ),

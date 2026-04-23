@@ -45,6 +45,40 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     }
   }
 
+  // ── Lógica de autenticación ──────────────────────────────
+
+  /// Muestra un diálogo informativo si el usuario intenta acceder a funciones
+  /// que requieren autenticación (reservas, perfil), pero está en estado de invitado.
+  void _showLoginRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Inicia sesión para continuar'),
+          content: const Text(
+            'Necesitas iniciar sesión para acceder a esta función. ¿Deseas hacerlo ahora?',
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(AppRoutes.login);
+              },
+              child: const Text('Iniciar Sesión'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Más tarde'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ── UI ───────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -58,6 +92,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             backgroundColor: colorScheme.surface,
             elevation: 0,
             title: const AppLogoTitle(),
+            // AppUserAvatar sustituido por el botón de perfil con lógica de autenticación
             actions: const [AppUserAvatar()],
           ),
           drawer: const AppDrawer(),
@@ -77,6 +112,21 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    // Mostrar error si existe
+    if (viewModel.errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(viewModel.errorMessage),
+          ],
+        ),
+      );
+    }
+
     final dishViewModel = context.watch<DishViewModel>();
 
     return SingleChildScrollView(
@@ -84,7 +134,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeroSection(),
+          _buildHeroSection(viewModel),
           _buildSuggestionsSection(dishViewModel),
           _buildRestaurantSection(context),
           const SizedBox(height: 40),
@@ -93,7 +143,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(HomeViewModel viewModel) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -130,6 +180,18 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            // Saludo personalizado para usuario autenticado
+            if (!viewModel.isGuest) ...[
+              Text(
+                '¡Hola, ${viewModel.displayName}!',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onPrimary.withAlpha(220),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
             Text(
               'Experiencia\nGastronómica',
               textAlign: TextAlign.center,
@@ -146,6 +208,45 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                 color: colorScheme.onPrimary.withAlpha(200),
               ),
             ),
+            // Banner informativo para invitados
+            if (viewModel.isGuest) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withAlpha(180),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.white, size: 16),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Explora nuestra carta sin cuenta. ¡Inicia sesión para reservar!',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go(AppRoutes.login),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Entrar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 32),
             Row(
               children: [
@@ -185,7 +286,14 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ),
                         ),
                         child: TextButton(
-                          onPressed: () {}, // Pendiente de commit
+                          // Si es invitado, muestra el diálogo de login; si está autenticado, va a reservar
+                          onPressed: () {
+                            if (viewModel.isGuest) {
+                              _showLoginRequiredDialog(context);
+                            } else {
+                              context.go(AppRoutes.reservationFormCreate());
+                            }
+                          },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             foregroundColor: colorScheme.onPrimary,
@@ -276,22 +384,22 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(18),
                         child:
-                            (dish.urlImage != null && dish.urlImage!.isNotEmpty)
+                        (dish.urlImage != null && dish.urlImage!.isNotEmpty)
                             ? Image.network(
-                                dish.urlImage!,
-                                width: 95,
-                                height: 95,
-                                fit: BoxFit.cover,
-                              )
+                          dish.urlImage!,
+                          width: 95,
+                          height: 95,
+                          fit: BoxFit.cover,
+                        )
                             : Container(
-                                width: 95,
-                                height: 95,
-                                color: colorScheme.surfaceContainerHighest,
-                                child: Icon(
-                                  Icons.restaurant,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
+                          width: 95,
+                          height: 95,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.restaurant,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     ),
                   ),
