@@ -103,6 +103,13 @@ class _UserProfileViewState extends State<UserProfileView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
+    final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
+    final effectivePhotoUrl =
+        (user?.urlImage != null && user!.urlImage!.isNotEmpty)
+        ? user.urlImage
+        : firebaseUser?.photoURL;
+
     return SizedBox(
       height: 170,
       child: Stack(
@@ -169,10 +176,10 @@ class _UserProfileViewState extends State<UserProfileView> {
                 radius: 55,
                 backgroundColor: colorScheme.surfaceContainerHighest,
                 backgroundImage:
-                    (user?.urlImage != null && user!.urlImage!.isNotEmpty)
-                    ? NetworkImage(user.urlImage!)
+                    (effectivePhotoUrl != null && effectivePhotoUrl.isNotEmpty)
+                    ? NetworkImage(effectivePhotoUrl)
                     : null,
-                child: (user?.urlImage == null || user!.urlImage!.isEmpty)
+                child: (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
                     ? Icon(
                         Icons.person,
                         size: 65,
