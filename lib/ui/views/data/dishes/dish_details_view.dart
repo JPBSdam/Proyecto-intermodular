@@ -101,11 +101,7 @@ class _DishDetailViewState extends State<DishDetailView> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                         onPressed: () => context.pop(),
                       ),
                     ),
