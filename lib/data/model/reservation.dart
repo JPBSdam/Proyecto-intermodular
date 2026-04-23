@@ -25,6 +25,7 @@ class Reservation {
   String? state; // ReservationStatus.*
   String? comments; // peticiones especiales
   bool? hasBaby; // necesitan espacio para carricoche
+  int? babyCount; // número de bebés (solo si hasBaby == true)
   DateTime? createdAt;
 
   //CONSTRUCTOR
@@ -38,6 +39,7 @@ class Reservation {
     this.state,
     this.comments,
     this.hasBaby,
+    this.babyCount,
     this.createdAt,
   });
 
@@ -57,6 +59,7 @@ class Reservation {
       state: map?['state'] as String?,
       comments: map?['comments'] as String?,
       hasBaby: map?['hasBaby'] as bool?,
+      babyCount: map?['babyCount'] as int?,
       createdAt: (map?['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -73,6 +76,7 @@ class Reservation {
       if (state != null) "state": state,
       if (comments != null) "comments": comments,
       if (hasBaby != null) "hasBaby": hasBaby,
+      if (babyCount != null) "babyCount": babyCount,
       if (createdAt != null) "createdAt": Timestamp.fromDate(createdAt!),
     };
   }
