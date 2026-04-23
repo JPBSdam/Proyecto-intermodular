@@ -25,6 +25,7 @@ class Reservation {
   String? state; // ReservationStatus.*
   String? comments; // peticiones especiales
   bool? hasBaby; // necesitan espacio para carricoche
+  int? babyCount; // número de bebés (solo si hasBaby == true)
   DateTime? createdAt;
 
   //CONSTRUCTOR
