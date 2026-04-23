@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
@@ -6,6 +7,7 @@ import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -32,8 +34,13 @@ class _DishesListViewState extends State<DishesListView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final viewmodel = context.watch<DishViewModel>();
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final homeVM = context.watch<HomeViewModel>();
+
+    // Solo el ADMIN puede crear platos
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     final filteredDishes = viewmodel.dishes.where((d) {
       return (d.name ?? "").toLowerCase().contains(_searchQuery.toLowerCase());
@@ -61,16 +68,26 @@ class _DishesListViewState extends State<DishesListView> {
       // tengo la impresión de que se podría crear una variable global para el loading
       // tener un setter del value tambien global y llamarlo cada vez que haga falta
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: theme.scaffoldBackgroundColor,
         drawer: const AppDrawer(),
-        appBar: _buildAppBar(context, primaryColor),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push(AppRoutes.dishFormCreate()),
-          backgroundColor: primaryColor,
-          elevation: 4,
-          child: const Icon(Icons.add, color: Colors.white, size: 30),
+        appBar: AppBar(
+          backgroundColor: colorScheme.surface,
+          elevation: 0,
+          centerTitle: true,
+          title: const AppLogoTitle(),
+          actions: const [AppUserAvatar()],
         ),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        floatingActionButton: isAdmin
+            ? FloatingActionButton.extended(
+                onPressed: () => context.push(AppRoutes.dishFormCreate()),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 4,
+                icon: const Icon(Icons.add),
+                label: const Text('NUEVO PLATO'),
+              )
+            : null,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -79,44 +96,38 @@ class _DishesListViewState extends State<DishesListView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () => context.go(AppRoutes.home),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.arrow_back,
-                          size: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Volver al Inicio',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                   Text(
                     'Nuestra Carta',
-                    style: TextStyle(
-                      fontSize: 32,
+                    style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: primaryColor,
+                      color: colorScheme.onSurface,
                       letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Explora nuestros sabores seleccionados',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
-            _buildSearchBar(primaryColor),
+            _buildSearchBar(theme),
+            if (viewmodel.errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  viewmodel.errorMessage,
+                  style: TextStyle(color: colorScheme.error),
+                ),
+              ),
             Expanded(
               child: viewmodel.dishes.isEmpty && !viewmodel.isLoading
-                  ? _buildEmptyState()
+                  ? _buildEmptyState(theme)
                   : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
                       itemCount: sortedCategories.length,
                       itemBuilder: (context, catIndex) {
@@ -126,10 +137,10 @@ class _DishesListViewState extends State<DishesListView> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildCategoryHeader(category, primaryColor),
+                            _buildCategoryHeader(category, theme),
                             ...categoryDishes.map(
                               (dish) =>
-                                  _buildDishCard(context, dish, primaryColor),
+                                  _buildDishCard(context, dish, theme, isAdmin),
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -143,27 +154,17 @@ class _DishesListViewState extends State<DishesListView> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, Color primaryColor) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      iconTheme: IconThemeData(color: primaryColor),
-      centerTitle: true,
-      title: const AppLogoTitle(),
-      actions: const [AppUserAvatar()],
-    );
-  }
-
-  Widget _buildSearchBar(Color primaryColor) {
+  Widget _buildSearchBar(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(12),
+              color: colorScheme.shadow.withAlpha(12),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -172,10 +173,13 @@ class _DishesListViewState extends State<DishesListView> {
         child: TextField(
           controller: _searchController,
           onChanged: (val) => setState(() => _searchQuery = val),
+          style: theme.textTheme.bodyLarge,
           decoration: InputDecoration(
             hintText: 'Busca tu plato favorito...',
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
-            prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+            hintStyle: TextStyle(
+              color: colorScheme.onSurfaceVariant.withAlpha(150),
+            ),
+            prefixIcon: Icon(Icons.search, color: colorScheme.primary),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 15,
@@ -187,30 +191,27 @@ class _DishesListViewState extends State<DishesListView> {
     );
   }
 
-  Widget _buildCategoryHeader(String category, Color primaryColor) {
+  Widget _buildCategoryHeader(String category, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
           Container(
             width: 4,
-            height: 24,
+            height: 20,
             decoration: BoxDecoration(
-              color: primaryColor,
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(width: 12),
           Text(
-            category == 'Entrante'
-                ? 'Entrantes'
-                : category == 'Principal'
-                ? 'Principales'
-                : '${category}s',
-            style: const TextStyle(
-              fontSize: 20,
+            category.toUpperCase(),
+            style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              letterSpacing: 1.2,
+              color: colorScheme.primary,
             ),
           ),
         ],
@@ -218,75 +219,97 @@ class _DishesListViewState extends State<DishesListView> {
     );
   }
 
-  Widget _buildDishCard(BuildContext context, Dish dish, Color primaryColor) {
-    return GestureDetector(
+  Widget _buildDishCard(
+    BuildContext context,
+    Dish dish,
+    ThemeData theme,
+    bool isAdmin,
+  ) {
+    final colorScheme = theme.colorScheme;
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       onTap: () => context.push(AppRoutes.dishDetail(dish.id!)),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(8),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    dish.name ?? 'Plato sin nombre',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 17,
-                      color: Colors.black87,
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: (dish.urlImage != null && dish.urlImage!.isNotEmpty)
+                ? Image.network(
+                    dish.urlImage!,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    color: colorScheme.primary.withAlpha(20),
+                    child: Icon(
+                      Icons.restaurant,
+                      color: colorScheme.primary,
+                      size: 24,
                     ),
                   ),
-                  if (dish.price != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '${dish.price!.toStringAsFixed(2)}€',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dish.name ?? 'Plato sin nombre',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (dish.price != null) ...[
+                  Text(
+                    '${dish.price!.toStringAsFixed(2)}€',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
+                  ),
                 ],
-              ),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: primaryColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(12),
+          ),
+          if (isAdmin)
+            IconButton(
+              icon: Icon(
+                Icons.edit_outlined,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
               ),
-              child: Icon(Icons.chevron_right, color: primaryColor, size: 20),
+              onPressed: () => context.push(AppRoutes.dishFormEdit(dish.id!)),
             ),
-          ],
-        ),
+          Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant.withAlpha(100),
+            size: 20,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.restaurant_menu, size: 80, color: Colors.grey.shade200),
+          Icon(
+            Icons.restaurant_menu,
+            size: 64,
+            color: theme.colorScheme.onSurface.withAlpha(30),
+          ),
           const SizedBox(height: 16),
           Text(
-            "No hay platos en esta sección",
-            style: TextStyle(color: Colors.grey.shade400, fontSize: 16),
+            "No hemos encontrado platos",
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

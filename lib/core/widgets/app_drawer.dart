@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
-import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 /// Drawer lateral unificado con estética Premium.
@@ -15,36 +14,18 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
-    final firebaseUser = authService.currentUser;
-    final userViewModel = context.watch<UserViewModel>();
-    final bool isAnonymous = firebaseUser?.isAnonymous ?? true;
+    final homeVM = context.watch<HomeViewModel>();
+    final bool isAnonymous = homeVM.isGuest;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Sincronización de datos de Firestore
-    if (!isAnonymous &&
-        firebaseUser != null &&
-        userViewModel.user == null &&
-        !userViewModel.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        userViewModel.watchUser(firebaseUser.uid);
-      });
-    }
-
     // Datos de visualización centralizados
-    final String name = isAnonymous
-        ? 'Invitado'
-        : (userViewModel.user?.name ?? firebaseUser?.displayName ?? 'Usuario');
-
-    final String email = isAnonymous
+    final String name = homeVM.displayName;
+    final String email = homeVM.isGuest
         ? 'Accede para gestionar reservas'
-        : (userViewModel.user?.email ?? firebaseUser?.email ?? '');
-
-    final String? photoUrl = isAnonymous
-        ? null
-        : (userViewModel.user?.urlImage ?? firebaseUser?.photoURL);
-    final bool isAdmin = userViewModel.user?.role == 'admin';
+        : homeVM.email;
+    final String? photoUrl = homeVM.photoUrl;
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     String currentPath = GoRouterState.of(context).uri.path;
     if (currentPath == '/') currentPath = AppRoutes.home;
@@ -88,22 +69,26 @@ class AppDrawer extends StatelessWidget {
                   route: AppRoutes.menus,
                   currentPath: currentPath,
                 ),
-                _buildSectionTitle(context, 'RESERVAS'),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.calendar_today_outlined,
-                  label: 'Reservar mesa',
-                  route: '/reservations/new',
-                  currentPath: currentPath,
-                ),
-                if (!isAnonymous)
+
+                // Sección de Reservas (Solo para usuarios autenticados)
+                if (!isAnonymous) ...[
+                  _buildSectionTitle(context, 'RESERVAS'),
+                  _buildDrawerItem(
+                    context: context,
+                    icon: Icons.calendar_today_outlined,
+                    label: 'Reservar mesa',
+                    route: AppRoutes.reservationFormCreate(),
+                    currentPath: currentPath,
+                  ),
                   _buildDrawerItem(
                     context: context,
                     icon: Icons.history_outlined,
                     label: 'Mis reservas',
-                    route: '/reservations/my',
+                    route: AppRoutes.reservations,
                     currentPath: currentPath,
                   ),
+                ],
+
                 // Sección de Administración (Solo visible para admins)
                 if (isAdmin) ...[
                   _buildSectionTitle(context, 'ADMINISTRACIÓN'),
@@ -113,22 +98,15 @@ class AppDrawer extends StatelessWidget {
                     label: 'Gestión Reservas',
                     route: "/admin/reservations",
                     currentPath: currentPath,
+                    // todo implementar
                     trailing: _buildBadge(context, '3'),
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.add_circle_outline,
-                    label: 'Añadir Plato',
-                    route: AppRoutes.dishFormCreate(),
-                    currentPath: currentPath,
-                    isAction: true,
                   ),
                 ],
               ],
             ),
           ),
           Divider(indent: 20, endIndent: 20, color: colorScheme.outlineVariant),
-          _buildLogoutTile(context, isAnonymous, authService),
+          _buildLogoutTile(context, isAnonymous, homeVM),
           const SizedBox(height: 16),
         ],
       ),
@@ -315,7 +293,7 @@ class AppDrawer extends StatelessWidget {
   Widget _buildLogoutTile(
     BuildContext context,
     bool isAnonymous,
-    AuthService auth,
+    HomeViewModel homeVM,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final color = isAnonymous ? colorScheme.primary : colorScheme.error;
@@ -332,7 +310,7 @@ class AppDrawer extends StatelessWidget {
         if (isAnonymous) {
           context.push(AppRoutes.login);
         } else {
-          await auth.signOut();
+          await homeVM.signOut();
         }
       },
     );

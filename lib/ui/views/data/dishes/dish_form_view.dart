@@ -1,6 +1,6 @@
 import 'package:app_restaurante/core/widgets/app_card.dart';
-import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -108,18 +108,12 @@ class _DishFormViewState extends State<DishFormView> {
       isLoading: viewmodel.isLoading,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          elevation: 0,
-          centerTitle: true,
+        appBar: SabrosAppBar(
+          pageTitle: isEditing ? 'Editar Plato' : 'Nuevo Plato',
           leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
-          title: const AppLogoTitle(),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),

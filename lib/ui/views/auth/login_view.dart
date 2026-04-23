@@ -36,11 +36,18 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _handleEmailLogin(LoginViewModel viewModel) async {
     if (!_formKey.currentState!.validate()) return;
+
     final success = await viewModel.signInWithEmail(
       email: _emailController.text,
       password: _passwordController.text,
     );
-    if (!success && mounted) _showError(viewModel.errorMessage);
+
+    // Si success es true, el ViewModel GoRouter detectará el cambio de Auth y nos sacará de aquí.
+    if (success) {
+      if (mounted) context.go(AppRoutes.home);
+    } else if (mounted) {
+      _showError(viewModel.errorMessage);
+    }
   }
 
   Future<void> _handleGoogleLogin(LoginViewModel viewModel) async {
@@ -134,9 +141,13 @@ class _LoginViewState extends State<LoginView> {
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
+      autocorrect: false,
+      enableSuggestions: false,
+      textCapitalization: TextCapitalization.none,
       decoration: const InputDecoration(
         labelText: 'Email',
         border: OutlineInputBorder(),
+        hintText: 'ejemplo@correo.com',
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Por favor ingresa tu email';
@@ -256,9 +267,13 @@ class _LoginViewState extends State<LoginView> {
             onPressed: () => context.go(AppRoutes.home),
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _buildForm(viewModel),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildForm(viewModel),
+            ),
+          ),
         ),
       ),
     );
