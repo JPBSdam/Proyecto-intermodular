@@ -212,14 +212,21 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             if (viewModel.isGuest) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.withAlpha(180),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Colors.white, size: 16),
+                    const Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -384,22 +391,22 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(18),
                         child:
-                        (dish.urlImage != null && dish.urlImage!.isNotEmpty)
+                            (dish.urlImage != null && dish.urlImage!.isNotEmpty)
                             ? Image.network(
-                          dish.urlImage!,
-                          width: 95,
-                          height: 95,
-                          fit: BoxFit.cover,
-                        )
+                                dish.urlImage!,
+                                width: 95,
+                                height: 95,
+                                fit: BoxFit.cover,
+                              )
                             : Container(
-                          width: 95,
-                          height: 95,
-                          color: colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.restaurant,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+                                width: 95,
+                                height: 95,
+                                color: colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.restaurant,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                       ),
                     ),
                   ),
