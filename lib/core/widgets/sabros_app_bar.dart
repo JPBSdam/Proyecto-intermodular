@@ -50,7 +50,9 @@ class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading,
       title: hasPageTitle
           ? Column(
-              crossAxisAlignment: centerTitle ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+              crossAxisAlignment: centerTitle
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 const AppLogoTitle(fontSize: 14, iconSize: 16),
