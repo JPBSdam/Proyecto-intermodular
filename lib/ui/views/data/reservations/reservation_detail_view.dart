@@ -187,7 +187,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             const SizedBox(height: 8),
           ],
 
-
           if (vm.errorMessage.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -200,7 +199,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       ),
     );
   }
-
 
   String _stateLabel(String? s) {
     if (s == ReservationStatus.confirmed) return 'Confirmada ✅';

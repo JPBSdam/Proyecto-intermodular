@@ -234,8 +234,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                     children: [
                       CheckboxListTile(
                         value: _hasBaby,
-                        onChanged: (v) =>
-                            setState(() => _hasBaby = v ?? false),
+                        onChanged: (v) => setState(() => _hasBaby = v ?? false),
                         title: const Text('Venimos con bebé'),
                         subtitle: const Text(
                           'Necesitamos espacio para carricoche',
