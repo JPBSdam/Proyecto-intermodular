@@ -39,6 +39,7 @@ class Reservation {
     this.state,
     this.comments,
     this.hasBaby,
+    this.babyCount,
     this.createdAt,
   });
 
