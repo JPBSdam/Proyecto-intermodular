@@ -1,11 +1,18 @@
+import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
+import 'package:app_restaurante/core/widgets/app_drawer.dart';
+import 'package:app_restaurante/core/widgets/app_logo_title.dart';
+import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:app_restaurante/data/services/auth/auth_service.dart';
 
 class UserProfileView extends StatefulWidget {
   const UserProfileView({super.key});
@@ -21,7 +28,10 @@ class _UserProfileViewState extends State<UserProfileView> {
   @override
   void initState() {
     super.initState();
+    _loadUser();
+  }
 
+  void _loadUser() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final viewmodel = context.read<UserViewModel>();
       final user = firebase.FirebaseAuth.instance.currentUser;
@@ -47,53 +57,283 @@ class _UserProfileViewState extends State<UserProfileView> {
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<UserViewModel>();
-
-    Widget bodyContent;
-
-    if (_error.isNotEmpty) {
-      bodyContent = Center(child: Text(_error));
-    } else if (viewmodel.user == null) {
-      bodyContent = const Center(child: Text("Usuario no encontrado"));
-    } else {
-      final user = viewmodel.user!;
-
-      bodyContent = Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              user.name ?? '',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text("Email: ${user.email ?? '-'}"),
-            Text("Teléfono: ${user.phoneNumber ?? '-'}"),
-            Text("Rol: ${user.role ?? '-'}"),
-          ],
-        ),
-      );
-    }
+    final user = viewmodel.user;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return LoadingOverlay(
       isLoading: _isLoading,
       child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        drawer: const AppDrawer(),
         appBar: AppBar(
-          title: const Text("Perfil"),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                final user = viewmodel.user;
-                if (user != null && user.id != null) {
-                  context.go(AppRoutes.profileEdit(user.id!));
-                }
-              },
+          backgroundColor: colorScheme.surface,
+          elevation: 0,
+          centerTitle: true,
+          title: const AppLogoTitle(),
+          actions: const [AppUserAvatar()],
+        ),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+        body: user == null
+            ? Center(
+                child: Text(
+                  _error.isNotEmpty ? _error : "Usuario no encontrado",
+                  style: theme.textTheme.bodyLarge,
+                ),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildHeader(context, user),
+                    const SizedBox(height: 60),
+                    _buildUserInfo(user),
+                    const SizedBox(height: 32),
+                    _buildActivitySection(context),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, model.User? user) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SizedBox(
+      height: 170,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            height: 120,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.primary.withAlpha(200),
+                ],
+              ),
             ),
-            const HomeButton(),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      final uid =
+                          firebase.FirebaseAuth.instance.currentUser?.uid;
+                      if (uid != null) context.push(AppRoutes.profileEdit(uid));
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onPrimary.withAlpha(51),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.settings,
+                        color: colorScheme.onPrimary,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: colorScheme.surface, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                backgroundImage:
+                    (user?.urlImage != null && user!.urlImage!.isNotEmpty)
+                    ? NetworkImage(user.urlImage!)
+                    : null,
+                child: (user?.urlImage == null || user!.urlImage!.isEmpty)
+                    ? Icon(
+                        Icons.person,
+                        size: 65,
+                        color: colorScheme.onSurfaceVariant,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserInfo(model.User? user) {
+    if (user == null) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isAdmin = user.role == 'admin';
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              user.name ?? 'Usuario',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.5,
+              ),
+            ),
+            if (isAdmin) ...[
+              const SizedBox(width: 8),
+              AppBadge(
+                label: 'ADMIN',
+                backgroundColor: colorScheme.tertiaryContainer,
+                textColor: colorScheme.onTertiaryContainer,
+              ),
+            ],
           ],
         ),
-        body: bodyContent,
+        const SizedBox(height: 4),
+        Text(
+          user.email ?? '',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.phone_outlined,
+              size: 16,
+              color: colorScheme.primary.withAlpha(150),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              user.phoneNumber ?? 'Sin teléfono',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivitySection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'MI CUENTA',
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.primary,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildActivityCard(
+            icon: Icons.calendar_today_outlined,
+            title: 'Mis reservas',
+            onTap: () => context.go('/reservations/my'),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityCard(
+            icon: Icons.notifications_none_outlined,
+            title: 'Notificaciones',
+            onTap: () {},
+          ),
+          const SizedBox(height: 40),
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: colorScheme.error.withAlpha(100)),
+                backgroundColor: colorScheme.errorContainer.withAlpha(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: () async => await AuthService().signOut(),
+              icon: Icon(Icons.logout, color: colorScheme.error),
+              label: Text(
+                'Cerrar sesión',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return AppCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 18,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withAlpha(20),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: colorScheme.primary, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant.withAlpha(150),
+            size: 20,
+          ),
+        ],
       ),
     );
   }

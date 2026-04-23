@@ -1,4 +1,4 @@
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/menu.dart';
@@ -7,14 +7,6 @@ import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-/// Pantalla de formulario de Menú.
-/// - Permite crear un nuevo menú o editar uno existente.
-/// - Lista todos los platos disponibles usando `DishViewModel`
-///   para poder seleccionar los que formarán parte del menú.
-/// - Muestra un formulario con campos de nombre, precio y selección de platos.
-/// - Al guardar o actualizar, llama a los métodos CRUD de `MenuViewModel`.
-/// - Utiliza `LoadingOverlay` para indicar carga mientras se realiza alguna operación.
 
 class MenuFormView extends StatefulWidget {
   final String? menuId;
@@ -29,6 +21,7 @@ class _MenuFormViewState extends State<MenuFormView> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _priceController;
+  late TextEditingController _descController;
   List<Dish> _selectedDishes = [];
   Menu? _menu;
   bool _initialized = false;
@@ -38,13 +31,13 @@ class _MenuFormViewState extends State<MenuFormView> {
     super.initState();
     _nameController = TextEditingController();
     _priceController = TextEditingController();
+    _descController = TextEditingController();
   }
 
   Future<void> _loadMenu() async {
     final menuViewModel = context.read<MenuViewModel>();
-    final dishViewModel = context.watch<DishViewModel>();
+    final dishViewModel = context.read<DishViewModel>();
 
-    // Escuchar platos si no lo está haciendo ya
     if (!dishViewModel.isWatchingDishes) dishViewModel.watchDishes();
 
     if (widget.menuId != null) {
@@ -56,23 +49,18 @@ class _MenuFormViewState extends State<MenuFormView> {
             .toList();
         _nameController.text = menu.name ?? '';
         _priceController.text = menu.price?.toStringAsFixed(2) ?? '';
+        _descController.text = menu.description ?? '';
         _menu = menu;
       }
-    } else {
-      _nameController.text = '';
-      _priceController.text = '';
-      _selectedDishes = [];
-      _menu = null;
     }
-
-    setState(() {
-      _initialized = true;
-    });
+    setState(() => _initialized = true);
   }
 
   @override
   Widget build(BuildContext context) {
     final menuViewModel = context.watch<MenuViewModel>();
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     if (!_initialized && !menuViewModel.isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadMenu());
     }
@@ -80,103 +68,232 @@ class _MenuFormViewState extends State<MenuFormView> {
     return LoadingOverlay(
       isLoading: menuViewModel.isLoading,
       child: Scaffold(
+        backgroundColor: const Color(0xFFFEF7F7),
         appBar: AppBar(
-          title: Text(_menu == null ? 'Añadir Menú' : 'Editar Menú'),
-          actions: const [HomeButton()],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.close, color: primaryColor),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            _menu == null ? 'Nuevo Menú' : 'Editar Menú',
+            style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: _buildForm(menuViewModel),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppTextField(
+                  controller: _nameController,
+                  label: 'Nombre del Menú',
+                  hint: 'Ej: Menú del Día',
+                  icon: Icons.restaurant_menu,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Ponle un nombre' : null,
+                ),
+                const SizedBox(height: 20),
+                AppTextField(
+                  controller: _priceController,
+                  label: 'Precio (€)',
+                  hint: '0.00',
+                  icon: Icons.euro,
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v == null || double.tryParse(v) == null
+                      ? 'Precio inválido'
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                AppTextField(
+                  controller: _descController,
+                  label: 'Descripción (Opcional)',
+                  hint: '¿Qué incluye este menú?',
+                  icon: Icons.description_outlined,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 32),
+                _buildDishSelector(primaryColor),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: () => _apply(menuViewModel),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 4,
+                  ),
+                  child: Text(
+                    _menu == null ? 'CREAR MENÚ' : 'ACTUALIZAR MENÚ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildForm(MenuViewModel viewModel) {
+  Widget _buildDishSelector(Color primaryColor) {
     final dishViewModel = context.watch<DishViewModel>();
 
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Nombre'),
-            validator: (v) => v == null || v.isEmpty ? 'Obligatorio' : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _priceController,
-            decoration: const InputDecoration(labelText: 'Precio'),
-            keyboardType: TextInputType.number,
-            validator: (v) => v == null || double.tryParse(v) == null
-                ? 'Introduce un número válido'
-                : null,
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: dishViewModel.dishes.length,
-              itemBuilder: (context, index) {
-                final dish = dishViewModel.dishes[index];
-                final selected = _selectedDishes.any((d) => d.id == dish.id);
-
-                return CheckboxListTile(
-                  title: Text(dish.name ?? ''),
-                  value: selected,
-                  onChanged: (val) {
-                    setState(() {
-                      if (val == true) {
-                        _selectedDishes.add(dish);
-                      } else {
-                        _selectedDishes.removeWhere((d) => d.id == dish.id);
-                      }
-                    });
-                  },
-                );
-              },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            'SELECCIONA LOS PLATOS',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+              letterSpacing: 1.1,
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _apply(viewModel),
-            child: Text(_menu == null ? 'Guardar' : 'Actualizar'),
-          ),
-          if (viewModel.errorMessage.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                viewModel.errorMessage,
-                style: const TextStyle(color: Colors.red),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(5),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: dishViewModel.dishes.length,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: Colors.grey.shade100,
+              indent: 20,
+              endIndent: 20,
             ),
-        ],
-      ),
+            itemBuilder: (context, index) {
+              final dish = dishViewModel.dishes[index];
+              final isSelected = _selectedDishes.any((d) => d.id == dish.id);
+
+              return CheckboxListTile(
+                title: Text(
+                  dish.name ?? '',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  dish.category ?? '',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                ),
+                value: isSelected,
+                activeColor: primaryColor,
+                checkboxShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    if (val == true) {
+                      _selectedDishes.add(dish);
+                    } else {
+                      _selectedDishes.removeWhere((d) => d.id == dish.id);
+                    }
+                  });
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Future<void> _apply(MenuViewModel viewModel) async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedDishes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona al menos un plato'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     final newMenu = Menu(
       id: _menu?.id,
-      name: _nameController.text,
+      name: _nameController.text.trim(),
+      description: _descController.text.trim(),
       dishes: _selectedDishes.map((d) => d.id!).toList(),
       price: double.tryParse(_priceController.text),
+      available: _menu?.available ?? true,
     );
 
-    if (_menu == null) {
-      await viewModel.addMenu(newMenu);
-    } else {
-      await viewModel.updateMenu(newMenu);
-    }
+    try {
+      if (_menu == null) {
+        await viewModel.addMenu(newMenu);
+      } else {
+        await viewModel.updateMenu(newMenu);
+      }
 
-    if (mounted) context.pop();
+      if (mounted) {
+        if (viewModel.errorMessage.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _menu == null
+                    ? '¡Menú creado con éxito!'
+                    : '¡Menú actualizado correctamente!',
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+          context.pop();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.errorMessage),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _descController.dispose();
     super.dispose();
   }
 }
