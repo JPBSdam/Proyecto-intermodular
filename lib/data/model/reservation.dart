@@ -76,6 +76,7 @@ class Reservation {
       if (state != null) "state": state,
       if (comments != null) "comments": comments,
       if (hasBaby != null) "hasBaby": hasBaby,
+      if (babyCount != null) "babyCount": babyCount,
       if (createdAt != null) "createdAt": Timestamp.fromDate(createdAt!),
     };
   }
