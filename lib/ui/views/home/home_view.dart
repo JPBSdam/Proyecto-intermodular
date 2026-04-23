@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -51,9 +52,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     return Consumer<HomeViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
-          appBar: AppBar(
+          appBar: SabrosAppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text(widget.title),
             actions: [
               IconButton(
                 icon: const Icon(Icons.account_circle),
@@ -65,6 +65,36 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           body: Column(
             children: [const VerificationBanner(), _buildBody(viewModel)],
           ),
+        );
+      },
+    );
+  }
+
+  /// Muestra un diálogo informativo si el usuario intenta acceder a funciones
+  /// que requieren autenticación (reservas, perfil), pero está en estado de invitado.
+  void _showLoginRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Inicia sesión para continuar'),
+          content: const Text(
+            'Necesitas iniciar sesión para acceder a esta función. ¿Deseas hacerlo ahora?',
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(AppRoutes.login);
+              },
+              child: const Text('Iniciar Sesión'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Más tarde'),
+            ),
+          ],
         );
       },
     );
@@ -109,7 +139,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(AppRoutes.login);
+                      context.go(AppRoutes.login);
                     },
                     child: const Text('Iniciar Sesión'),
                   ),
@@ -120,7 +150,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(AppRoutes.register);
+                      context.go(AppRoutes.register);
                     },
                     child: const Text('Registrarse'),
                   ),
@@ -319,7 +349,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => context.push(AppRoutes.login),
+                    onPressed: () => context.go(AppRoutes.login),
                     child: const Text('Entrar'),
                   ),
                 ],
@@ -363,6 +393,37 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                     },
                   ),
                 ),
+                const SizedBox(height: 12),
+
+                // ── Reservas ── visible para TODOS
+                // Si no está autenticado → dialog informativo y redirige a login
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_month),
+                    label: const Text('Hacer una reserva'),
+                    onPressed: () {
+                      if (viewModel.isGuest) {
+                        _showLoginRequiredDialog(context);
+                      } else {
+                        context.go(AppRoutes.reservationFormCreate());
+                      }
+                    },
+                  ),
+                ),
+
+                // ── Mis reservas ── solo si está autenticado
+                if (!viewModel.isGuest) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.list_alt),
+                      label: const Text('Mis reservas'),
+                      onPressed: () => context.go(AppRoutes.reservations),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 _buildRestaurantSection(context),
               ],

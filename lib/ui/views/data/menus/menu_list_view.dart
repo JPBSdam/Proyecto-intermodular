@@ -30,7 +30,7 @@ class MenuListView extends StatelessWidget {
       isLoading: viewmodel.isLoading,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Menús"),
+          title: const Text('Menús'),
           actions: const [HomeButton()],
         ),
         floatingActionButton: FloatingActionButton(

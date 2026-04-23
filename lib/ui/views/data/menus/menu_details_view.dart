@@ -114,7 +114,7 @@ class _MenuDetailViewState extends State<MenuDetailView> {
       isLoading: _isLoading,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_menu?.name ?? "Detalle del Menú"),
+          title: Text(_menu?.name ?? 'Detalle del Menú'),
           actions: [
             if (_menu != null && (_menu!.id?.isNotEmpty ?? false))
               IconButton(
