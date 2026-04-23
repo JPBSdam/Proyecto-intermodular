@@ -103,6 +103,8 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
           if (r.userName != null) _Row('Nombre', r.userName!),
           if (r.userEmail != null) _Row('Email', r.userEmail!),
           _Row('Bebé / carricoche', (r.hasBaby ?? false) ? 'Sí 🍼' : 'No'),
+          if ((r.hasBaby ?? false) && r.babyCount != null)
+            _Row('Número de bebés', '${r.babyCount}'),
           if (r.comments != null && r.comments!.isNotEmpty)
             _Row('Comentarios', r.comments!),
           _Row('Estado', _stateLabel(r.state)),
