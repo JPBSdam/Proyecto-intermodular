@@ -122,8 +122,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             ),
             const SizedBox(height: 8),
           ],
-
-          // ── Confirmar (solo admin) — oculto para el propio usuario ──
           if (r.state == ReservationStatus.pending &&
               FirebaseAuth.instance.currentUser?.uid != r.userId) ...[
             SizedBox(
@@ -141,7 +139,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             const SizedBox(height: 8),
           ],
 
-          // ── Cancelar (si no está ya cancelada) ─────────────────────
           if (r.state != ReservationStatus.cancelled) ...[
             SizedBox(
               width: double.infinity,
@@ -152,10 +149,37 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                   style: TextStyle(color: Colors.red),
                 ),
                 onPressed: () async {
-                  await vm.cancelReservation(r.id!);
-                  if (context.mounted) {
-                    showSnackBar(context, 'Reserva cancelada');
-                    context.go(AppRoutes.reservations);
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Cancelar reserva'),
+                      content: const Text(
+                        '¿Seguro que quieres cancelar esta reserva? Se eliminará definitivamente.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('No, volver'),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text(
+                            'Sí, cancelar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && context.mounted) {
+                    await vm.deleteReservation(r.id!);
+                    if (context.mounted) {
+                      showSnackBar(context, 'Reserva cancelada y eliminada');
+                      context.go(AppRoutes.reservations);
+                    }
                   }
                 },
               ),
@@ -163,18 +187,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             const SizedBox(height: 8),
           ],
 
-          // ── Eliminar (siempre disponible) ──────────────────────────
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              label: const Text(
-                'Eliminar reserva',
-                style: TextStyle(color: Colors.red),
-              ),
-              onPressed: () => _confirmDelete(context, vm, r.id!),
-            ),
-          ),
 
           if (vm.errorMessage.isNotEmpty)
             Padding(
@@ -189,42 +201,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     );
   }
 
-  void _confirmDelete(
-    BuildContext context,
-    ReservationViewModel vm,
-    String id,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar reserva'),
-        content: const Text(
-          '¿Seguro que quieres eliminar esta reserva? Esta acción no se puede deshacer.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await vm.deleteReservation(id);
-              if (context.mounted) {
-                showSnackBar(context, 'Reserva eliminada');
-                context.go(AppRoutes.reservations);
-              }
-            },
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   String _stateLabel(String? s) {
     if (s == ReservationStatus.confirmed) return 'Confirmada ✅';
