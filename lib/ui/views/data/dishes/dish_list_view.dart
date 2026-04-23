@@ -58,6 +58,8 @@ class _DishesListViewState extends State<DishesListView> {
 
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
+      // tengo la impresión de que se podría crear una variable global para el loading
+      // tener un setter del value tambien global y llamarlo cada vez que haga falta
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: const AppDrawer(),
