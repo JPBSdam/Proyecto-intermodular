@@ -1,3 +1,5 @@
+import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
@@ -49,39 +51,50 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
       _initialized = true;
     }
 
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return LoadingOverlay(
       isLoading: vm.isLoading,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7F7),
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           elevation: 0,
           centerTitle: true,
-          iconTheme: IconThemeData(color: primaryColor),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
           title: Text(
-            'INFORMACIÓN DEL LOCAL',
-            style: TextStyle(
-              color: primaryColor,
+            'MI RESTAURANTE',
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              letterSpacing: 1.2,
             ),
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildImageSelector(primaryColor),
+                _buildImageSelector(colorScheme.primary),
                 const SizedBox(height: 32),
-
+                
+                _buildSectionTitle("DATOS GENERALES"),
                 AppTextField(
                   controller: _nameController,
-                  label: "Nombre del restaurante",
+                  label: "Nombre comercial",
                   hint: "Ej: SabrosApp Centro",
                   icon: Icons.business_outlined,
                   validator: (v) => v == null || v.isEmpty
@@ -90,8 +103,18 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                 ),
                 const SizedBox(height: 24),
                 AppTextField(
+                  controller: _descriptionController,
+                  label: "Descripción breve",
+                  hint: "Cuéntanos sobre el restaurante...",
+                  icon: Icons.description_outlined,
+                  maxLines: 3,
+                ),
+                
+                const SizedBox(height: 32),
+                _buildSectionTitle("LOCALIZACIÓN Y CONTACTO"),
+                AppTextField(
                   controller: _addressController,
-                  label: "Dirección",
+                  label: "Dirección completa",
                   hint: "Calle Falsa 123, Ciudad",
                   icon: Icons.location_on_outlined,
                 ),
@@ -111,7 +134,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                     Expanded(
                       child: AppTextField(
                         controller: _capacityController,
-                        label: "Capacidad",
+                        label: "Aforo máx.",
                         hint: "50",
                         icon: Icons.people_outline,
                         keyboardType: TextInputType.number,
@@ -131,29 +154,20 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                       ? "Email inválido"
                       : null,
                 ),
-                const SizedBox(height: 24),
-                AppTextField(
-                  controller: _descriptionController,
-                  label: "Descripción",
-                  hint: "Cuéntanos sobre el restaurante...",
-                  icon: Icons.description_outlined,
-                  maxLines: 3,
-                ),
 
                 const SizedBox(height: 32),
-
-                _buildFieldLabel("ESTADO ACTUAL"),
+                _buildSectionTitle("ESTADO DEL LOCAL"),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(10),
+                        color: Colors.black.withAlpha(5),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -187,11 +201,11 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                   child: ElevatedButton(
                     onPressed: () => _save(vm),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      elevation: 2,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: Text(
@@ -200,7 +214,8 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                           : "GUARDAR CAMBIOS",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
+                        letterSpacing: 1,
                       ),
                     ),
                   ),
@@ -210,20 +225,21 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
             ),
           ),
         ),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 3),
       ),
     );
   }
 
-  Widget _buildFieldLabel(String label) {
+  Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(
-        label,
-        style: const TextStyle(
+        title,
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
-          letterSpacing: 1.1,
+          color: Theme.of(context).colorScheme.primary.withAlpha(180),
+          letterSpacing: 1.2,
         ),
       ),
     );
@@ -235,14 +251,14 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
         onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
         child: Container(
           width: double.infinity,
-          height: 160,
+          height: 180,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: primaryColor.withAlpha(30), width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(10),
+                color: Colors.black.withAlpha(5),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -250,7 +266,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
           ),
           child: _imageController.text.isNotEmpty
               ? ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(22),
                   child: Image.network(
                     _imageController.text,
                     fit: BoxFit.cover,
@@ -333,12 +349,16 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
       if (!mounted) return;
 
       if (vm.errorMessage.isEmpty) {
-        context.pop();
         showSnackBar(
           context,
           'Información actualizada correctamente',
           success: true,
         );
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.home);
+        }
       } else {
         showSnackBar(context, vm.errorMessage);
       }
