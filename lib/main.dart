@@ -2,9 +2,11 @@ import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,9 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => DishViewModel(DishService())),
         ChangeNotifierProvider(
           create: (_) => RestaurantViewModel(RestaurantService()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReservationViewModel(ReservationService()),
         ),
       ],
       child: const MyApp(),

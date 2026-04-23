@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeVM = context.watch<HomeViewModel>();
+    final reservationVM = context.watch<ReservationViewModel>();
     final bool isAnonymous = homeVM.isGuest;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -105,8 +107,12 @@ class AppDrawer extends StatelessWidget {
                     label: 'Gestión Reservas',
                     route: AppRoutes.reservations,
                     currentPath: currentPath,
-                    // TODO: Implementar contador real de reservas pendientes
-                    trailing: _buildBadge(context, '3'),
+                    trailing: reservationVM.pendingCount > 0
+                        ? _buildBadge(
+                            context,
+                            reservationVM.pendingCount.toString(),
+                          )
+                        : null,
                   ),
                 ],
               ],

@@ -11,6 +11,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import '../../../core/widgets/verification_banner.dart';
 
@@ -29,6 +30,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DishViewModel>().watchDishes();
+
+      // Si el usuario ya está logueado como ADMIN, activamos la escucha de reservas
+      final homeVM = context.read<HomeViewModel>();
+      if (homeVM.userRole == 'ADMIN') {
+        context.read<ReservationViewModel>().watchAll();
+      }
     });
   }
 
