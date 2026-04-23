@@ -3,6 +3,7 @@ import 'package:app_restaurante/core/widgets/home_button.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,28 +33,39 @@ class _ReservationFormViewState extends State<ReservationFormView> {
   DateTime? _selectedDate;
   int _seats = 1;
   bool _hasBaby = false;
+  // feat: contador de bebés (desplegable tras marcar hasBaby)
+  int _babyCount = 1;
+  // fix: flag de carga para cuando se edita (carga de Firestore por ID)
+  bool _loadingEdit = false;
   Reservation? _reservation;
 
   @override
   void initState() {
     super.initState();
     if (widget.reservationId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final vm = context.read<ReservationViewModel>();
-        final found = vm.reservations.cast<Reservation?>().firstWhere(
-          (r) => r?.id == widget.reservationId,
-          orElse: () => null,
-        );
-        if (found != null && mounted) {
-          setState(() {
-            _reservation = found;
-            _seats = found.seats ?? 1;
-            _hasBaby = found.hasBaby ?? false;
-            _commentsController.text = found.comments ?? '';
-            _selectedDate = found.reservationDate;
-          });
-        }
-      });
+      _loadExisting(widget.reservationId!);
+    }
+  }
+
+  // fix: carga la reserva directamente de Firestore por ID en lugar de
+  // buscarla en vm.reservations (que puede estar vacío y causaba duplicados)
+  Future<void> _loadExisting(String id) async {
+    setState(() => _loadingEdit = true);
+    try {
+      final found = await ReservationService().getById(id);
+      if (found != null && mounted) {
+        setState(() {
+          _reservation = found;
+          _seats = found.seats ?? 1;
+          _hasBaby = found.hasBaby ?? false;
+          // feat: carga babyCount al editar
+          _babyCount = found.babyCount ?? 1;
+          _commentsController.text = found.comments ?? '';
+          _selectedDate = found.reservationDate;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loadingEdit = false);
     }
   }
 
@@ -104,7 +116,11 @@ class _ReservationFormViewState extends State<ReservationFormView> {
           ? null
           : _commentsController.text.trim(),
       hasBaby: _hasBaby,
-      state: _reservation?.state ?? ReservationStatus.pending,
+      // feat: guarda babyCount solo si hasBaby está marcado
+      babyCount: _hasBaby ? _babyCount : null,
+      // feat: siempre se guarda como pending al crear o editar
+      // (si estaba confirmed, vuelve a pending para que el admin reconfirme)
+      state: ReservationStatus.pending,
       createdAt: _reservation?.createdAt ?? DateTime.now(),
     );
 
@@ -212,8 +228,6 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // ── Bebé / carricoche ─────────────────────────────────────
                 Card(
                   margin: EdgeInsets.zero,
                   child: Column(
