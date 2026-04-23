@@ -1,9 +1,6 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
-import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
-import 'package:app_restaurante/core/widgets/app_logo_title.dart';
-import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -48,17 +45,29 @@ class _MenuListViewState extends State<MenuListView> {
       isLoading: viewmodel.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        drawer: const AppDrawer(),
         appBar: AppBar(
           backgroundColor: colorScheme.surface,
           elevation: 0,
           centerTitle: true,
-          title: const AppLogoTitle(),
-          actions: const [AppUserAvatar()],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+          title: Text(
+            'NUESTROS MENÚS',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
         ),
-        bottomNavigationBar: const AppBottomNav(
-          currentIndex: 1,
-        ), // O 2 si prefieres otra pestaña
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
         floatingActionButton: isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.menuFormCreate()),

@@ -2,9 +2,6 @@ import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
-import 'package:app_restaurante/core/widgets/app_drawer.dart';
-import 'package:app_restaurante/core/widgets/app_logo_title.dart';
-import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
@@ -65,13 +62,27 @@ class _UserProfileViewState extends State<UserProfileView> {
       isLoading: _isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        drawer: const AppDrawer(),
         appBar: AppBar(
           backgroundColor: colorScheme.surface,
           elevation: 0,
           centerTitle: true,
-          title: const AppLogoTitle(),
-          actions: const [AppUserAvatar()],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+          title: Text(
+            'MI PERFIL',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
         ),
         bottomNavigationBar: const AppBottomNav(currentIndex: 3),
         body: user == null
