@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Badge unificado para etiquetas informativas (ADMIN, ABIERTO, CATEGORÍA, etc).
@@ -23,8 +24,8 @@ class AppBadge extends StatelessWidget {
   factory AppBadge.success({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,
-    backgroundColor: Colors.green.withAlpha(25),
-    textColor: Colors.green,
+    backgroundColor: AppTheme.brandSuccess.withAlpha(25),
+    textColor: AppTheme.brandSuccess,
     borderRadius: 12,
   );
 
@@ -32,8 +33,17 @@ class AppBadge extends StatelessWidget {
   factory AppBadge.error({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,
-    backgroundColor: const Color(0xFFB00020).withAlpha(25),
-    textColor: const Color(0xFFB00020),
+    backgroundColor: AppTheme.brandError.withAlpha(25),
+    textColor: AppTheme.brandError,
+    borderRadius: 12,
+  );
+
+  /// Variante para avisos o estados pendientes (ej: PENDIENTE).
+  factory AppBadge.warning({required String label, IconData? icon}) => AppBadge(
+    label: label,
+    icon: icon,
+    backgroundColor: AppTheme.brandWarning.withAlpha(25),
+    textColor: AppTheme.brandWarning,
     borderRadius: 12,
   );
 

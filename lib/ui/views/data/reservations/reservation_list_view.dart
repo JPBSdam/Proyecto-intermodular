@@ -287,11 +287,7 @@ class _ReservationCard extends StatelessWidget {
       case ReservationStatus.cancelled:
         return AppBadge.error(label: 'CANCELADA');
       default:
-        return const AppBadge(
-          label: 'PENDIENTE',
-          backgroundColor: Colors.orange,
-          textColor: Colors.white,
-        );
+        return AppBadge.warning(label: 'PENDIENTE');
     }
   }
 }

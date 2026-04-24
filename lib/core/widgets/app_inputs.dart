@@ -26,7 +26,9 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,21 +37,21 @@ class AppTextField extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             label.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: colorScheme.onSurfaceVariant.withAlpha(180),
               letterSpacing: 1.1,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(10),
+                color: colorScheme.shadow.withAlpha(10),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -62,18 +64,20 @@ class AppTextField extends StatelessWidget {
             validator: validator,
             obscureText: obscureText,
             textCapitalization: TextCapitalization.sentences,
-            // Importante para las tildes: No añadir formatters restrictivos
             style: const TextStyle(fontSize: 16),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade300, fontSize: 14),
+              hintStyle: TextStyle(
+                color: colorScheme.onSurfaceVariant.withAlpha(100),
+                fontSize: 14,
+              ),
               prefixIcon: Icon(icon, color: primaryColor, size: 22),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide.none,
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: colorScheme.surface,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 18,
@@ -95,16 +99,17 @@ class AppFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null) ...[
           Text(
             title!.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: colorScheme.onSurfaceVariant.withAlpha(180),
               letterSpacing: 1,
             ),
           ),
@@ -113,11 +118,11 @@ class AppFormCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(5),
+                color: colorScheme.shadow.withAlpha(5),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

@@ -24,7 +24,7 @@ class ReservationRepository {
 
   // ─── READ todas (admin) ──────────────────────────────────────────────────────
   Stream<List<Reservation>> watchAll() => _col
-      .orderBy('reservationDate')
+      .orderBy('reservationDate', descending: true)
       .snapshots()
       .map(
         (s) => s.docs.map((d) => Reservation.fromFirestore(d, null)).toList(),
@@ -33,7 +33,7 @@ class ReservationRepository {
   // ─── READ por usuario (customer) ─────────────────────────────────────────────
   Stream<List<Reservation>> watchByUser(String userId) => _col
       .where('userId', isEqualTo: userId)
-      .orderBy('reservationDate')
+      .orderBy('reservationDate', descending: true)
       .snapshots()
       .map(
         (s) => s.docs.map((d) => Reservation.fromFirestore(d, null)).toList(),
