@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
 class UserFormView extends StatefulWidget {
   final String userId;
@@ -246,6 +247,7 @@ class _UserFormViewState extends State<UserFormView> {
 
   Widget _buildForm(UserViewModel viewmodel) {
     final colorScheme = Theme.of(context).colorScheme;
+    final homeVM = context.watch<HomeViewModel>();
 
     return Form(
       key: _formKey,
@@ -290,6 +292,32 @@ class _UserFormViewState extends State<UserFormView> {
               ),
             ),
           ),
+          if (homeVM.actualRole == 'ADMIN') ...[
+            const SizedBox(height: 48),
+            const Divider(),
+            const SizedBox(height: 24),
+            Text(
+              'OPCIONES DE ADMINISTRADOR',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary.withAlpha(150),
+                letterSpacing: 1.1,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Modo Vista Cliente'),
+              subtitle: const Text('Oculta las funciones de administrador'),
+              value: homeVM.previewMode,
+              onChanged: (_) => homeVM.togglePreviewMode(),
+              secondary: Icon(
+                homeVM.previewMode ? Icons.visibility : Icons.visibility_off,
+                color: colorScheme.primary,
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ],
           const SizedBox(height: 40),
         ],
       ),
