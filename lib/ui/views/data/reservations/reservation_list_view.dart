@@ -4,6 +4,7 @@ import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -22,59 +23,91 @@ class ReservationListView extends StatefulWidget {
 
 class _ReservationListViewState extends State<ReservationListView> {
   String _filterStatus = 'all';
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
+
+  // Guardamos el rol anterior para detectar cambios reales y evitar parpadeos
+  String? _lastRole;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<ReservationViewModel>();
-      final homeVM = context.read<HomeViewModel>();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _handleSubscription();
+  }
 
-      if (homeVM.userRole == 'ADMIN') {
-        vm.watchAll();
-      } else if (widget.userId != null) {
-        vm.watchByUser(widget.userId!);
-      }
-    });
+  /// Inicializa o actualiza el stream de datos solo si el rol ha cambiado.
+  void _handleSubscription() {
+    final homeVM = context.watch<HomeViewModel>();
+    final currentRole = homeVM.userRole;
+
+    if (_lastRole != currentRole) {
+      _lastRole = currentRole;
+
+      final resVM = context.read<ReservationViewModel>();
+      final uid = widget.userId ?? homeVM.currentUser?.uid;
+
+      // Usamos postFrameCallback para que la carga no interfiera con el pintado actual
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (currentRole == 'ADMIN') {
+          resVM.watchAll();
+        } else if (uid != null) {
+          resVM.watchByUser(uid);
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<ReservationViewModel>();
-    final homeVM = context.watch<HomeViewModel>();
+    final resVM = context.watch<ReservationViewModel>();
+    final homeVM = context.read<HomeViewModel>();
     final isAdmin = homeVM.userRole == 'ADMIN';
     final theme = Theme.of(context);
 
-    // Filtrar lista localmente
-    final filteredList = vm.reservations.where((r) {
+    // Filtrado local según el chip seleccionado
+    final filteredList = resVM.reservations.where((r) {
       if (_filterStatus == 'all') return true;
       return r.state == _filterStatus;
     }).toList();
 
     return LoadingOverlay(
-      isLoading: vm.isLoading,
+      isLoading: resVM.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: SabrosAppBar(
-          pageTitle: isAdmin ? 'GESTIÓN RESERVAS' : 'MIS RESERVAS',
+          pageTitle: _isSelectionMode
+              ? '${_selectedIds.length} SELECCIONADAS'
+              : (isAdmin ? 'GESTIÓN RESERVAS' : 'MIS RESERVAS'),
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home);
-              }
-            },
-          ),
+          leading: _isSelectionMode
+              ? IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() {
+                    _isSelectionMode = false;
+                    _selectedIds.clear();
+                  }),
+                )
+              : null,
         ),
         body: Column(
           children: [
-            _buildFilters(),
-            Expanded(child: _buildBody(filteredList, vm.errorMessage, isAdmin)),
+            // 1. Filtros (Siempre arriba)
+            if (!_isSelectionMode) _buildFilters(),
+
+            // 2. Acción Rápida (Solo Admin, debajo de filtros)
+            if (isAdmin && !_isSelectionMode) _buildQuickActionTrigger(),
+
+            // 3. Panel de Selección (Sustituye a la acción rápida en modo selección)
+            if (_isSelectionMode) _buildSelectionHeader(resVM),
+
+            // 4. Listado
+            Expanded(
+              child: _buildBody(filteredList, resVM.errorMessage, isAdmin),
+            ),
           ],
         ),
+        bottomNavigationBar: AppBottomNav(currentIndex: isAdmin ? 2 : 2),
         floatingActionButton: !isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () =>
@@ -83,20 +116,154 @@ class _ReservationListViewState extends State<ReservationListView> {
                 label: const Text('RESERVAR'),
               )
             : null,
-        bottomNavigationBar: AppBottomNav(currentIndex: isAdmin ? 2 : 2),
       ),
     );
+  }
+
+  Widget _buildQuickActionTrigger() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+      child: InkWell(
+        onTap: () => setState(() => _isSelectionMode = true),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withAlpha(20),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.primary.withAlpha(50)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.fact_check_outlined,
+                color: colorScheme.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'MARCAR RESERVAS COMO COMPLETADAS',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: colorScheme.primary, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionHeader(ReservationViewModel vm) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasSelection = _selectedIds.isNotEmpty;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(8),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.info_outline, size: 18, color: Colors.blueGrey),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Selecciona las reservas a completar:',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  _isSelectionMode = false;
+                  _selectedIds.clear();
+                }),
+                child: const Text('CANCELAR', style: TextStyle(fontSize: 11)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: hasSelection ? () => _confirmBulkComplete(vm) : null,
+              icon: const Icon(Icons.done_all, size: 18),
+              label: Text('COMPLETAR ${_selectedIds.length} RESERVAS'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmBulkComplete(ReservationViewModel vm) async {
+    final count = _selectedIds.length;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Completar reservas?'),
+        content: Text(
+          'Vas a marcar como COMPLETADAS $count reservas. ¿Deseas continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('SÍ, COMPLETAR'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await vm.completeMultipleReservations(_selectedIds.toList());
+      if (mounted) {
+        showSnackBar(context, '$count reservas completadas', success: true);
+        setState(() {
+          _isSelectionMode = false;
+          _selectedIds.clear();
+        });
+      }
+    }
   }
 
   Widget _buildFilters() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
           _filterChip('TODAS', 'all'),
           _filterChip('PENDIENTES', ReservationStatus.pending),
           _filterChip('CONFIRMADAS', ReservationStatus.confirmed),
+          _filterChip('COMPLETADAS', ReservationStatus.completed),
           _filterChip('CANCELADAS', ReservationStatus.cancelled),
         ],
       ),
@@ -110,27 +277,12 @@ class _ReservationListViewState extends State<ReservationListView> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: FilterChip(
-        label: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-          ),
-        ),
+        label: Text(label, style: const TextStyle(fontSize: 11)),
         selected: isSelected,
         onSelected: (val) => setState(() => _filterStatus = status),
         backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.primary,
-        checkmarkColor: colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: isSelected
-                ? colorScheme.primary
-                : colorScheme.outlineVariant,
-          ),
-        ),
+        selectedColor: colorScheme.primaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -138,13 +290,9 @@ class _ReservationListViewState extends State<ReservationListView> {
   Widget _buildBody(List<Reservation> list, String error, bool isAdmin) {
     if (error.isNotEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(error),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Text(error, textAlign: TextAlign.center),
         ),
       );
     }
@@ -160,9 +308,9 @@ class _ReservationListViewState extends State<ReservationListView> {
               color: Colors.grey.withAlpha(50),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'No hay reservas que mostrar',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -170,14 +318,34 @@ class _ReservationListViewState extends State<ReservationListView> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       physics: const BouncingScrollPhysics(),
       itemCount: list.length,
-      itemBuilder: (context, i) => _ReservationCard(
-        reservation: list[i],
-        isAdmin: isAdmin,
-        onTap: () => context.push(AppRoutes.reservationDetail(list[i].id!)),
-      ),
+      itemBuilder: (context, i) {
+        final reservation = list[i];
+        final isSelectable = reservation.state == ReservationStatus.confirmed;
+        final isSelected = _selectedIds.contains(reservation.id);
+
+        return _ReservationCard(
+          reservation: reservation,
+          isAdmin: isAdmin,
+          isSelectionMode: _isSelectionMode,
+          isSelected: isSelected,
+          isSelectable: isSelectable,
+          onTap: _isSelectionMode
+              ? (isSelectable
+                    ? () => setState(() {
+                        if (isSelected) {
+                          _selectedIds.remove(reservation.id);
+                        } else {
+                          _selectedIds.add(reservation.id!);
+                        }
+                      })
+                    : null)
+              : () =>
+                    context.push(AppRoutes.reservationDetail(reservation.id!)),
+        );
+      },
     );
   }
 }
@@ -185,12 +353,18 @@ class _ReservationListViewState extends State<ReservationListView> {
 class _ReservationCard extends StatelessWidget {
   final Reservation reservation;
   final bool isAdmin;
-  final VoidCallback onTap;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final bool isSelectable;
+  final VoidCallback? onTap;
 
   const _ReservationCard({
     required this.reservation,
     required this.isAdmin,
-    required this.onTap,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.isSelectable = true,
+    this.onTap,
   });
 
   @override
@@ -202,80 +376,97 @@ class _ReservationCard extends StatelessWidget {
     final dayFormat = DateFormat('dd MMM', 'es');
     final hourFormat = DateFormat('HH:mm');
 
-    return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      onTap: onTap,
-      child: Row(
-        children: [
-          // Lado Izquierdo: Fecha
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withAlpha(100),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  date != null ? dayFormat.format(date).toUpperCase() : '??',
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  date != null ? hourFormat.format(date) : '--:--',
-                  style: TextStyle(
-                    color: colorScheme.primary.withAlpha(180),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
+    // Prioridad de visualización de nombre: Firestore Name > Auth DisplayName > Auth Email
+    final String displayName =
+        reservation.userName ?? reservation.userEmail ?? 'Cliente';
 
-          // Centro: Información
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAdmin
-                      ? (reservation.userName ?? 'Cliente Desconocido')
-                      : 'Mesa para ${reservation.seats} personas',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.people_outline,
-                      size: 14,
-                      color: colorScheme.onSurfaceVariant,
+    return Opacity(
+      opacity: isSelectionMode && !isSelectable ? 0.4 : 1.0,
+      child: AppCard(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        onTap: onTap,
+        child: Row(
+          children: [
+            if (isSelectionMode) ...[
+              Checkbox(
+                value: isSelected,
+                onChanged: isSelectable ? (_) => onTap?.call() : null,
+                activeColor: colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+            ],
+            // Fecha
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withAlpha(80),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    date != null ? dayFormat.format(date).toUpperCase() : '??',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isAdmin
-                          ? '${reservation.seats} comensales'
-                          : 'ID: ${reservation.id?.substring(0, 8).toUpperCase()}',
-                      style: theme.textTheme.bodySmall?.copyWith(
+                  ),
+                  Text(
+                    date != null ? hourFormat.format(date) : '--:--',
+                    style: TextStyle(
+                      color: colorScheme.primary.withAlpha(180),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isAdmin
+                        ? displayName
+                        : 'Mesa para ${reservation.seats} personas',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 14,
                         color: colorScheme.onSurfaceVariant,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${reservation.seats} comensales',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-
-          // Lado Derecho: Estado
-          _buildStatusBadge(reservation.state),
-        ],
+            // Estado
+            _buildStatusBadge(reservation.state),
+          ],
+        ),
       ),
     );
   }
@@ -284,6 +475,12 @@ class _ReservationCard extends StatelessWidget {
     switch (status) {
       case ReservationStatus.confirmed:
         return AppBadge.success(label: 'CONFIRMADA');
+      case ReservationStatus.completed:
+        return const AppBadge(
+          label: 'COMPLETADA',
+          backgroundColor: Colors.blueGrey,
+          textColor: Colors.white,
+        );
       case ReservationStatus.cancelled:
         return AppBadge.error(label: 'CANCELADA');
       default:

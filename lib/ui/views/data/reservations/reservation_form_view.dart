@@ -6,6 +6,7 @@ import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
+import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -119,11 +120,36 @@ class _ReservationFormViewState extends State<ReservationFormView> {
     }
 
     final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser == null) {
+      showSnackBar(
+        context,
+        'Debes estar autenticado para reservar',
+        error: true,
+      );
+      return;
+    }
+
+    // Intentamos obtener los datos reales desde Firestore antes de guardar
+    String? realName = fbUser.displayName;
+    String? realPhone;
+    try {
+      final userDoc = await UserService().getUserById(fbUser.uid);
+      if (userDoc != null) {
+        if (userDoc.name != null && userDoc.name!.isNotEmpty) {
+          realName = userDoc.name;
+        }
+        realPhone = userDoc.phoneNumber;
+      }
+    } catch (_) {}
+
     final updated = Reservation(
       id: _reservation?.id,
-      userId: fbUser?.uid,
-      userName: fbUser?.displayName ?? fbUser?.email,
-      userEmail: fbUser?.email,
+      userId: fbUser.uid,
+      userName: (realName != null && realName.isNotEmpty)
+          ? realName
+          : fbUser.email,
+      userEmail: fbUser.email,
+      userPhone: realPhone,
       seats: _seats,
       reservationDate: _selectedDate,
       comments: _commentsController.text.trim().isEmpty
