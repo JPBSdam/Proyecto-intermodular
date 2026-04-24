@@ -28,6 +28,10 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   bool _loading = true;
   String _error = '';
 
+  // Getters para acceso centralizado a estilos
+  ThemeData get theme => Theme.of(context);
+  ColorScheme get colorScheme => theme.colorScheme;
+
   @override
   void initState() {
     super.initState();
@@ -58,8 +62,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     final vm = context.watch<ReservationViewModel>();
     final homeVM = context.watch<HomeViewModel>();
     final isAdmin = homeVM.userRole == 'ADMIN';
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return LoadingOverlay(
       isLoading: _loading || vm.isLoading,
@@ -73,18 +75,13 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: _buildBody(theme, colorScheme, vm, isAdmin),
+        body: _buildBody(vm, isAdmin),
         bottomNavigationBar: const AppBottomNav(currentIndex: 2),
       ),
     );
   }
 
-  Widget _buildBody(
-    ThemeData theme,
-    ColorScheme colorScheme,
-    ReservationViewModel vm,
-    bool isAdmin,
-  ) {
+  Widget _buildBody(ReservationViewModel vm, bool isAdmin) {
     if (_error.isNotEmpty) return Center(child: Text(_error));
     if (_reservation == null) {
       return const Center(child: CircularProgressIndicator());
@@ -180,12 +177,9 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       case ReservationStatus.cancelled:
         return AppBadge.error(label: 'CANCELADA', icon: Icons.cancel);
       default:
-        return const AppBadge(
+        return AppBadge.warning(
           label: 'PENDIENTE DE CONFIRMACIÓN',
           icon: Icons.timer_outlined,
-          backgroundColor: Colors.orange,
-          textColor: Colors.white,
-          borderRadius: 12,
         );
     }
   }
@@ -194,7 +188,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+        Icon(icon, size: 20, color: colorScheme.primary),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -205,7 +199,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
+                  color: colorScheme.onSurfaceVariant.withAlpha(180),
                   letterSpacing: 1.1,
                 ),
               ),
@@ -225,8 +219,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   }
 
   Widget _buildActions(Reservation r, ReservationViewModel vm, bool isAdmin) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Column(
       children: [
         // Si es Admin y está pendiente, botón Confirmar
@@ -238,8 +230,8 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
               icon: const Icon(Icons.check_circle_outline),
               label: const Text('CONFIRMAR RESERVA'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.tertiary,
+                foregroundColor: colorScheme.onTertiary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -305,11 +297,14 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             child: const Text('VOLVER'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
               'SÍ, CANCELAR',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
