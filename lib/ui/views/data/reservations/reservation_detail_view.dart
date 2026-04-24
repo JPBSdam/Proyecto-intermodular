@@ -133,8 +133,20 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
               children: [
                 _infoRow(
                   Icons.person_outline,
-                  'Cliente',
-                  r.userName ?? r.userEmail ?? 'Anónimo',
+                  'Nombre Cliente',
+                  r.userName ?? 'No especificado',
+                ),
+                const Divider(height: 32),
+                _infoRow(
+                  Icons.email_outlined,
+                  'Email Contacto',
+                  r.userEmail ?? 'No especificado',
+                ),
+                const Divider(height: 32),
+                _infoRow(
+                  Icons.phone_outlined,
+                  'Teléfono',
+                  r.userPhone ?? 'No especificado',
                 ),
                 const Divider(height: 32),
                 _infoRow(
@@ -174,6 +186,14 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     switch (status) {
       case ReservationStatus.confirmed:
         return AppBadge.success(label: 'CONFIRMADA', icon: Icons.check_circle);
+      case ReservationStatus.completed:
+        return const AppBadge(
+          label: 'RESERVA COMPLETADA',
+          icon: Icons.done_all,
+          backgroundColor: Colors.blueGrey,
+          textColor: Colors.white,
+          borderRadius: 12,
+        );
       case ReservationStatus.cancelled:
         return AppBadge.error(label: 'CANCELADA', icon: Icons.cancel);
       default:
@@ -248,8 +268,40 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
           const SizedBox(height: 12),
         ],
 
-        // Editar (disponible para dueño o admin si no está cancelada)
-        if (r.state != ReservationStatus.cancelled) ...[
+        // Si es Admin y está confirmada, botón Completar
+        if (isAdmin && r.state == ReservationStatus.confirmed) ...[
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.done_all),
+              label: const Text('MARCAR COMO COMPLETADA'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueGrey,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: () async {
+                await vm.completeReservation(r.id!);
+                if (mounted) {
+                  showSnackBar(
+                    context,
+                    'Reserva marcada como completada',
+                    success: true,
+                  );
+                  _load();
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Editar (disponible para dueño o admin si no está cancelada ni completada)
+        if (r.state != ReservationStatus.cancelled &&
+            r.state != ReservationStatus.completed) ...[
           SizedBox(
             width: double.infinity,
             height: 55,
@@ -312,10 +364,10 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     );
 
     if (confirm == true && mounted) {
-      await vm.deleteReservation(r.id!);
+      await vm.cancelReservation(r.id!);
       if (mounted) {
-        showSnackBar(context, 'Reserva eliminada');
-        context.pop();
+        showSnackBar(context, 'Reserva cancelada');
+        _load(); // Recargamos para ver el estado 'cancelada'
       }
     }
   }
