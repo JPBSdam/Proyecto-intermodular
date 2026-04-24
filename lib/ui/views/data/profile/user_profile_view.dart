@@ -6,6 +6,7 @@ import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -198,7 +199,8 @@ class _UserProfileViewState extends State<UserProfileView> {
     if (user == null) return const SizedBox.shrink();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isAdmin = user.role == 'admin';
+    final homeVM = context.watch<HomeViewModel>();
+    final isAdmin = homeVM.userRole == 'ADMIN';
 
     return Column(
       children: [
@@ -252,6 +254,8 @@ class _UserProfileViewState extends State<UserProfileView> {
   Widget _buildActivitySection(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final homeVM = context.watch<HomeViewModel>();
+    final isRealAdmin = homeVM.actualRole == 'ADMIN';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -267,6 +271,26 @@ class _UserProfileViewState extends State<UserProfileView> {
             ),
           ),
           const SizedBox(height: 16),
+          if (isRealAdmin) ...[
+            _buildActivityCard(
+              icon: homeVM.previewMode
+                  ? Icons.visibility
+                  : Icons.visibility_off,
+              title: homeVM.previewMode
+                  ? 'Desactivar vista cliente'
+                  : 'Activar vista cliente',
+              subtitle: homeVM.previewMode
+                  ? 'Viendo como cliente'
+                  : 'Viendo como administrador',
+              onTap: () => homeVM.togglePreviewMode(),
+              trailing: Switch(
+                value: homeVM.previewMode,
+                onChanged: (_) => homeVM.togglePreviewMode(),
+                activeThumbColor: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           _buildActivityCard(
             icon: Icons.calendar_today_outlined,
             title: 'Mis reservas',
@@ -310,7 +334,9 @@ class _UserProfileViewState extends State<UserProfileView> {
   Widget _buildActivityCard({
     required IconData icon,
     required String title,
+    String? subtitle,
     required VoidCallback onTap,
+    Widget? trailing,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -331,18 +357,31 @@ class _UserProfileViewState extends State<UserProfileView> {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: colorScheme.onSurfaceVariant.withAlpha(150),
-            size: 20,
-          ),
+          trailing ??
+              Icon(
+                Icons.chevron_right,
+                color: colorScheme.onSurfaceVariant.withAlpha(150),
+                size: 20,
+              ),
         ],
       ),
     );

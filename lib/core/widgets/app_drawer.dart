@@ -28,6 +28,8 @@ class AppDrawer extends StatelessWidget {
         : homeVM.email;
     final String? photoUrl = homeVM.photoUrl;
     final bool isAdmin = homeVM.userRole == 'ADMIN';
+    final bool isRealAdmin = homeVM.actualRole == 'ADMIN';
+    final bool previewMode = homeVM.previewMode;
 
     String currentPath = GoRouterState.of(context).uri.path;
     if (currentPath == '/') currentPath = AppRoutes.home;
@@ -36,7 +38,16 @@ class AppDrawer extends StatelessWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
-          _buildPremiumHeader(context, name, email, photoUrl, isAdmin),
+          _buildPremiumHeader(
+            context,
+            name,
+            email,
+            photoUrl,
+            isAdmin,
+            isRealAdmin,
+            previewMode,
+            homeVM,
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -132,6 +143,9 @@ class AppDrawer extends StatelessWidget {
     String email,
     String? photo,
     bool isAdmin,
+    bool isRealAdmin,
+    bool previewMode,
+    HomeViewModel homeVM,
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -162,10 +176,17 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppLogoTitle(
-            color: colorScheme.onPrimary,
-            fontSize: 22,
-            iconSize: 24,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              AppLogoTitle(
+                color: colorScheme.onPrimary,
+                fontSize: 22,
+                iconSize: 24,
+              ),
+              if (isRealAdmin)
+                _buildPreviewToggle(context, previewMode, homeVM),
+            ],
           ),
           const SizedBox(height: 32),
           Row(
@@ -233,6 +254,37 @@ class AppDrawer extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPreviewToggle(
+    BuildContext context,
+    bool previewMode,
+    HomeViewModel homeVM,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Transform.scale(
+          scale: 0.8,
+          child: Switch(
+            value: previewMode,
+            onChanged: (value) => homeVM.togglePreviewMode(),
+            activeThumbColor: colorScheme.secondary,
+            activeTrackColor: colorScheme.onPrimary.withAlpha(100),
+            inactiveThumbColor: colorScheme.onPrimary.withAlpha(150),
+            inactiveTrackColor: Colors.black.withAlpha(50),
+          ),
+        ),
+        Text(
+          'VISTA CLIENTE',
+          style: TextStyle(
+            color: colorScheme.onPrimary.withAlpha(200),
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 

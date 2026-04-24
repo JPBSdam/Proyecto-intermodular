@@ -11,9 +11,12 @@ class HomeViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Estado del perfil (Firestore)
-  String _userRole = 'USER';
+  String _actualRole = 'USER'; // Rol real en la base de datos
   String? _userName;
   String? _userPhotoUrl;
+
+  // Modo Vista Cliente (para admins)
+  bool _previewMode = false;
 
   // Estado de UI
   bool _isLoading = false;
@@ -23,7 +26,24 @@ class HomeViewModel extends ChangeNotifier {
   // Getters
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
-  String get userRole => _userRole;
+
+  /// Retorna el rol efectivo (USER si previewMode está activo)
+  String get userRole {
+    if (_actualRole == 'ADMIN' && _previewMode) return 'USER';
+    return _actualRole;
+  }
+
+  /// Retorna el rol real sin filtros
+  String get actualRole => _actualRole;
+
+  bool get previewMode => _previewMode;
+
+  void togglePreviewMode() {
+    if (_actualRole == 'ADMIN') {
+      _previewMode = !_previewMode;
+      notifyListeners();
+    }
+  }
 
   // Getters - Información del usuario
   User? get currentUser => _authService.currentUser;
@@ -70,7 +90,8 @@ class HomeViewModel extends ChangeNotifier {
     _userSubscription?.cancel();
 
     // Reset agresivo de datos al cambiar de usuario
-    _userRole = 'USER';
+    _actualRole = 'USER';
+    _previewMode = false;
     _userName = null;
     _userPhotoUrl = null;
     _errorMessage = '';
@@ -92,7 +113,7 @@ class HomeViewModel extends ChangeNotifier {
             (doc) {
               if (doc.exists) {
                 final data = doc.data();
-                _userRole = data?['role']?.toString().toUpperCase() ?? 'USER';
+                _actualRole = data?['role']?.toString().toUpperCase() ?? 'USER';
                 _userName = data?['name']?.toString();
                 _userPhotoUrl = data?['urlImage']?.toString();
               }
@@ -139,7 +160,8 @@ class HomeViewModel extends ChangeNotifier {
       // 2. Cerramos sesión en Firebase
       await _authService.signOut();
       // 3. Reseteamos datos localmente
-      _userRole = 'USER';
+      _actualRole = 'USER';
+      _previewMode = false;
       _userName = null;
       _userPhotoUrl = null;
       _setLoading(false);
