@@ -294,7 +294,7 @@ class _UserProfileViewState extends State<UserProfileView> {
           _buildActivityCard(
             icon: Icons.calendar_today_outlined,
             title: 'Mis reservas',
-            onTap: () => context.go('/reservations/my'),
+            onTap: () => context.go(AppRoutes.reservations),
           ),
           const SizedBox(height: 12),
           _buildActivityCard(
