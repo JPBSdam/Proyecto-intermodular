@@ -4,14 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// - pending:   el cliente ha solicitado la reserva (pendiente de confirmación admin)
 /// - confirmed: el admin ha confirmado la reserva
 /// - cancelled: la reserva ha sido cancelada (por cliente o admin)
-///
-/// NOTA ROLES: cuando los roles estén implantados:
-///   - customer → puede cancelar/editar la suya si está 'pending'
-///   - admin    → puede confirmar o cancelar cualquier reserva
+/// - completed: los clientes ya han asistido (marcado por admin)
+
 class ReservationStatus {
   static const String pending = 'pending';
   static const String confirmed = 'confirmed';
   static const String cancelled = 'cancelled';
+  static const String completed = 'completed';
 }
 
 class Reservation {
@@ -20,6 +19,7 @@ class Reservation {
   String? userId; // uid de Firebase del cliente
   String? userName; // nombre visible para el admin
   String? userEmail; // email visible para el admin
+  String? userPhone; // teléfono de contacto
   int? seats;
   DateTime? reservationDate; // fecha y hora unificadas
   String? state; // ReservationStatus.*
@@ -34,6 +34,7 @@ class Reservation {
     this.userId,
     this.userName,
     this.userEmail,
+    this.userPhone,
     this.seats,
     this.reservationDate,
     this.state,
@@ -54,6 +55,7 @@ class Reservation {
       userId: map?['userId'] as String?,
       userName: map?['userName'] as String?,
       userEmail: map?['userEmail'] as String?,
+      userPhone: map?['userPhone'] as String?,
       seats: map?['seats'] as int?,
       reservationDate: (map?['reservationDate'] as Timestamp?)?.toDate(),
       state: map?['state'] as String?,
@@ -70,6 +72,7 @@ class Reservation {
       if (userId != null) "userId": userId,
       if (userName != null) "userName": userName,
       if (userEmail != null) "userEmail": userEmail,
+      if (userPhone != null) "userPhone": userPhone,
       if (seats != null) "seats": seats,
       if (reservationDate != null)
         "reservationDate": Timestamp.fromDate(reservationDate!),

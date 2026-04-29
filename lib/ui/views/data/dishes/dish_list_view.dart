@@ -1,74 +1,326 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Pantalla de lista de platos.
-/// Muestra todos los platos disponibles usando DishViewModel para obtener datos de Firestore.
-/// Permite navegar a la vista de detalle de un plato o crear un nuevo plato.
-/// Incluye manejo de estado de carga y errores mediante LoadingOverlay.
-
-class DishesListView extends StatelessWidget {
+class DishesListView extends StatefulWidget {
   const DishesListView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewmodel = context.watch<DishViewModel>();
+  State<DishesListView> createState() => _DishesListViewState();
+}
 
-    // Cargar platos solo una vez
+class _DishesListViewState extends State<DishesListView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    final viewmodel = context.read<DishViewModel>();
     if (!viewmodel.isWatchingDishes) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        viewmodel.watchDishes();
-      });
+      viewmodel.watchDishes();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final viewmodel = context.watch<DishViewModel>();
+    final homeVM = context.watch<HomeViewModel>();
+
+    // Solo el ADMIN puede crear platos
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
+
+    final filteredDishes = viewmodel.dishes.where((d) {
+      return (d.name ?? "").toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    final groupedDishes = <String, List<Dish>>{};
+    for (var dish in filteredDishes) {
+      final cat = dish.category ?? 'Otros';
+      if (!groupedDishes.containsKey(cat)) groupedDishes[cat] = [];
+      groupedDishes[cat]!.add(dish);
+    }
+
+    final categoryOrder = ['Entrante', 'Principal', 'Postre', 'Bebida', 'Otro'];
+    final sortedCategories = groupedDishes.keys.toList()
+      ..sort((a, b) {
+        int indexA = categoryOrder.indexOf(a);
+        int indexB = categoryOrder.indexOf(b);
+        if (indexA == -1) indexA = 99;
+        if (indexB == -1) indexB = 99;
+        return indexA.compareTo(indexB);
+      });
 
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
-      // tengo la impresión de que se podría crear una variable global para el loading
-      // tener un setter del value tambien global y llamarlo cada vez que haga falta
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Lista de Platos'),
-          actions: const [HomeButton()],
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: SabrosAppBar(
+          pageTitle: 'NUESTRA CARTA',
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            context.go(AppRoutes.dishFormCreate());
-          },
-          tooltip: 'Añadir Plato',
-          child: const Icon(Icons.add),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        floatingActionButton: isAdmin
+            ? FloatingActionButton.extended(
+                onPressed: () => context.push(AppRoutes.dishFormCreate()),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 4,
+                icon: const Icon(Icons.add),
+                label: const Text('NUEVO PLATO'),
+              )
+            : null,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nuestra Carta',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Explora nuestros sabores seleccionados',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildSearchBar(theme),
+            if (viewmodel.errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  viewmodel.errorMessage,
+                  style: TextStyle(color: colorScheme.error),
+                ),
+              ),
+            Expanded(
+              child: viewmodel.dishes.isEmpty && !viewmodel.isLoading
+                  ? _buildEmptyState(theme)
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                      itemCount: sortedCategories.length,
+                      itemBuilder: (context, catIndex) {
+                        final category = sortedCategories[catIndex];
+                        final categoryDishes = groupedDishes[category]!;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCategoryHeader(category, theme),
+                            ...categoryDishes.map(
+                              (dish) =>
+                                  _buildDishCard(context, dish, theme, isAdmin),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
-        body: _buildBody(viewmodel, context),
       ),
     );
   }
 
-  Widget _buildBody(DishViewModel viewModel, BuildContext context) {
-    if (viewModel.errorMessage.isNotEmpty) {
-      return Center(child: Text(viewModel.errorMessage));
-    }
-
-    if (viewModel.dishes.isEmpty) {
-      return const Center(child: Text("No hay platos disponibles"));
-    }
-
-    return ListView.builder(
-      itemCount: viewModel.dishes.length,
-      itemBuilder: (context, index) {
-        final dish = viewModel.dishes[index];
-
-        return ListTile(
-          title: Text(dish.name ?? ''),
-          subtitle: Text(dish.category ?? ''),
-          trailing: Text(dish.price?.toStringAsFixed(2) ?? '-'),
-          onTap: () {
-            context.go(AppRoutes.dishDetail(dish.id!));
-          },
-        );
-      },
+  Widget _buildSearchBar(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withAlpha(12),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (val) => setState(() => _searchQuery = val),
+          style: theme.textTheme.bodyLarge,
+          decoration: InputDecoration(
+            hintText: 'Busca tu plato favorito...',
+            hintStyle: TextStyle(
+              color: colorScheme.onSurfaceVariant.withAlpha(150),
+            ),
+            prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 15,
+              horizontal: 20,
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildCategoryHeader(String category, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            category.toUpperCase(),
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              color: colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDishCard(
+    BuildContext context,
+    Dish dish,
+    ThemeData theme,
+    bool isAdmin,
+  ) {
+    final colorScheme = theme.colorScheme;
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      onTap: () => context.push(AppRoutes.dishDetail(dish.id!)),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: (dish.urlImage != null && dish.urlImage!.isNotEmpty)
+                ? Image.network(
+                    dish.urlImage!,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    color: colorScheme.primary.withAlpha(20),
+                    child: Icon(
+                      Icons.restaurant,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dish.name ?? 'Plato sin nombre',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (dish.price != null) ...[
+                  Text(
+                    '${dish.price!.toStringAsFixed(2)}€',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (isAdmin)
+            IconButton(
+              icon: Icon(
+                Icons.edit_outlined,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+              onPressed: () => context.push(AppRoutes.dishFormEdit(dish.id!)),
+            ),
+          Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant.withAlpha(100),
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeData theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.restaurant_menu,
+            size: 64,
+            color: theme.colorScheme.onSurface.withAlpha(30),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "No hemos encontrado platos",
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }

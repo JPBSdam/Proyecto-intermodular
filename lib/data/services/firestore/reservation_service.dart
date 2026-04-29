@@ -19,8 +19,8 @@ class ReservationService {
   Future<void> updateReservation(Reservation r) =>
       _handle(() => _repo.update(r));
   Future<void> deleteReservation(String id) => _handle(() => _repo.delete(id));
-  Future<void> updateStatus(String id, String status) =>
-      _handle(() => _repo.updateStatus(id, status));
+  Future<void> updateStatuses(List<String> ids, String status) =>
+      _handle(() => _repo.updateStatuses(ids, status));
   Future<Reservation?> getById(String id) => _handle(() => _repo.getById(id));
 
   // ─── Manejo de errores ────────────────────────────────────────────────────
