@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../ui/viewmodels/home/home_viewmodel.dart';
@@ -19,28 +20,32 @@ class VerificationBanner extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final warningColor = AppTheme.brandWarning;
+
     return Material(
       elevation: 2,
       child: Container(
         width: double.infinity,
-        color: Colors.amber.shade50,
+        color: warningColor.withAlpha(20),
         padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.mark_email_unread_outlined,
-                  color: Colors.amber,
+                  color: warningColor,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Verifica tu cuenta para activar todas las funciones.',
                     style: TextStyle(
-                      color: Colors.black87,
+                      color: colorScheme.onSurface,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -48,11 +53,7 @@ class VerificationBanner extends StatelessWidget {
                 ),
                 // Botón para forzar el refresco manualmente si el auto-refresco falla o si se verifica desde otro dispositivo
                 IconButton(
-                  icon: const Icon(
-                    Icons.refresh,
-                    size: 20,
-                    color: Colors.amber,
-                  ),
+                  icon: Icon(Icons.refresh, size: 20, color: warningColor),
                   tooltip: 'Comprobar ahora',
                   onPressed: () => viewModel.checkEmailVerification(),
                 ),

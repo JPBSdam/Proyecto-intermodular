@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 
 /// AppBar reutilizable que muestra la marca "SabrosApp" en todas las pantallas.
 ///
@@ -10,6 +11,8 @@ import 'package:flutter/material.dart';
 ///   appBar: SabrosAppBar(pageTitle: 'Iniciar Sesión')
 ///   appBar: SabrosAppBar(pageTitle: 'Menús', actions: [HomeButton()])
 ///   appBar: SabrosAppBar()  // solo muestra "SabrosApp"
+/// Utiliza [AppLogoTitle] para mantener la consistencia visual.
+
 class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SabrosAppBar({
     super.key,
@@ -17,6 +20,7 @@ class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leading,
     this.backgroundColor,
+    this.centerTitle = false,
   });
 
   /// Título de la pantalla actual (ej: 'Iniciar Sesión', 'Menús', ...).
@@ -31,44 +35,50 @@ class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Color de fondo del AppBar. Si es null, usa el tema de la app.
   final Color? backgroundColor;
+  final bool centerTitle;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final hasPageTitle = pageTitle != null && pageTitle!.isNotEmpty;
 
     return AppBar(
-      backgroundColor: backgroundColor,
+      backgroundColor: backgroundColor ?? colorScheme.surface,
+      elevation: 0,
+      centerTitle: centerTitle,
       leading: leading,
       title: hasPageTitle
           ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: centerTitle
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'SabrosApp',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.55),
-                    letterSpacing: 0.8,
-                  ),
-                ),
+                const AppLogoTitle(fontSize: 14, iconSize: 16),
+                const SizedBox(height: 2),
                 Text(
                   pageTitle!,
-                  style: const TextStyle(
-                    fontSize: 17,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ],
             )
-          : const Text('SabrosApp'),
+          : const AppLogoTitle(),
       actions: actions,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(
+          height: 1,
+          thickness: 1,
+          color: colorScheme.outlineVariant.withAlpha(50),
+        ),
+      ),
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 1);
 }

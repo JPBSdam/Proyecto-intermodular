@@ -1,22 +1,18 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/app_badge.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
-import 'package:app_restaurante/core/widgets/home_button.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-/// Pantalla de detalle de Menú.
-/// - Muestra la información de un menú específico: nombre, descripción,
-///   precio, disponibilidad y lista de platos incluidos.
-/// - Permite editar o eliminar el menú usando `MenuViewModel`.
-/// - Obtiene los datos de los platos incluidos desde `DishViewModel`.
-/// - Utiliza `LoadingOverlay` para indicar carga mientras se recuperan
-///   los datos o se ejecuta alguna acción.
 
 class MenuDetailView extends StatefulWidget {
   final String menuId;
@@ -28,123 +24,232 @@ class MenuDetailView extends StatefulWidget {
 }
 
 class _MenuDetailViewState extends State<MenuDetailView> {
-  late final MenuViewModel _menuViewModel;
-  late final DishViewModel _dishViewModel;
-
-  Menu? _menu;
-  List<Dish> _menuDishes = [];
-  bool _isLoading = true;
-  String _error = '';
-
   @override
   void initState() {
     super.initState();
-    _menuViewModel = context.read<MenuViewModel>();
-    _dishViewModel = context.read<DishViewModel>();
-    _loadMenu();
-  }
-
-  Future<void> _loadMenu() async {
-    setState(() {
-      _isLoading = true;
-      _error = '';
+    // Aseguramos que los ViewModels estén escuchando datos
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final menuVM = context.read<MenuViewModel>();
+      final dishVM = context.read<DishViewModel>();
+      if (!menuVM.isWatchingMenus) menuVM.watchMenus();
+      if (!dishVM.isWatchingDishes) dishVM.watchDishes();
     });
-
-    try {
-      final menu = await _menuViewModel.fetchMenuById(widget.menuId);
-      if (menu == null) {
-        setState(() {
-          _error = 'Menú no encontrado';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Filtrar los platos del menú usando DishViewModel
-      final menuDishIds = menu.dishes ?? [];
-      final menuDishes = _dishViewModel.dishes
-          .where((d) => menuDishIds.contains(d.id))
-          .toList();
-
-      setState(() {
-        _menu = menu;
-        _menuDishes = menuDishes;
-      });
-    } catch (e) {
-      setState(() => _error = 'Error al cargar el menú: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget bodyContent;
+    final menuViewModel = context.watch<MenuViewModel>();
+    final dishViewModel = context.watch<DishViewModel>();
+    final homeVM = context.watch<HomeViewModel>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    if (_error.isNotEmpty) {
-      bodyContent = Center(child: Text(_error));
-    } else if (_menu == null) {
-      bodyContent = const Center(child: Text("Menú no encontrado"));
-    } else {
-      bodyContent = Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _menu!.name ?? '',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text("Descripción: ${_menu!.description ?? '-'}"),
-            Text("Precio total: ${_menu!.price?.toStringAsFixed(2) ?? '-'} €"),
-            Text("Disponible: ${_menu!.available == true ? "Sí" : "No"}"),
-            const SizedBox(height: 16),
-            const Text(
-              "Platos incluidos:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            ..._menuDishes.map((d) => Text("- ${d.name ?? ''}")),
-          ],
-        ),
-      );
-    }
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
+
+    // Buscamos el menú en tiempo real dentro de la lista del ViewModel
+    final Menu? menu = menuViewModel.menus.cast<Menu?>().firstWhere(
+      (m) => m?.id == widget.menuId,
+      orElse: () => null,
+    );
+
+    final bool isNotFound = menu == null && !menuViewModel.isLoading;
+
+    // Obtenemos los platos reales vinculados
+    final List<Dish> menuDishes = dishViewModel.dishes
+        .where((d) => menu?.dishes?.contains(d.id) ?? false)
+        .toList();
 
     return LoadingOverlay(
-      isLoading: _isLoading,
+      isLoading: menuViewModel.isLoading || dishViewModel.isLoading,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(_menu?.name ?? 'Detalle del Menú'),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: SabrosAppBar(
+          pageTitle: isNotFound ? 'NO ENCONTRADO' : 'DETALLE MENÚ',
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () => context.pop(),
+          ),
           actions: [
-            if (_menu != null && (_menu!.id?.isNotEmpty ?? false))
+            if (menu != null && isAdmin) ...[
               IconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: 'Editar menú',
-                onPressed: () {
-                  context.go(AppRoutes.menuFormEdit(_menu!.id!));
-                },
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => context.push(AppRoutes.menuFormEdit(menu.id!)),
               ),
-            if (_menu != null && (_menu!.id?.isNotEmpty ?? false))
               IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () async {
-                  final confirm = await showDialogYesNo(
-                    context,
-                    title: 'Eliminar $_menu',
-                    cuestion:
-                        "¿Estás seguro de que quieres eliminar este menú?",
-                  );
-                  if (confirm == true && context.mounted) {
-                    await _menuViewModel.deleteMenu(_menu!.id!);
-                    if (context.mounted) context.go(AppRoutes.menus);
-                  }
-                },
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: () => _handleDelete(context, menuViewModel, menu),
               ),
-            const HomeButton(),
+            ],
           ],
         ),
-        body: bodyContent,
+        body: isNotFound
+            ? const Center(child: Text("El menú solicitado no existe."))
+            : (menu == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildContent(
+                      menu,
+                      menuDishes,
+                      theme,
+                      colorScheme,
+                      dishViewModel.isLoading,
+                    )),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
       ),
     );
+  }
+
+  Widget _buildContent(
+    Menu menu,
+    List<Dish> menuDishes,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    bool isDishLoading,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Cabecera: Nombre y Precio
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  (menu.name ?? 'MENÚ ESPECIAL').toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AppBadge.success(
+                  label: '${menu.price?.toStringAsFixed(2) ?? "0.00"} €',
+                  icon: Icons.payments_outlined,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+
+          // Descripción si existe
+          if (menu.description != null && menu.description!.isNotEmpty) ...[
+            _buildSectionHeader('DESCRIPCIÓN', Icons.notes_outlined, theme),
+            const SizedBox(height: 12),
+            Text(
+              menu.description!,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+
+          // Composición
+          _buildSectionHeader(
+            'COMPOSICIÓN DEL MENÚ',
+            Icons.restaurant_outlined,
+            theme,
+          ),
+          const SizedBox(height: 16),
+          if (menuDishes.isEmpty && !isDishLoading)
+            Text(
+              "No hay platos asignados a este menú.",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            )
+          else
+            ...menuDishes.map((dish) => _buildDishTile(dish, theme)),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDishTile(Dish dish, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withAlpha(50),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.done, color: colorScheme.primary, size: 16),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dish.name ?? '',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (dish.category != null)
+                  Text(
+                    dish.category!.toUpperCase(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleDelete(
+    BuildContext context,
+    MenuViewModel vm,
+    Menu menu,
+  ) async {
+    final confirm = await showDialogYesNo(
+      context,
+      title: '¿ELIMINAR MENÚ?',
+      cuestion:
+          "Esta acción no se puede deshacer y el menú desaparecerá de la lista.",
+    );
+    if (confirm != true) return;
+
+    await vm.deleteMenu(menu.id!);
+
+    if (context.mounted) {
+      context.go(AppRoutes.menus);
+    }
   }
 }

@@ -3,19 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 
-/// ViewModel de reservas.
-/// - watchAll()      → admin (todas las reservas)
-/// - watchByUser()   → customer (solo las suyas)
-/// - confirmReservation / cancelReservation → cambios de estado
-///
-/// NOTA ROLES: la UI decide qué método de escucha usar según user.role
-
+/// ViewModel de reservas con gestión de flujo estable.
 class ReservationViewModel extends ChangeNotifier {
   final ReservationService _service;
   ReservationViewModel(this._service);
 
   List<Reservation> _reservations = [];
   List<Reservation> get reservations => _reservations;
+
+  int get pendingCount =>
+      _reservations.where((r) => r.state == ReservationStatus.pending).length;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -24,50 +21,70 @@ class ReservationViewModel extends ChangeNotifier {
   String get errorMessage => _errorMessage;
 
   StreamSubscription<List<Reservation>>? _sub;
-  bool _isWatching = false;
-  bool get isWatching => _isWatching;
 
-  // ─── Escuchar TODAS (admin) ──────────────────────────────────────────────
+  /// Almacena el alcance actual (scope) para evitar re-escuchas innecesarias.
+  String? _currentScope;
+
+  /// Indica si hay una escucha activa de datos.
+  bool get isWatching => _currentScope != null;
+
+  // ─── Listeners ──────────────────────────────────────────────────────────
+
   void watchAll() {
-    if (_isWatching) return;
-    _listen(_service.watchAll());
+    if (_currentScope == 'all') return;
+    _currentScope = 'all';
+    // Solo activamos loading en el cambio de scope (carga inicial del modo admin)
+    _listen(_service.watchAll(), showLoading: true);
   }
 
-  // ─── Escuchar por usuario (customer) ────────────────────────────────────
   void watchByUser(String userId) {
-    if (_isWatching) return;
-    _listen(_service.watchByUser(userId));
+    if (_currentScope == userId) return;
+    _currentScope = userId;
+    // Solo activamos loading en el cambio de scope (carga inicial del modo cliente)
+    _listen(_service.watchByUser(userId), showLoading: true);
   }
 
-  void _listen(Stream<List<Reservation>> stream) {
-    _isWatching = true;
-    _setLoading(true);
+  void _listen(Stream<List<Reservation>> stream, {bool showLoading = false}) {
+    if (showLoading) _setLoading(true);
     _errorMessage = '';
     _sub?.cancel();
     _sub = stream.listen(
       (list) {
         _reservations = list;
         _setLoading(false);
-        notifyListeners();
       },
       onError: (e) {
         _errorMessage = 'Error al cargar reservas: $e';
         _setLoading(false);
+        _currentScope = null;
       },
     );
   }
 
-  // ─── CRUD ────────────────────────────────────────────────────────────────
+  // ─── Acciones ────────────────────────────────────────────────────────────
+
+  Future<void> confirmReservation(String id) =>
+      _run(() => _service.updateStatuses([id], ReservationStatus.confirmed));
+
+  Future<void> cancelReservation(String id) =>
+      _run(() => _service.updateStatuses([id], ReservationStatus.cancelled));
+
+  Future<void> completeReservation(String id) =>
+      _run(() => _service.updateStatuses([id], ReservationStatus.completed));
+
+  Future<void> completeMultipleReservations(List<String> ids) =>
+      _run(() => _service.updateStatuses(ids, ReservationStatus.completed));
+
   Future<void> addReservation(Reservation r) =>
       _run(() => _service.createReservation(r));
+
   Future<void> updateReservation(Reservation r) =>
       _run(() => _service.updateReservation(r));
+
   Future<void> deleteReservation(String id) =>
       _run(() => _service.deleteReservation(id));
-  Future<void> confirmReservation(String id) =>
-      _run(() => _service.updateStatus(id, ReservationStatus.confirmed));
-  Future<void> cancelReservation(String id) =>
-      _run(() => _service.updateStatus(id, ReservationStatus.cancelled));
+
+  // ─── Helpers ────────────────────────────────────────────────────────────
 
   Future<void> _run(Future<void> Function() action) async {
     _setLoading(true);
@@ -81,8 +98,9 @@ class ReservationViewModel extends ChangeNotifier {
     }
   }
 
-  void _setLoading(bool v) {
-    _isLoading = v;
+  void _setLoading(bool value) {
+    if (_isLoading == value) return;
+    _isLoading = value;
     notifyListeners();
   }
 

@@ -1,78 +1,249 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
-import 'package:app_restaurante/core/widgets/home_button.dart';
+import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Pantalla de lista de menús.
-/// - Muestra todos los menús disponibles usando `MenuViewModel`.
-/// - Permite navegar a los detalles de cada menú al pulsar un ítem.
-/// - Incluye botón flotante para crear un nuevo menú.
-/// - Maneja la carga con `LoadingOverlay` y muestra errores locales.
-
-class MenuListView extends StatelessWidget {
+class MenuListView extends StatefulWidget {
   const MenuListView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewmodel = context.watch<MenuViewModel>();
+  State<MenuListView> createState() => _MenuListViewState();
+}
 
-    // Cargar menús solo una vez
+class _MenuListViewState extends State<MenuListView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    final viewmodel = context.read<MenuViewModel>();
     if (!viewmodel.isWatchingMenus) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        viewmodel.watchMenus();
-      });
+      viewmodel.watchMenus();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final viewmodel = context.watch<MenuViewModel>();
+    final homeVM = context.watch<HomeViewModel>();
+
+    final bool isAdmin = homeVM.userRole == 'ADMIN';
+
+    final filteredMenus = viewmodel.menus.where((m) {
+      return (m.name ?? "").toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
 
     return LoadingOverlay(
       isLoading: viewmodel.isLoading,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Menús'),
-          actions: const [HomeButton()],
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: SabrosAppBar(
+          pageTitle: 'NUESTROS MENÚS',
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            context.go(AppRoutes.menuFormCreate());
-          },
-          tooltip: 'Añadir Menú',
-          child: const Icon(Icons.add),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        floatingActionButton: isAdmin
+            ? FloatingActionButton.extended(
+                onPressed: () => context.push(AppRoutes.menuFormCreate()),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                elevation: 4,
+                icon: const Icon(Icons.add),
+                label: const Text('NUEVO MENÚ'),
+              )
+            : null,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nuestros Menús',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Degusta nuestras mejores combinaciones',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildSearchBar(theme),
+            Expanded(
+              child: filteredMenus.isEmpty && !viewmodel.isLoading
+                  ? _buildEmptyState(theme)
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                      itemCount: filteredMenus.length,
+                      itemBuilder: (context, index) {
+                        final menu = filteredMenus[index];
+                        return _buildMenuCard(context, menu, theme, isAdmin);
+                      },
+                    ),
+            ),
+          ],
         ),
-        body: _buildBody(context, viewmodel),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, MenuViewModel viewmodel) {
-    if (viewmodel.errorMessage.isNotEmpty) {
-      return Center(child: Text(viewmodel.errorMessage));
-    }
-
-    if (viewmodel.menus.isEmpty) {
-      return const Center(child: Text("No hay menús disponibles"));
-    }
-
-    return ListView.builder(
-      itemCount: viewmodel.menus.length,
-      itemBuilder: (context, index) {
-        final menu = viewmodel.menus[index];
-
-        return ListTile(
-          title: Text(menu.name ?? ''),
-          subtitle: Text("${menu.price?.toStringAsFixed(2) ?? '-'} €"),
-          onTap: () {
-            if (menu.id == null || menu.id!.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('ID de menú inválido')),
-              );
-              return;
-            }
-            context.go(AppRoutes.menuDetail(menu.id!));
-          },
-        );
-      },
+  Widget _buildSearchBar(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withAlpha(12),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (val) => setState(() => _searchQuery = val),
+          style: theme.textTheme.bodyLarge,
+          decoration: InputDecoration(
+            hintText: 'Encuentra el menú ideal...',
+            hintStyle: TextStyle(
+              color: colorScheme.onSurfaceVariant.withAlpha(150),
+            ),
+            prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 15,
+              horizontal: 20,
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildMenuCard(
+    BuildContext context,
+    dynamic menu,
+    ThemeData theme,
+    bool isAdmin,
+  ) {
+    final colorScheme = theme.colorScheme;
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      onTap: () => context.push(AppRoutes.menuDetail(menu.id!)),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withAlpha(20),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.restaurant_menu,
+              color: colorScheme.primary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  menu.name ?? 'Menú sin nombre',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${menu.price?.toStringAsFixed(2) ?? "0.00"}€',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isAdmin)
+            IconButton(
+              icon: Icon(
+                Icons.edit_outlined,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+              onPressed: () => context.push(AppRoutes.menuFormEdit(menu.id!)),
+            ),
+          Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant.withAlpha(100),
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeData theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.menu_book,
+            size: 64,
+            color: theme.colorScheme.onSurface.withAlpha(30),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "No se han encontrado menús",
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
