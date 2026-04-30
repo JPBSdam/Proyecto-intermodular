@@ -76,7 +76,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
           ),
         ),
         body: _buildBody(vm, isAdmin),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 2),
+        bottomNavigationBar: const AppBottomNav(),
       ),
     );
   }
