@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 /// - Centraliza la lógica de manejo de errores de la UI durante el registro.
 
 class RegisterViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
+
+  RegisterViewModel({AuthService? authService})
+    : _authService = authService ?? AuthService();
 
   bool _isLoading = false;
   String? _errorMessage;
