@@ -56,7 +56,7 @@ class NotFoundView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-              
+
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -65,7 +65,10 @@ class NotFoundView extends StatelessWidget {
                   icon: const Icon(Icons.home_rounded),
                   label: const Text(
                     'VOLVER AL INICIO',
-                    style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
@@ -77,13 +80,15 @@ class NotFoundView extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Debug info (solo visible en desarrollo)
               if (exception != null) ...[
                 const SizedBox(height: 32),
                 Text(
                   'Error técnico:',
-                  style: theme.textTheme.labelSmall?.copyWith(color: colorScheme.outline),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colorScheme.outline,
+                  ),
                 ),
                 Text(
                   exception!,
