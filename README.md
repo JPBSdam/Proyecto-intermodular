@@ -173,9 +173,12 @@ El proyecto incluye un workflow automático que:
 
 Consulta la carpeta `docs/` para documentación detallada:
 
-- **[Provider](docs/provider.md)**: Explicación del patrón Provider para el equipo
+- **[MVVM](docs/mvvm.md)**: Arquitectura del proyecto — qué hace cada capa y por qué
+- **[Provider](docs/provider.md)**: Gestión de estado con Provider y ViewModels
 - **[Autenticación](docs/autenticacion.md)**: Sistema de autenticación con Firebase
 - **[Navegación](docs/navegacion.md)**: Sistema de rutas con GoRouter
+- **[Firestore](docs/firestore.md)**: Capa de datos — repositorios, servicios y streams en tiempo real
+- **[Roles](docs/roles.md)**: Sistema de roles ADMIN/USER y cómo cambia la interfaz
 - **[Tests](test/README.md)**: Guía completa de testing y cobertura
 
 ## 👨‍💻 Autores

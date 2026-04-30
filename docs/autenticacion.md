@@ -2,26 +2,26 @@
 
 ## 📋 Resumen
 
-El proyecto utiliza **Firebase Authentication** para gestionar usuarios con múltiples métodos de inicio de sesión.
+El proyecto usa **Firebase Authentication** para gestionar usuarios con tres métodos de inicio de sesión distintos. Toda la lógica de Firebase queda encapsulada en `AuthService`, de forma que ni las pantallas ni los ViewModels hablan directamente con Firebase.
 
 ---
 
-## 🎯 Métodos de autenticación Implementados
+## 🎯 Métodos de autenticación implementados
 
-### 1. **Email y Contraseña**
+### 1. Email y contraseña
 - Registro de nuevos usuarios
 - Inicio de sesión con credenciales
-- Validación de formato de email
-- Manejo de contraseñas
+- Recuperación de contraseña por email
+- Verificación del email tras el registro
 
-### 2. **Google Sign-In**
+### 2. Google Sign-In
 - Inicio de sesión con cuenta de Google
-- Integración con Firebase
-- Flujo OAuth completo
+- Integración OAuth completa con Firebase
 
-### 3. **Inicio de Sesión Anónimo**
-- Acceso temporal sin registro
-- Útil para probar la app
+### 3. Acceso anónimo (invitado)
+- El usuario puede explorar la app sin registrarse
+- No puede acceder a reservas ni perfil
+- Si intenta hacerlo, se le pide que inicie sesión
 
 ---
 
@@ -29,201 +29,223 @@ El proyecto utiliza **Firebase Authentication** para gestionar usuarios con múl
 
 ```
 lib/data/services/auth/
-  └── auth_service.dart                  ← Servicio de autenticación Firebase
-  
+  └── auth_service.dart          ← Toda la lógica de Firebase Auth
+
 lib/ui/viewmodels/auth/
-  ├── login_viewmodel.dart               ← Lógica de login
-  └── register_viewmodel.dart            ← Lógica de registro
-  
+  ├── login_viewmodel.dart       ← Estado y lógica de la pantalla de login
+  └── register_viewmodel.dart    ← Estado y lógica de la pantalla de registro
+
 lib/ui/views/auth/
-  ├── login_view.dart                    ← Pantalla de login
-  └── register_view.dart                 ← Pantalla de registro
-  
+  ├── login_view.dart            ← Pantalla de login (solo UI)
+  └── register_view.dart         ← Pantalla de registro (solo UI)
+
 lib/core/navigation/
-  └── auth_wrapper.dart                  ← Wrapper para rutas protegidas
+  └── app_router.dart            ← Protección de rutas con GoRouter redirect
 ```
 
 ---
 
-## 🔧 Funcionalidades del AuthService
-
-### Métodos Principales
+## 🔧 Qué expone AuthService
 
 ```dart
-// Registro
-Future<UserCredential?> signUpWithEmail({
-  required String email,
-  required String password,
-})
+class AuthService {
+  // ─── Stream ─────────────────────────────────────────────
+  // Emite el usuario cada vez que cambia el estado de sesión.
+  // GoRouter lo escucha para redirigir automáticamente.
+  Stream<User?> get authStateChanges
 
-// Login con email
-Future<UserCredential?> signInWithEmail({
-  required String email,
-  required String password,
-})
+  // ─── Estado actual ───────────────────────────────────────
+  User? get currentUser           // null si no hay sesión
+  bool get isEmailVerified        // si el email está verificado
+  bool isAnonymous()              // true si es sesión de invitado
 
-// Login con Google
-Future<UserCredential?> signInWithGoogle()
+  // ─── Autenticación ───────────────────────────────────────
+  Future<UserCredential?> signUpWithEmail({email, password})
+  Future<UserCredential?> signInWithEmail({email, password})
+  Future<UserCredential?> signInWithGoogle()
+  Future<UserCredential?> signInAnonymously()
+  Future<void> signOut()
+  Future<void> resetPassword({email})
 
-// Login anónimo
-Future<UserCredential?> signInAnonymously()
-
-// Cerrar sesión
-Future<void> signOut()
-
-// Restablecer contraseña
-Future<void> resetPassword({required String email})
-
-// Estado actual
-User? get currentUser
-Stream<User?> get authStateChanges
-bool isAnonymous()
+  // ─── Verificación de email ───────────────────────────────
+  Future<void> sendEmailVerification()
+  Future<void> reloadUser()
+}
 ```
 
 ---
 
-## 🎨 Integración con ViewModels
+## 🎨 Cómo lo usan los ViewModels
 
-Los ViewModels utilizan `AuthService` para manejar la autenticación:
+Los ViewModels llaman a `AuthService` y gestionan el estado de la UI (cargando, error):
 
 ```dart
-// LoginViewModel
 class LoginViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
-  
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
   Future<bool> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    // Lógica con manejo de estado
-    await _authService.signInWithEmail(...);
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authService.signInWithEmail(email: email, password: password);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }
 ```
 
-**Ventajas:**
-- ✅ Separación de lógica de UI y servicios
-- ✅ Gestión de estado con Provider
-- ✅ Fácil de testear
-- ✅ Manejo centralizado de errores
+La vista solo lee `isLoading` y `errorMessage` del ViewModel: no sabe nada de Firebase.
 
 ---
 
 ## 🔒 Protección de rutas
 
-### AuthWrapper
-El `AuthWrapper` protege rutas que requieren autenticación:
+La protección de rutas la hace **GoRouter** directamente, sin necesidad de un widget envolvente. El router escucha el stream de autenticación y redirige automáticamente cuando cambia el estado de sesión.
 
 ```dart
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: AuthService().authStateChanges,
-      builder: (context, snapshot) {
-        // Si está autenticado → HomeView
-        if (snapshot.hasData) {
-          return ChangeNotifierProvider(
-            create: (_) => HomeViewModel()..loadHomeData(),
-            child: const HomeView(),
-          );
-        }
-        // Si NO está autenticado → LoginView
-        return const LoginView();
-      },
-    );
+final GoRouter appRouter = GoRouter(
+  // refreshListenable avisa a GoRouter cada vez que el stream emite un nuevo valor
+  refreshListenable: GoRouterRefreshStream(
+    FirebaseAuth.instance.authStateChanges(),
+  ),
+
+  redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser;
+    final location = state.matchedLocation;
+
+    final isAuthRoute = location == '/login' || location == '/register';
+    final isProtectedRoute =
+        location.startsWith('/profile') || location.startsWith('/reservations');
+
+    // Sin usuario → no puede acceder a zonas protegidas
+    if (user == null && isProtectedRoute) return AppRoutes.login;
+
+    // Con sesión real → no tiene sentido ir al login/registro
+    if (user != null && !user.isAnonymous && isAuthRoute) return AppRoutes.home;
+
+    return null; // Sin redirección: continúa normalmente
+  },
+```
+
+**¿Qué es `GoRouterRefreshStream`?**
+GoRouter necesita un `ChangeNotifier` para saber cuándo re-evaluar las redirecciones. Pero `authStateChanges` es un `Stream`, no un `ChangeNotifier`. Esta clase puente los convierte:
+
+```dart
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
   }
+  late final StreamSubscription _subscription;
+  // ...
 }
 ```
 
-**¿Cómo funciona?**
-1. Escucha cambios en el estado de autenticación con `authStateChanges`
-2. Si hay un usuario autenticado → muestra la pantalla principal
-3. Si NO hay usuario → redirige al login
+---
+
+## 📧 Verificación de email
+
+Tras el registro, `RegisterViewModel` envía automáticamente el email de verificación:
+
+```
+Usuario completa el formulario de registro
+    ↓
+RegisterViewModel.signUpWithEmail()
+    ↓
+AuthService.signUpWithEmail() — crea la cuenta en Firebase
+    ↓
+AuthService.sendEmailVerification() — envía el email
+    ↓
+La app navega a Home y muestra un banner hasta que se verifique
+```
+
+En la pantalla Home, si el email no está verificado, `VerificationBanner` muestra un aviso con la opción de reenviar el correo. Cuando el usuario vuelve a la app después de verificarlo, `HomeViewModel.checkEmailVerification()` recarga el usuario y el banner desaparece.
 
 ---
 
-## ❌ Manejo de Errores
+## ❌ Manejo de errores
 
-El `AuthService` incluye un método `_handleAuthException` que traduce los errores de Firebase a mensajes en español:
+`AuthService` incluye un método privado `_mapAuthException` que traduce los códigos de error de Firebase a mensajes en español legibles. Así los ViewModels solo necesitan hacer `catch (e)` y mostrar `e.toString()` sin conocer los detalles de Firebase.
 
-### Errores Comunes
-
-| Código Firebase | Mensaje al Usuario |
-|----------------|-------------------|
-| `weak-password` | La contraseña es demasiado débil |
-| `email-already-in-use` | Ya existe una cuenta con este correo |
-| `invalid-email` | El correo electrónico no es válido |
-| `user-not-found` | No existe ninguna cuenta con este correo |
-| `wrong-password` | Contraseña incorrecta |
-| `too-many-requests` | Demasiados intentos. Intenta más tarde |
-| `user-disabled` | Esta cuenta ha sido deshabilitada |
+| Código Firebase | Mensaje al usuario |
+|---|---|
+| `weak-password` | La contraseña es demasiado débil. |
+| `email-already-in-use` | Ya existe una cuenta con este correo electrónico. |
+| `invalid-email` | El correo electrónico no es válido. |
+| `user-not-found` | No existe ninguna cuenta con este correo. |
+| `wrong-password` | Contraseña incorrecta. |
+| `user-disabled` | Esta cuenta ha sido deshabilitada. |
+| `too-many-requests` | Demasiados intentos. Intenta más tarde. |
+| `account-exists-with-different-credential` | Ya existe una cuenta con este correo usando otro método. |
 
 ---
 
-## 🚀 Flujo de Autenticación
+## 🚀 Flujos principales
 
-### Registro de Usuario
+### Registro
 ```
 Usuario completa formulario
     ↓
 RegisterViewModel.signUpWithEmail()
     ↓
-AuthService.signUpWithEmail()
+AuthService.signUpWithEmail() → Firebase crea usuario
     ↓
-Firebase crea usuario
+AuthService.sendEmailVerification()
     ↓
-authStateChanges emite evento
+authStateChanges emite el nuevo usuario
     ↓
-AuthWrapper detecta usuario
-    ↓
-Navega a HomeView
+GoRouter detecta el cambio y redirige a Home automáticamente
 ```
 
-### Inicio de Sesión
+### Login
 ```
-Usuario ingresa credenciales
+Usuario introduce credenciales
     ↓
 LoginViewModel.signInWithEmail()
     ↓
-AuthService.signInWithEmail()
+AuthService.signInWithEmail() → Firebase valida
     ↓
-Firebase valida credenciales
+authStateChanges emite el usuario autenticado
     ↓
-authStateChanges emite evento
-    ↓
-AuthWrapper detecta usuario
-    ↓
-Navega a HomeView
+GoRouter redirige a Home automáticamente
 ```
 
-### Cerrar Sesión
+### Cerrar sesión
 ```
-Usuario presiona "Cerrar Sesión"
+Usuario pulsa "Cerrar sesión"
     ↓
 HomeViewModel.signOut()
     ↓
-AuthService.signOut()
-    ↓
-Firebase cierra sesión
+AuthService.signOut() → cierra sesión en Google (si aplica) y en Firebase
     ↓
 authStateChanges emite null
     ↓
-AuthWrapper detecta sin usuario
-    ↓
-Navega a LoginView
+GoRouter detecta que no hay usuario y redirige a Login automáticamente
 ```
 
 ---
 
-## 💡 Buenas Prácticas Implementadas
+## 💡 Buenas prácticas aplicadas
 
-1. ✅ **Separación de responsabilidades**: Service → ViewModel → View
-2. ✅ **Manejo centralizado de errores**: Todos los errores pasan por `_handleAuthException`
-3. ✅ **Mensajes en español**: Usuario recibe mensajes claros
-4. ✅ **Estado reactivo**: `authStateChanges` actualiza UI automáticamente
-5. ✅ **Cierre de sesión completo**: Incluye Google Sign-In
-6. ✅ **Validación de usuario anónimo**: Método `isAnonymous()`
+1. **Separación de responsabilidades**: `AuthService` → `ViewModel` → `View`. Cada capa tiene una sola responsabilidad.
+2. **Manejo centralizado de errores**: todos los errores de Firebase pasan por `_mapAuthException`.
+3. **Mensajes en español**: el usuario recibe mensajes claros, no códigos técnicos.
+4. **Reactividad**: `authStateChanges` actualiza el router automáticamente sin código manual de navegación.
+5. **Cierre de sesión completo**: incluye `googleSignIn.signOut()` cuando aplica.
 
 ---
 
@@ -232,5 +254,3 @@ Navega a LoginView
 - [Firebase Authentication Docs](https://firebase.google.com/docs/auth)
 - [Google Sign-In Flutter](https://pub.dev/packages/google_sign_in)
 - [GoRouter Documentation](https://pub.dev/packages/go_router)
-
----
