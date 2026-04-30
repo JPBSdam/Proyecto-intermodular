@@ -77,7 +77,7 @@ class _UserProfileViewState extends State<UserProfileView> {
             },
           ),
         ),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+        bottomNavigationBar: const AppBottomNav(),
         body: user == null
             ? Center(
                 child: Text(
