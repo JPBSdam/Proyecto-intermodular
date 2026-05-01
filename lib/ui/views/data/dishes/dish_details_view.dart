@@ -237,7 +237,7 @@ class _DishDetailViewState extends State<DishDetailView> {
                   ),
                 ],
               ),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        bottomNavigationBar: const AppBottomNav(),
       ),
     );
   }
