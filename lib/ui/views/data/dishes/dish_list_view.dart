@@ -79,7 +79,7 @@ class _DishesListViewState extends State<DishesListView> {
             },
           ),
         ),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        bottomNavigationBar: const AppBottomNav(),
         floatingActionButton: isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.dishFormCreate()),

@@ -7,11 +7,9 @@ import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
 /// Widget de navegación inferior unificado para SabrosApp.
 /// Diferencia visualmente entre Admin (Gestión) y Usuario (Reserva).
+/// Calcula automáticamente el currentIndex basado en la ruta actual.
 class AppBottomNav extends StatelessWidget {
-  /// Índice de la pestaña actualmente seleccionada.
-  final int currentIndex;
-
-  const AppBottomNav({super.key, required this.currentIndex});
+  const AppBottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +69,25 @@ class AppBottomNav extends StatelessWidget {
         route: AppRoutes.profile,
       ),
     ];
+
+    // Calcular currentIndex basado en la ruta actual
+    final currentRoute = GoRouterState.of(context).matchedLocation;
+    int currentIndex = 0; // Default a Home
+
+    // Buscar el índice correspondiente a la ruta actual
+    for (int i = 0; i < allItems.length; i++) {
+      final item = allItems[i];
+      if (currentRoute == item.route ||
+          currentRoute.startsWith(item.route.split('/').take(2).join('/'))) {
+        currentIndex = i;
+        break;
+      }
+    }
+
+    // Asegurar que currentIndex esté dentro del rango válido
+    if (currentIndex >= allItems.length) {
+      currentIndex = 0; // Fallback a Home
+    }
 
     return Container(
       decoration: BoxDecoration(

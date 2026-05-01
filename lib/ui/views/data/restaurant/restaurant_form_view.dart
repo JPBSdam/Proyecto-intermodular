@@ -225,7 +225,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
             ),
           ),
         ),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+        bottomNavigationBar: const AppBottomNav(),
       ),
     );
   }

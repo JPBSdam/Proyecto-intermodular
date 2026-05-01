@@ -94,7 +94,7 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                       colorScheme,
                       dishViewModel.isLoading,
                     )),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        bottomNavigationBar: const AppBottomNav(),
       ),
     );
   }
