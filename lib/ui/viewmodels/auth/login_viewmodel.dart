@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 /// - Centraliza la lógica de validación y manejo de errores de la UI.
 
 class LoginViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
+
+  LoginViewModel({AuthService? authService})
+    : _authService = authService ?? AuthService();
 
   bool _isLoading = false;
   String? _errorMessage;
