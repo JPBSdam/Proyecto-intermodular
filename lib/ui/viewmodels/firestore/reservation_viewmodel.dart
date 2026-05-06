@@ -229,7 +229,9 @@ class ReservationViewModel extends ChangeNotifier {
 
     // Si la reserva falló, no seguimos
     if (_errorMessage.isNotEmpty) {
-      debugPrint('[ReservationVM] ❌ Reserva no creada, se omiten notificaciones');
+      debugPrint(
+        '[ReservationVM] ❌ Reserva no creada, se omiten notificaciones',
+      );
       return;
     }
 
@@ -242,7 +244,8 @@ class ReservationViewModel extends ChangeNotifier {
     try {
       await FcmService.enqueueForAllAdmins(
         title: '🔔 Nueva Reserva Recibida',
-        body: '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
+        body:
+            '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
         type: 'new_reservation',
       );
       debugPrint('[ReservationVM] ✅ Push FCM encolado');
