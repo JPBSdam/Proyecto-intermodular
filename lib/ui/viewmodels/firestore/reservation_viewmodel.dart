@@ -227,23 +227,38 @@ class ReservationViewModel extends ChangeNotifier {
     // 1. Creamos la reserva en Firestore
     await _run(() => _service.createReservation(r));
 
-    // 2. Notificamos a TODOS los admins via push (cola de Firestore)
-    //    Esto llega a sus dispositivos aunque tengan la app abierta/cerrada
+    // Si la reserva falló, no seguimos
+    if (_errorMessage.isNotEmpty) {
+      debugPrint('[ReservationVM] ❌ Reserva no creada, se omiten notificaciones');
+      return;
+    }
+
     final dateStr = r.reservationDate != null
         ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(r.reservationDate!)
         : 'fecha por confirmar';
     final clientName = r.userName ?? r.userEmail ?? 'Un cliente';
 
-    // Enviamos push a todos los admins para que aparezca el badge inmediatamente
-    await FcmService.enqueueForAllAdmins(
-      title: '🔔 Nueva Reserva Recibida',
-      body: '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
-      type: 'new_reservation',
-    );
+    // 2. Push a admins (cola Firestore) — independiente del email
+    try {
+      await FcmService.enqueueForAllAdmins(
+        title: '🔔 Nueva Reserva Recibida',
+        body: '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
+        type: 'new_reservation',
+      );
+      debugPrint('[ReservationVM] ✅ Push FCM encolado');
+    } catch (e) {
+      // Si falla el push, seguimos igualmente con el email
+      debugPrint('[ReservationVM] ⚠️ FCM falló (no crítico): $e');
+    }
 
-    // 3. Enviamos email a todos los admins con los detalles completos de la reserva
-    //    (funciona solo si las credenciales de EmailJS están configuradas en email_service.dart)
-    await EmailService.sendNewReservationToAdmins(r);
+    // 3. Email a admins via EmailJS — independiente del push
+    try {
+      debugPrint('[ReservationVM] 📧 Llamando a EmailService...');
+      await EmailService.sendNewReservationToAdmins(r);
+      debugPrint('[ReservationVM] ✅ EmailService completado');
+    } catch (e) {
+      debugPrint('[ReservationVM] ⚠️ EmailService falló: $e');
+    }
   }
 
   Future<void> updateReservation(Reservation r) =>

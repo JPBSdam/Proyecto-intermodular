@@ -14,7 +14,6 @@ import 'package:app_restaurante/ui/views/data/reservations/reservation_list_view
 import 'package:app_restaurante/ui/views/data/restaurant/restaurant_form_view.dart';
 // Vista de avisos/notificaciones para administradores (reservas pendientes)
 import 'package:app_restaurante/ui/views/data/notifications/admin_notifications_view.dart';
-import 'package:app_restaurante/ui/views/error/not_found_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
