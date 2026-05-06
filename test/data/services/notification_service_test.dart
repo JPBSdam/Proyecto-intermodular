@@ -33,6 +33,7 @@ class _NotifCall {
   // Nombre del metodo: 'show', 'zonedSchedule' o 'cancel'
   final String method;
   // Argumentos clave capturados
+
   final Map<String, dynamic> args;
 
   _NotifCall(this.method, this.args);
