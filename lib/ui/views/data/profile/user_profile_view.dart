@@ -77,6 +77,7 @@ class _UserProfileViewState extends State<UserProfileView> {
             },
           ),
         ),
+        // AppBottomNav calcula el índice activo automáticamente por la ruta actual
         bottomNavigationBar: const AppBottomNav(),
         body: user == null
             ? Center(
@@ -294,6 +295,8 @@ class _UserProfileViewState extends State<UserProfileView> {
           _buildActivityCard(
             icon: Icons.calendar_today_outlined,
             title: 'Mis reservas',
+            // Corregido: la ruta '/reservations/my' no existía,
+            // usamos AppRoutes.reservations que sí está registrada en el router
             onTap: () => context.go(AppRoutes.reservations),
           ),
           const SizedBox(height: 12),
