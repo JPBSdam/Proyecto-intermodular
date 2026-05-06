@@ -25,6 +25,8 @@ dependencies:
   timezone: ^0.9.4
   flutter_timezone: ^5.0.2
   firebase_messaging: ^16.1.1
+  # Paquete HTTP para llamar a la API REST de EmailJS (emails gratuitos sin servidor)
+  http: ^1.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

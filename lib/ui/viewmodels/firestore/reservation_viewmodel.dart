@@ -7,6 +7,8 @@ import 'package:app_restaurante/data/services/firestore/reservation_service.dart
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
 // Importamos FcmService para escribir en la cola de Firestore (push en background)
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
+// Importamos EmailService para enviar emails a los admins cuando llega una reserva nueva
+import 'package:app_restaurante/data/services/notifications/email_service.dart';
 
 /// ViewModel de reservas con gestión de flujo estable.
 class ReservationViewModel extends ChangeNotifier {
@@ -18,6 +20,16 @@ class ReservationViewModel extends ChangeNotifier {
 
   int get pendingCount =>
       _reservations.where((r) => r.state == ReservationStatus.pending).length;
+
+  // Conjunto de IDs de reservas "nuevas" que el admin aún no ha visto.
+  // Se llena cuando llega una reserva nueva con estado pending mientras la app está abierta.
+  // Se vacía cuando el admin abre la vista de notificaciones (markAllAsSeen).
+  final Set<String> _newReservationIds = {};
+  // Número de reservas nuevas no vistas por el admin (controla el badge de la campana)
+  int get newReservationsCount => _newReservationIds.length;
+
+  // Conjunto de IDs de reservas que ya conocíamos (para detectar las realmente nuevas)
+  final Set<String> _knownReservationIds = {};
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -65,10 +77,16 @@ class ReservationViewModel extends ChangeNotifier {
     _sub?.cancel();
     _sub = stream.listen(
       (list) {
-        // En la primera emisión solo guardamos los estados actuales como base,
-        // sin disparar notificaciones (así evitamos spam al abrir la app)
         if (!_isFirstLoad) {
+          // Detectamos cambios de estado (confirmada/cancelada) para notificar al cliente
           _checkReservationStateChanges(list);
+          // Detectamos reservas nuevas (para notificar al admin con badge y push)
+          _checkForNewReservations(list);
+        } else {
+          // Primera carga: solo registramos los IDs existentes como base de referencia
+          for (final r in list) {
+            if (r.id != null) _knownReservationIds.add(r.id!);
+          }
         }
         // Actualizamos el mapa de estados conocidos con los datos recién llegados
         _updatePreviousStates(list);
@@ -84,6 +102,34 @@ class ReservationViewModel extends ChangeNotifier {
         _currentScope = null;
       },
     );
+  }
+
+  /// Detecta reservas nuevas (IDs no conocidos) con estado pending y actualiza el badge.
+  /// Solo relevante para el admin que tiene watchAll() activo.
+  void _checkForNewReservations(List<Reservation> updatedList) {
+    for (final reservation in updatedList) {
+      final id = reservation.id;
+      if (id == null) continue;
+
+      // Si el ID no estaba en nuestro conjunto → es una reserva nueva
+      if (!_knownReservationIds.contains(id)) {
+        // Añadimos a conocidos para no procesarla de nuevo
+        _knownReservationIds.add(id);
+
+        // Solo contamos las nuevas pendientes (estado pending = acción requerida del admin)
+        if (reservation.state == ReservationStatus.pending) {
+          _newReservationIds.add(id);
+        }
+      }
+    }
+  }
+
+  /// Marca todas las reservas nuevas como vistas.
+  /// Se llama cuando el admin abre la vista de notificaciones/avisos.
+  void markAllAsSeen() {
+    // Vaciamos el conjunto de nuevas → badge vuelve a 0
+    _newReservationIds.clear();
+    notifyListeners();
   }
 
   /// Compara el estado actual de cada reserva con el que tenía antes.
@@ -177,8 +223,28 @@ class ReservationViewModel extends ChangeNotifier {
   Future<void> completeMultipleReservations(List<String> ids) =>
       _run(() => _service.updateStatuses(ids, ReservationStatus.completed));
 
-  Future<void> addReservation(Reservation r) =>
-      _run(() => _service.createReservation(r));
+  Future<void> addReservation(Reservation r) async {
+    // 1. Creamos la reserva en Firestore
+    await _run(() => _service.createReservation(r));
+
+    // 2. Notificamos a TODOS los admins via push (cola de Firestore)
+    //    Esto llega a sus dispositivos aunque tengan la app abierta/cerrada
+    final dateStr = r.reservationDate != null
+        ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(r.reservationDate!)
+        : 'fecha por confirmar';
+    final clientName = r.userName ?? r.userEmail ?? 'Un cliente';
+
+    // Enviamos push a todos los admins para que aparezca el badge inmediatamente
+    await FcmService.enqueueForAllAdmins(
+      title: '🔔 Nueva Reserva Recibida',
+      body: '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
+      type: 'new_reservation',
+    );
+
+    // 3. Enviamos email a todos los admins con los detalles completos de la reserva
+    //    (funciona solo si las credenciales de EmailJS están configuradas en email_service.dart)
+    await EmailService.sendNewReservationToAdmins(r);
+  }
 
   Future<void> updateReservation(Reservation r) =>
       _run(() => _service.updateReservation(r));

@@ -203,6 +203,39 @@ class FcmService {
     });
   }
 
+  // ─── Notificar a TODOS los admins (reserva nueva) ────────────────────────
+
+  /// Escribe una notificación en la cola para TODOS los usuarios con role='ADMIN'.
+  /// Se llama cuando un cliente crea una reserva nueva, para que todos los admins
+  /// reciban un push inmediato y vean el badge en la barra de navegación.
+  static Future<void> enqueueForAllAdmins({
+    required String title,
+    required String body,
+    required String type,
+  }) async {
+    try {
+      // Consultamos Firestore para obtener los IDs de todos los admins
+      final snapshot = await _db
+          .collection('users')
+          .where('role', isEqualTo: 'ADMIN')
+          .get();
+
+      // Encolamos la notificación para cada admin individualmente
+      for (final doc in snapshot.docs) {
+        await enqueueForUser(
+          toUserId: doc.id,
+          title: title,
+          body: body,
+          type: type,
+        );
+      }
+    } catch (e) {
+      // Si falla la consulta no interrumpimos el flujo de reserva
+      // ignore: avoid_print
+      print('[FcmService] Error al notificar admins: $e');
+    }
+  }
+
   /// Obtiene el usuario actualmente autenticado en Firebase Auth.
   /// Método de utilidad para usarlo desde otros ViewModels.
   static User? get currentUser => FirebaseAuth.instance.currentUser;

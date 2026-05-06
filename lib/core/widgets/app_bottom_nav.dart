@@ -62,6 +62,18 @@ class AppBottomNav extends StatelessWidget {
                 route: AppRoutes.reservationFormCreate(),
               ),
 
+      // Pestaña de AVISOS: solo visible para admins.
+      // El badge muestra las reservas nuevas que aún no han sido vistas.
+      if (isAdmin)
+        _BottomNavItem(
+          icon: Icons.notifications_outlined,
+          activeIcon: Icons.notifications,
+          label: 'AVISOS',
+          route: AppRoutes.adminNotifications,
+          // newReservationsCount: 0 cuando el admin ya ha abierto la vista
+          badgeCount: reservationVM.newReservationsCount,
+        ),
+
       _BottomNavItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
