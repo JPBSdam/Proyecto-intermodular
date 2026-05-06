@@ -13,10 +13,11 @@ import 'package:app_restaurante/data/model/reservation.dart';
 
 class EmailService {
   // ─── Credenciales de EmailJS ─────────────────────────────────────────────
-  static const String _serviceId  = 'service_5y9zjld';        // EmailJS Service ID
-  static const String _templateId = 'template_7xonz2m';       // EmailJS Template ID
-  static const String _publicKey  = 'N_djxO1LI2WPKf-Jk';      // EmailJS Public Key
-  static const String _privateKey = 'JxxlroAkO5CYOb_M74yqF';  // EmailJS Private Key (modo no-browser)
+  static const String _serviceId = 'service_5y9zjld'; // EmailJS Service ID
+  static const String _templateId = 'template_7xonz2m'; // EmailJS Template ID
+  static const String _publicKey = 'N_djxO1LI2WPKf-Jk'; // EmailJS Public Key
+  static const String _privateKey =
+      'JxxlroAkO5CYOb_M74yqF'; // EmailJS Private Key (modo no-browser)
 
   // URL del endpoint de EmailJS (no cambiar)
   static const String _apiUrl = 'https://api.emailjs.com/api/v1.0/email/send';
@@ -25,7 +26,9 @@ class EmailService {
 
   /// Obtiene los emails de todos los admins desde Firestore y envía un email
   /// a cada uno. El campo "To Email" de la plantilla de EmailJS debe ser {{to_email}}.
-  static Future<void> sendNewReservationToAdmins(Reservation reservation) async {
+  static Future<void> sendNewReservationToAdmins(
+    Reservation reservation,
+  ) async {
     // 1. Buscamos todos los usuarios con role == 'ADMIN' en Firestore
     final adminEmails = await _fetchAdminEmails();
 
@@ -36,12 +39,15 @@ class EmailService {
 
     // 2. Formateamos la fecha para que sea legible en el email
     final dateStr = reservation.reservationDate != null
-        ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(reservation.reservationDate!)
+        ? DateFormat(
+            "dd/MM/yyyy 'a las' HH:mm",
+          ).format(reservation.reservationDate!)
         : 'fecha por confirmar';
 
-    final clientName = reservation.userName ?? reservation.userEmail ?? 'Cliente';
-    final seats      = reservation.seats?.toString() ?? '?';
-    final comments   = reservation.comments?.isNotEmpty == true
+    final clientName =
+        reservation.userName ?? reservation.userEmail ?? 'Cliente';
+    final seats = reservation.seats?.toString() ?? '?';
+    final comments = reservation.comments?.isNotEmpty == true
         ? reservation.comments!
         : 'Sin comentarios adicionales';
 
@@ -49,20 +55,22 @@ class EmailService {
     //    (EmailJS free plan no soporta múltiples destinatarios en 1 llamada)
     for (final adminEmail in adminEmails) {
       debugPrint('[EmailService] 📧 Enviando email a admin: $adminEmail');
-      await _send(templateParams: {
-        // {{to_email}} → destinatario dinámico (campo "To Email" de la plantilla)
-        'to_email':         adminEmail,
-        // {{time}} → aparece en gris bajo "SabrosApp" en el email
-        'time':             dateStr,
-        // {{client_name}} → nombre del cliente en el cuerpo del email
-        'client_name':      clientName,
-        // {{reservation_date}} → fecha y hora de la reserva
-        'reservation_date': dateStr,
-        // {{seats}} → número de comensales
-        'seats':            seats,
-        // {{comments}} → peticiones especiales del cliente
-        'comments':         comments,
-      });
+      await _send(
+        templateParams: {
+          // {{to_email}} → destinatario dinámico (campo "To Email" de la plantilla)
+          'to_email': adminEmail,
+          // {{time}} → aparece en gris bajo "SabrosApp" en el email
+          'time': dateStr,
+          // {{client_name}} → nombre del cliente en el cuerpo del email
+          'client_name': clientName,
+          // {{reservation_date}} → fecha y hora de la reserva
+          'reservation_date': dateStr,
+          // {{seats}} → número de comensales
+          'seats': seats,
+          // {{comments}} → peticiones especiales del cliente
+          'comments': comments,
+        },
+      );
     }
   }
 
@@ -91,25 +99,31 @@ class EmailService {
   // ─── Llamada HTTP al API de EmailJS ──────────────────────────────────────
 
   /// Realiza el POST al endpoint de EmailJS con los parámetros de la plantilla.
-  static Future<void> _send({required Map<String, String> templateParams}) async {
+  static Future<void> _send({
+    required Map<String, String> templateParams,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'service_id':      _serviceId,
-          'template_id':     _templateId,
-          'user_id':         _publicKey,
+          'service_id': _serviceId,
+          'template_id': _templateId,
+          'user_id': _publicKey,
           // accessToken con la Private Key: requerido en modo no-browser
-          'accessToken':     _privateKey,
+          'accessToken': _privateKey,
           'template_params': templateParams,
         }),
       );
 
       if (response.statusCode != 200) {
-        debugPrint('[EmailService] ❌ Error ${response.statusCode}: ${response.body}');
+        debugPrint(
+          '[EmailService] ❌ Error ${response.statusCode}: ${response.body}',
+        );
       } else {
-        debugPrint('[EmailService] ✅ Email enviado correctamente a ${templateParams['to_email']}');
+        debugPrint(
+          '[EmailService] ✅ Email enviado correctamente a ${templateParams['to_email']}',
+        );
       }
     } catch (e) {
       debugPrint('[EmailService] Excepción al enviar email: $e');

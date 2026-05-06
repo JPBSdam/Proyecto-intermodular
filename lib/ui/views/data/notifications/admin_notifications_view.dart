@@ -47,24 +47,22 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
 
     // Filtramos solo las reservas pendientes y las ordenamos por fecha de creación
     // (las más recientes arriba, que son las que requieren atención inmediata)
-    final pendingReservations = resVM.reservations
-        .where((r) => r.state == ReservationStatus.pending)
-        .toList()
-      ..sort((a, b) {
-        // Ordenamos por createdAt descendente; si no hay fecha usamos DateTime.now()
-        final aDate = a.createdAt ?? DateTime(2000);
-        final bDate = b.createdAt ?? DateTime(2000);
-        return bDate.compareTo(aDate);
-      });
+    final pendingReservations =
+        resVM.reservations
+            .where((r) => r.state == ReservationStatus.pending)
+            .toList()
+          ..sort((a, b) {
+            // Ordenamos por createdAt descendente; si no hay fecha usamos DateTime.now()
+            final aDate = a.createdAt ?? DateTime(2000);
+            final bDate = b.createdAt ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
 
     return LoadingOverlay(
       isLoading: resVM.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: SabrosAppBar(
-          pageTitle: 'AVISOS',
-          centerTitle: true,
-        ),
+        appBar: SabrosAppBar(pageTitle: 'AVISOS', centerTitle: true),
         bottomNavigationBar: const AppBottomNav(),
         body: pendingReservations.isEmpty
             ? _buildEmptyState(colorScheme)
@@ -105,10 +103,7 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
           const SizedBox(height: 8),
           Text(
             'No hay reservas pendientes de confirmar',
-            style: TextStyle(
-              color: colorScheme.onSurfaceVariant,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],
@@ -158,9 +153,8 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
               // Al cancelar: actualiza Firestore + cancela recordatorio
               onCancel: () => _cancel(list[i], resVM),
               // Al tocar la tarjeta: navega al detalle completo de la reserva
-              onTap: () => context.push(
-                AppRoutes.reservationDetail(list[i].id!),
-              ),
+              onTap: () =>
+                  context.push(AppRoutes.reservationDetail(list[i].id!)),
             ),
           ),
         ),
@@ -170,7 +164,10 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
 
   // ─── Acciones rápidas ─────────────────────────────────────────────────────
 
-  Future<void> _confirm(Reservation reservation, ReservationViewModel vm) async {
+  Future<void> _confirm(
+    Reservation reservation,
+    ReservationViewModel vm,
+  ) async {
     // Mostramos diálogo de confirmación para evitar toques accidentales
     final ok = await showDialog<bool>(
       context: context,
@@ -396,11 +393,7 @@ class _NotificationCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onCancel,
-                  icon: Icon(
-                    Icons.close,
-                    size: 16,
-                    color: colorScheme.error,
-                  ),
+                  icon: Icon(Icons.close, size: 16, color: colorScheme.error),
                   label: Text(
                     'CANCELAR',
                     style: TextStyle(color: colorScheme.error),
@@ -475,4 +468,3 @@ class _InfoChip extends StatelessWidget {
     );
   }
 }
-
