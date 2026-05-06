@@ -1,84 +1,66 @@
 // Servicio de email gratuito para SabrosApp usando EmailJS.
 //
-// ¿Por qué EmailJS?
-//  - 100% gratuito: 200 emails/mes sin servidor ni tarjeta de crédito
-//  - Funciona desde el propio cliente Flutter (llamada HTTP directa)
-//  - Compatible con el plan Spark de Firebase (sin Cloud Functions)
-//
-// ─── SETUP (5 minutos) ──────────────────────────────────────────────────────
-//  1. Ve a https://www.emailjs.com → crea cuenta gratuita
-//  2. "Add New Service" → conecta tu Gmail → copia el Service ID
-//  3. "Email Templates" → crea plantilla con estas variables:
-//       {{to_email}}         → email del admin destinatario
-//       {{client_name}}      → nombre del cliente
-//       {{reservation_date}} → fecha y hora de la reserva
-//       {{seats}}            → número de comensales
-//       {{comments}}         → comentarios especiales
-//  4. Copia el Template ID
-//  5. Cuenta → "API Keys" → copia tu Public Key
-//  6. Sustituye las 3 constantes de abajo con tus valores reales
+// El destinatario se obtiene dinámicamente de Firestore (todos los usuarios ADMIN).
+// En la plantilla de EmailJS, el campo "To Email" debe ser {{to_email}}.
 // ────────────────────────────────────────────────────────────────────────────
 
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
 import 'package:app_restaurante/data/model/reservation.dart';
 
 class EmailService {
   // ─── Credenciales de EmailJS ─────────────────────────────────────────────
-  // Sustituye estos valores con los de TU cuenta de EmailJS
-  static const String _serviceId  = 'service_w1yyd0c';   // EmailJS Service ID
-  static const String _templateId = 'template_7xonz2m';  // EmailJS Template ID
-  static const String _publicKey  = 'N_djxO1LI2WPKf-Jk';   // EmailJS Public Key
+  static const String _serviceId  = 'service_5y9zjld';        // EmailJS Service ID
+  static const String _templateId = 'template_7xonz2m';       // EmailJS Template ID
+  static const String _publicKey  = 'N_djxO1LI2WPKf-Jk';      // EmailJS Public Key
+  static const String _privateKey = 'JxxlroAkO5CYOb_M74yqF';  // EmailJS Private Key (modo no-browser)
 
   // URL del endpoint de EmailJS (no cambiar)
   static const String _apiUrl = 'https://api.emailjs.com/api/v1.0/email/send';
 
-  // ─── Enviar email de nueva reserva a todos los admins ────────────────────
+  // ─── Enviar email de nueva reserva a TODOS los admins ────────────────────
 
-  /// Envía un email a TODOS los admins cuando un cliente hace una nueva reserva.
-  /// Se llama desde ReservationViewModel.addReservation() al crear la reserva.
+  /// Obtiene los emails de todos los admins desde Firestore y envía un email
+  /// a cada uno. El campo "To Email" de la plantilla de EmailJS debe ser {{to_email}}.
   static Future<void> sendNewReservationToAdmins(Reservation reservation) async {
-    // Si no hay credenciales configuradas aún, salimos sin error
-    if (_serviceId == 'YOUR_SERVICE_ID') return;
-
-    // 1. Obtenemos la lista de emails de todos los admins desde Firestore
+    // 1. Buscamos todos los usuarios con role == 'ADMIN' en Firestore
     final adminEmails = await _fetchAdminEmails();
-    if (adminEmails.isEmpty) return;
+
+    if (adminEmails.isEmpty) {
+      debugPrint('[EmailService] ⚠️ No se encontraron admins en Firestore');
+      return;
+    }
 
     // 2. Formateamos la fecha para que sea legible en el email
     final dateStr = reservation.reservationDate != null
         ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(reservation.reservationDate!)
         : 'fecha por confirmar';
 
-    // 3. Nombre del cliente que hizo la reserva
     final clientName = reservation.userName ?? reservation.userEmail ?? 'Cliente';
-
-    // 4. Número de comensales
-    final seats = reservation.seats?.toString() ?? '?';
-
-    // 5. Comentarios adicionales
-    final comments = reservation.comments?.isNotEmpty == true
+    final seats      = reservation.seats?.toString() ?? '?';
+    final comments   = reservation.comments?.isNotEmpty == true
         ? reservation.comments!
         : 'Sin comentarios adicionales';
 
-    // 6. Enviamos un email individualmente a cada admin
+    // 3. Enviamos un email a cada admin individualmente
     //    (EmailJS free plan no soporta múltiples destinatarios en 1 llamada)
     for (final adminEmail in adminEmails) {
+      debugPrint('[EmailService] 📧 Enviando email a admin: $adminEmail');
       await _send(templateParams: {
-        // Destinatario (campo "To Email" de la plantilla EmailJS → {{to_email}})
+        // {{to_email}} → destinatario dinámico (campo "To Email" de la plantilla)
         'to_email':         adminEmail,
-        // {{time}} → momento en que se creó la reserva (aparece en gris bajo el título)
+        // {{time}} → aparece en gris bajo "SabrosApp" en el email
         'time':             dateStr,
-        // {{client_name}} → nombre del cliente que aparece en la lista del email
+        // {{client_name}} → nombre del cliente en el cuerpo del email
         'client_name':      clientName,
-        // {{reservation_date}} → fecha y hora de la reserva solicitada
+        // {{reservation_date}} → fecha y hora de la reserva
         'reservation_date': dateStr,
         // {{seats}} → número de comensales
         'seats':            seats,
-        // {{comments}} → comentarios especiales del cliente
+        // {{comments}} → peticiones especiales del cliente
         'comments':         comments,
       });
     }
@@ -86,7 +68,7 @@ class EmailService {
 
   // ─── Obtener emails de los admins desde Firestore ────────────────────────
 
-  /// Consulta Firestore para obtener los emails de todos los usuarios ADMIN.
+  /// Consulta la colección 'users' buscando documentos con role == 'ADMIN'.
   static Future<List<String>> _fetchAdminEmails() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -94,14 +76,14 @@ class EmailService {
           .where('role', isEqualTo: 'ADMIN')
           .get();
 
-      // Extraemos el campo 'email', filtrando los nulos
+      // Extraemos el campo 'email', descartando nulos o vacíos
       return snapshot.docs
           .map((doc) => doc.data()['email'] as String?)
           .whereType<String>()
+          .where((e) => e.isNotEmpty)
           .toList();
     } catch (e) {
-      // ignore: avoid_print
-      print('[EmailService] Error al obtener emails de admins: $e');
+      debugPrint('[EmailService] Error al obtener admins: $e');
       return [];
     }
   }
@@ -118,22 +100,19 @@ class EmailService {
           'service_id':      _serviceId,
           'template_id':     _templateId,
           'user_id':         _publicKey,
+          // accessToken con la Private Key: requerido en modo no-browser
+          'accessToken':     _privateKey,
           'template_params': templateParams,
         }),
       );
 
       if (response.statusCode != 200) {
-        // ignore: avoid_print
-        print('[EmailService] Error ${response.statusCode}: ${response.body}');
+        debugPrint('[EmailService] ❌ Error ${response.statusCode}: ${response.body}');
+      } else {
+        debugPrint('[EmailService] ✅ Email enviado correctamente a ${templateParams['to_email']}');
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('[EmailService] Excepción al enviar email: $e');
+      debugPrint('[EmailService] Excepción al enviar email: $e');
     }
   }
 }
-
-
-
-
-
