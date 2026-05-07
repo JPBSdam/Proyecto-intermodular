@@ -3,11 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
-// Importamos el servicio de notificaciones para disparar avisos en tiempo real
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
-// Importamos FcmService para escribir en la cola de Firestore (push en background)
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
-// Importamos EmailService para enviar emails a los admins cuando llega una reserva nueva
 import 'package:app_restaurante/data/services/notifications/email_service.dart';
 
 /// ViewModel de reservas con gestión de flujo estable.
@@ -21,14 +18,27 @@ class ReservationViewModel extends ChangeNotifier {
   int get pendingCount =>
       _reservations.where((r) => r.state == ReservationStatus.pending).length;
 
+  /// Retorna todas las reservas PENDING ordenadas de más reciente a más antigua.
+  /// Se usa en AdminNotificationsView para no recalcular en el build().
+  /// Patrón arquitectura: ViewModels calculan lógica, vistas solo pintan.
+  List<Reservation> get pendingReservations {
+    final pending = _reservations
+        .where((r) => r.state == ReservationStatus.pending)
+        .toList();
+    // Ordenamos por createdAt descendente (más recientes primero)
+    pending.sort((a, b) {
+      final aDate = a.createdAt ?? DateTime(2000);
+      final bDate = b.createdAt ?? DateTime(2000);
+      return bDate.compareTo(aDate);
+    });
+    return pending;
+  }
+
   // Conjunto de IDs de reservas "nuevas" que el admin aún no ha visto.
   // Se llena cuando llega una reserva nueva con estado pending mientras la app está abierta.
   // Se vacía cuando el admin abre la vista de notificaciones (markAllAsSeen).
   final Set<String> _newReservationIds = {};
-  // Número de reservas nuevas no vistas por el admin (controla el badge de la campana)
   int get newReservationsCount => _newReservationIds.length;
-
-  // Conjunto de IDs de reservas que ya conocíamos (para detectar las realmente nuevas)
   final Set<String> _knownReservationIds = {};
 
   bool _isLoading = false;
@@ -223,45 +233,50 @@ class ReservationViewModel extends ChangeNotifier {
   Future<void> completeMultipleReservations(List<String> ids) =>
       _run(() => _service.updateStatuses(ids, ReservationStatus.completed));
 
+  /// Crea una nueva reserva en Firestore y notifica a los admins.
+  ///
+  /// Flujo completo (sincrónico, con LoadingOverlay activo):
+  /// 1. Guarda la reserva en Firestore
+  /// 2. Encola notificación push a todos los admins (vía Firestore queue)
+  /// 3. Envía email a todos los admins (vía EmailJS)
+  ///
+  /// Mientras se ejecuta: `isLoading = true` → LoadingOverlay bloquea clicks múltiples
+  /// Después: `isLoading = false` → usuario ve snackbar (éxito/error) y puede navegar
+  ///
+  /// Si alguna sección falla (FCM o email), continúa sin interrumpir.
   Future<void> addReservation(Reservation r) async {
-    // 1. Creamos la reserva en Firestore
-    await _run(() => _service.createReservation(r));
+    await _run(() async {
+      // Paso 1: Crear reserva en Firestore
+      await _service.createReservation(r);
 
-    // Si la reserva falló, no seguimos
-    if (_errorMessage.isNotEmpty) {
-      debugPrint(
-        '[ReservationVM] ❌ Reserva no creada, se omiten notificaciones',
-      );
-      return;
-    }
+      final dateStr = r.reservationDate != null
+          ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(r.reservationDate!)
+          : 'fecha por confirmar';
+      final clientName = r.userName ?? r.userEmail ?? 'Un cliente';
 
-    final dateStr = r.reservationDate != null
-        ? DateFormat("dd/MM/yyyy 'a las' HH:mm").format(r.reservationDate!)
-        : 'fecha por confirmar';
-    final clientName = r.userName ?? r.userEmail ?? 'Un cliente';
+      // Paso 2: Push a admins (cola Firestore) — independiente del email
+      try {
+        await FcmService.enqueueForAllAdmins(
+          title: '🔔 Nueva Reserva Recibida',
+          body:
+              '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
+          type: 'new_reservation',
+        );
+        debugPrint('[ReservationVM] ✅ Push FCM encolado');
+      } catch (e) {
+        // Si falla el push, seguimos igualmente con el email
+        debugPrint('[ReservationVM] ⚠️ FCM falló (no crítico): $e');
+      }
 
-    // 2. Push a admins (cola Firestore) — independiente del email
-    try {
-      await FcmService.enqueueForAllAdmins(
-        title: '🔔 Nueva Reserva Recibida',
-        body:
-            '$clientName solicita mesa para ${r.seats ?? '?'} personas el $dateStr',
-        type: 'new_reservation',
-      );
-      debugPrint('[ReservationVM] ✅ Push FCM encolado');
-    } catch (e) {
-      // Si falla el push, seguimos igualmente con el email
-      debugPrint('[ReservationVM] ⚠️ FCM falló (no crítico): $e');
-    }
-
-    // 3. Email a admins via EmailJS — independiente del push
-    try {
-      debugPrint('[ReservationVM] 📧 Llamando a EmailService...');
-      await EmailService.sendNewReservationToAdmins(r);
-      debugPrint('[ReservationVM] ✅ EmailService completado');
-    } catch (e) {
-      debugPrint('[ReservationVM] ⚠️ EmailService falló: $e');
-    }
+      // Paso 3: Email a admins via EmailJS — independiente del push
+      try {
+        debugPrint('[ReservationVM] 📧 Llamando a EmailService...');
+        await EmailService.sendNewReservationToAdmins(r);
+        debugPrint('[ReservationVM] ✅ EmailService completado');
+      } catch (e) {
+        debugPrint('[ReservationVM] ⚠️ EmailService falló: $e');
+      }
+    });
   }
 
   Future<void> updateReservation(Reservation r) =>

@@ -53,7 +53,9 @@ class AppBottomNav extends StatelessWidget {
                 activeIcon: Icons.assignment,
                 label: 'RESERVAS',
                 route: AppRoutes.reservations,
-                badgeCount: reservationVM.pendingCount,
+                // No mostramos badge aquí: RESERVAS es el historial completo
+                // (pending, confirmed, completed, cancelled).
+                // El badge de "nuevas no vistas" solo tiene sentido en AVISOS.
               )
             : _BottomNavItem(
                 icon: Icons.calendar_today_outlined,

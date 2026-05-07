@@ -1,24 +1,3 @@
-// Servicio de Firebase Cloud Messaging (FCM) para SabrosApp.
-//
-// ¿Cómo funciona el sistema de notificaciones push GRATUITO?
-// ─────────────────────────────────────────────────────────────
-//  Sin Cloud Functions (de pago), usamos Firestore como "buzón de notificaciones":
-//
-//  Admin confirma reserva
-//          │
-//          ▼
-//  Escribimos en Firestore → colección "notification_queue"
-//          │
-//          ├─ App en PRIMER PLANO   → stream de Firestore lo detecta al instante
-//          ├─ App en SEGUNDO PLANO  → stream sigue activo  → local notification
-//          └─ App CERRADA           → al re-abrir la app   → se procesa la cola
-//
-//  FCM se usa para:
-//   • Recibir notificaciones enviadas manualmente desde Firebase Console (tests)
-//   • Mostrar local notifications cuando llega un mensaje FCM con la app abierta
-//   • En el futuro: si se añade un backend barato (Railway, Render free tier)
-//     podría enviar push con app cerrada automáticamente
-
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
