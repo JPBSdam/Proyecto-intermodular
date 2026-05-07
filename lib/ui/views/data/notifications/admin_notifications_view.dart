@@ -30,13 +30,8 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
   @override
   void initState() {
     super.initState();
-    // Al abrir la vista, reseteamos el badge (el admin ha visto los avisos)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        // markAllAsSeen() pone newReservationsCount a 0 → desaparece el badge
-        context.read<ReservationViewModel>().markAllAsSeen();
-      }
-    });
+    // No reseteamos el badge aquí. Solo lo reseteamos cuando no hay nada pendiente
+    // (ver _buildEmptyState)
   }
 
   @override
@@ -45,18 +40,8 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Filtramos solo las reservas pendientes y las ordenamos por fecha de creación
-    // (las más recientes arriba, que son las que requieren atención inmediata)
-    final pendingReservations =
-        resVM.reservations
-            .where((r) => r.state == ReservationStatus.pending)
-            .toList()
-          ..sort((a, b) {
-            // Ordenamos por createdAt descendente; si no hay fecha usamos DateTime.now()
-            final aDate = a.createdAt ?? DateTime(2000);
-            final bDate = b.createdAt ?? DateTime(2000);
-            return bDate.compareTo(aDate);
-          });
+    // ViewModel calcula el filtrado y ordenamiento → vista solo pinta
+    final pendingReservations = resVM.pendingReservations;
 
     return LoadingOverlay(
       isLoading: resVM.isLoading,
@@ -74,6 +59,13 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
   // ─── Estado vacío (ninguna reserva pendiente) ─────────────────────────────
 
   Widget _buildEmptyState(ColorScheme colorScheme) {
+    // Cuando no hay reservas pendientes, marcamos todas como vistas (resetea badge)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ReservationViewModel>().markAllAsSeen();
+      }
+    });
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
