@@ -59,7 +59,6 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: colorScheme.surface,
           elevation: 0,
           centerTitle: true,
           leading: IconButton(

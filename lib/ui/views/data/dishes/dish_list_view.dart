@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
@@ -83,74 +84,78 @@ class _DishesListViewState extends State<DishesListView> {
         floatingActionButton: isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.dishFormCreate()),
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                elevation: 4,
                 icon: const Icon(Icons.add),
-                label: const Text('NUEVO PLATO'),
+                label: const Text('Añadir plato'),
               )
             : null,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Nuestra Carta',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Explora nuestros sabores seleccionados',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildSearchBar(theme),
-            if (viewmodel.errorMessage.isNotEmpty)
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.webHPad(context)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  viewmodel.errorMessage,
-                  style: TextStyle(color: colorScheme.error),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Nuestra Carta',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Explora nuestros sabores seleccionados',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            Expanded(
-              child: viewmodel.dishes.isEmpty && !viewmodel.isLoading
-                  ? _buildEmptyState(theme)
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                      itemCount: sortedCategories.length,
-                      itemBuilder: (context, catIndex) {
-                        final category = sortedCategories[catIndex];
-                        final categoryDishes = groupedDishes[category]!;
+              _buildSearchBar(theme),
+              if (viewmodel.errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    viewmodel.errorMessage,
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ),
+              Expanded(
+                child: viewmodel.dishes.isEmpty && !viewmodel.isLoading
+                    ? _buildEmptyState(theme)
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                        itemCount: sortedCategories.length,
+                        itemBuilder: (context, catIndex) {
+                          final category = sortedCategories[catIndex];
+                          final categoryDishes = groupedDishes[category]!;
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildCategoryHeader(category, theme),
-                            ...categoryDishes.map(
-                              (dish) =>
-                                  _buildDishCard(context, dish, theme, isAdmin),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        );
-                      },
-                    ),
-            ),
-          ],
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCategoryHeader(category, theme),
+                              ...categoryDishes.map(
+                                (dish) => _buildDishCard(
+                                  context,
+                                  dish,
+                                  theme,
+                                  isAdmin,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -194,7 +199,6 @@ class _DishesListViewState extends State<DishesListView> {
   }
 
   Widget _buildCategoryHeader(String category, ThemeData theme) {
-    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -203,7 +207,7 @@ class _DishesListViewState extends State<DishesListView> {
             width: 4,
             height: 20,
             decoration: BoxDecoration(
-              color: colorScheme.primary,
+              color: AppTheme.brandDetail,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -213,7 +217,7 @@ class _DishesListViewState extends State<DishesListView> {
             style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
-              color: colorScheme.primary,
+              color: AppTheme.brandDetail,
             ),
           ),
         ],
@@ -242,6 +246,23 @@ class _DishesListViewState extends State<DishesListView> {
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                    loadingBuilder: (_, child, progress) => progress == null
+                        ? child
+                        : Container(
+                            width: 60,
+                            height: 60,
+                            color: AppTheme.brandPrimary.withAlpha(20),
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 60,
+                      height: 60,
+                      color: AppTheme.brandPrimary.withAlpha(20),
+                      child: const Icon(Icons.restaurant, size: 24),
+                    ),
                   )
                 : Container(
                     width: 60,

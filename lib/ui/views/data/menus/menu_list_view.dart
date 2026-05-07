@@ -64,11 +64,8 @@ class _MenuListViewState extends State<MenuListView> {
         floatingActionButton: isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.menuFormCreate()),
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                elevation: 4,
                 icon: const Icon(Icons.add),
-                label: const Text('NUEVO MENÚ'),
+                label: const Text('Añadir menú'),
               )
             : null,
         body: Column(

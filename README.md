@@ -136,7 +136,7 @@ lib/
 ## 📦 Dependencias
 
 | Dependencia | Versión | Propósito |
-|---|---|-|---|
+|---|---|---|
 | **firebase_core** | ^4.3.0 | Inicialización de Firebase |
 | **firebase_auth** | ^6.1.4 | Autenticación (Email, Google, Anónimo) |
 | **cloud_firestore** | ^6.1.2 | Base de datos en tiempo real |
@@ -146,6 +146,7 @@ lib/
 | **flutter_localizations** | SDK | Localización (español) |
 | **intl** | ^0.20.2 | Internacionalización |
 | **json_annotation** | ^4.9.0 | Serialización JSON |
+| **flutter_svg** | ^2.0.17 | Renderizado de imágenes SVG |
 | **cupertino_icons** | ^1.0.8 | Iconos nativos de iOS |
 | **flutter_lints** | ^5.0.0 | Análisis estático de código |
 | **fake_cloud_firestore** | ^4.0.0 | Mock de Firestore para tests |
@@ -176,6 +177,7 @@ Consulta la carpeta `docs/` para documentación detallada:
 - **[Provider](docs/provider.md)**: Explicación del patrón Provider para el equipo
 - **[Autenticación](docs/autenticacion.md)**: Sistema de autenticación con Firebase
 - **[Navegación](docs/navegacion.md)**: Sistema de rutas con GoRouter
+- **[UI y sistema de diseño](docs/ui_sistema_diseno.md)**: Guía de componentes y estilo visual
 - **[Tests](test/README.md)**: Guía completa de testing y cobertura
 
 ## 👨‍💻 Autores

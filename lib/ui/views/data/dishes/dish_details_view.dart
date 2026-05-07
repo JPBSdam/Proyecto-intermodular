@@ -132,7 +132,25 @@ class _DishDetailViewState extends State<DishDetailView> {
                         children: [
                           if (_dish!.urlImage != null &&
                               _dish!.urlImage!.isNotEmpty)
-                            Image.network(_dish!.urlImage!, fit: BoxFit.cover)
+                            Image.network(
+                              _dish!.urlImage!,
+                              fit: BoxFit.cover,
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.fallback,
+                              errorBuilder: (context, _, __) => Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                child: Icon(
+                                  Icons.restaurant,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer
+                                      .withAlpha(100),
+                                  size: 100,
+                                ),
+                              ),
+                            )
                           else
                             Container(
                               color: colorScheme.primaryContainer,
@@ -185,9 +203,8 @@ class _DishDetailViewState extends State<DishDetailView> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                AppBadge(
+                                AppBadge.detail(
                                   label: _dish!.category ?? 'GENERAL',
-                                  borderRadius: 12,
                                 ),
                                 if (_dish!.available == false)
                                   AppBadge.error(label: 'NO DISPONIBLE'),

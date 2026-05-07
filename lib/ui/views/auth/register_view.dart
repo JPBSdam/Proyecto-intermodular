@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
@@ -199,9 +200,16 @@ class _RegisterViewState extends State<RegisterView> {
             onPressed: () => context.go(AppRoutes.login),
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _buildForm(viewmodel),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppTheme.kFormMaxWidth),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildForm(viewmodel),
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -47,6 +47,15 @@ class AppBadge extends StatelessWidget {
     borderRadius: 12,
   );
 
+  /// Variante para detalles secundarios (ej: categoría, etiqueta informativa).
+  factory AppBadge.detail({required String label, IconData? icon}) => AppBadge(
+    label: label,
+    icon: icon,
+    backgroundColor: AppTheme.brandDetail.withAlpha(30),
+    textColor: AppTheme.brandDetail,
+    borderRadius: 12,
+  );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

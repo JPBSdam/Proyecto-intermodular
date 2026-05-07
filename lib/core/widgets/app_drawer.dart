@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
@@ -180,9 +181,9 @@ class AppDrawer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               AppLogoTitle(
-                color: colorScheme.onPrimary,
+                color: AppTheme.brandSecondary,
                 fontSize: 22,
-                iconSize: 24,
+                iconSize: 30,
               ),
               if (isRealAdmin)
                 _buildPreviewToggle(context, previewMode, homeVM),
@@ -235,7 +236,7 @@ class AppDrawer extends StatelessWidget {
                         ),
                         if (isAdmin) ...[
                           const SizedBox(width: 8),
-                          const AppBadge(label: 'ADMIN', borderRadius: 4),
+                          AppBadge.detail(label: 'ADMIN'),
                         ],
                       ],
                     ),
