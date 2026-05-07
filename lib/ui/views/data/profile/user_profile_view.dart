@@ -89,7 +89,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                 child: Column(
                   children: [
                     _buildHeader(context, user),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 24),
                     _buildUserInfo(user),
                     const SizedBox(height: 32),
                     _buildActivitySection(context),
@@ -216,11 +216,7 @@ class _UserProfileViewState extends State<UserProfileView> {
             ),
             if (isAdmin) ...[
               const SizedBox(width: 8),
-              AppBadge(
-                label: 'ADMIN',
-                backgroundColor: colorScheme.tertiaryContainer,
-                textColor: colorScheme.onTertiaryContainer,
-              ),
+              AppBadge.detail(label: 'ADMIN'),
             ],
           ],
         ),
@@ -273,6 +269,12 @@ class _UserProfileViewState extends State<UserProfileView> {
           const SizedBox(height: 16),
           if (isRealAdmin) ...[
             _buildActivityCard(
+              icon: Icons.store_outlined,
+              title: 'Gestionar mi restaurante',
+              onTap: () => context.push(AppRoutes.restaurantForm),
+            ),
+            const SizedBox(height: 12),
+            _buildActivityCard(
               icon: homeVM.previewMode
                   ? Icons.visibility
                   : Icons.visibility_off,
@@ -286,7 +288,7 @@ class _UserProfileViewState extends State<UserProfileView> {
               trailing: Switch(
                 value: homeVM.previewMode,
                 onChanged: (_) => homeVM.togglePreviewMode(),
-                activeThumbColor: colorScheme.primary,
+                activeThumbColor: colorScheme.secondary,
               ),
             ),
             const SizedBox(height: 12),

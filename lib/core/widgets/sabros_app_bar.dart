@@ -44,7 +44,7 @@ class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
     final hasPageTitle = pageTitle != null && pageTitle!.isNotEmpty;
 
     return AppBar(
-      backgroundColor: backgroundColor ?? colorScheme.surface,
+      backgroundColor: backgroundColor,
       elevation: 0,
       centerTitle: centerTitle,
       leading: leading,

@@ -1,4 +1,6 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
@@ -188,29 +190,63 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildLoginButton(LoginViewModel viewModel) {
-    return ElevatedButton(
-      onPressed: viewModel.isLoading
-          ? null
-          : () => _handleEmailLogin(viewModel),
-      child: const Text('Iniciar Sesión'),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: viewModel.isLoading
+            ? null
+            : () => _handleEmailLogin(viewModel),
+        child: const Text('Iniciar Sesión'),
+      ),
     );
   }
 
   Widget _buildGoogleButton(LoginViewModel viewModel) {
-    return ElevatedButton(
-      onPressed: viewModel.isLoading
-          ? null
-          : () => _handleGoogleLogin(viewModel),
-      child: const Text('Iniciar con Google'),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: viewModel.isLoading
+            ? null
+            : () => _handleGoogleLogin(viewModel),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          side: const BorderSide(color: Color(0xFFDDDDDD)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset('assets/google_logo.svg', width: 20, height: 20),
+            const SizedBox(width: 12),
+            const Text('Iniciar con Google'),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildAnonymousButton(LoginViewModel viewModel) {
-    return ElevatedButton(
-      onPressed: viewModel.isLoading
-          ? null
-          : () => _handleAnonymousLogin(viewModel),
-      child: const Text('Continuar como invitado'),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: viewModel.isLoading
+            ? null
+            : () => _handleAnonymousLogin(viewModel),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.brandPrimary,
+          side: BorderSide(color: AppTheme.brandPrimary.withAlpha(100)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        child: const Text('Continuar como invitado'),
+      ),
     );
   }
 
@@ -275,10 +311,13 @@ class _LoginViewState extends State<LoginView> {
           ),
         ),
         body: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildForm(viewModel),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppTheme.kFormMaxWidth),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildForm(viewModel),
+              ),
             ),
           ),
         ),

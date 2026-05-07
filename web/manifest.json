@@ -1,11 +1,11 @@
 {
-    "name": "app_restaurante",
-    "short_name": "app_restaurante",
+    "name": "SabrosApp",
+    "short_name": "SabrosApp",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FDEADF",
+    "theme_color": "#494E2C",
+    "description": "Gestión de menús, reservas y restaurante.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

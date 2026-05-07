@@ -1,3 +1,4 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
@@ -89,17 +90,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Consumer<HomeViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: colorScheme.surface,
-            elevation: 0,
             title: const AppLogoTitle(),
-            // AppUserAvatar sustituido por el botón de perfil con lógica de autenticación
             actions: const [AppUserAvatar()],
           ),
           drawer: const AppDrawer(),
@@ -136,16 +133,23 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
     final dishViewModel = context.watch<DishViewModel>();
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroSection(viewModel),
-          _buildSuggestionsSection(dishViewModel),
-          _buildRestaurantSection(context, viewModel),
-          const SizedBox(height: 40),
-        ],
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: AppTheme.kContentMaxWidth,
+        ), // ignore: prefer_const_constructors
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeroSection(viewModel),
+              _buildSuggestionsSection(dishViewModel),
+              _buildRestaurantSection(context, viewModel),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -170,6 +174,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         image: const DecorationImage(
           image: NetworkImage(
             'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
           ),
           fit: BoxFit.cover,
         ),
@@ -218,46 +223,49 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             // Banner informativo para invitados
             if (viewModel.isGuest) ...[
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withAlpha(180),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'Explora nuestra carta sin cuenta. ¡Inicia sesión para reservar!',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withAlpha(180),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                        size: 16,
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go(AppRoutes.login),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Entrar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Explora nuestra carta sin cuenta. ¡Inicia sesión para reservar!',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ),
-                    ),
-                  ],
+                      TextButton(
+                        onPressed: () => context.go(AppRoutes.login),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Entrar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -430,6 +438,31 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                 width: 95,
                                 height: 95,
                                 fit: BoxFit.cover,
+                                webHtmlElementStrategy:
+                                    WebHtmlElementStrategy.fallback,
+                                loadingBuilder: (_, child, progress) =>
+                                    progress == null
+                                    ? child
+                                    : Container(
+                                        width: 95,
+                                        height: 95,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary.withAlpha(20),
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 95,
+                                  height: 95,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withAlpha(20),
+                                  child: const Icon(Icons.restaurant, size: 32),
+                                ),
                               )
                             : Container(
                                 width: 95,
