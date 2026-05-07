@@ -106,7 +106,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
               Expanded(child: _buildBody(viewModel)),
             ],
           ),
-          bottomNavigationBar: const AppBottomNav(currentIndex: 0),
+          bottomNavigationBar: const AppBottomNav(),
         );
       },
     );

@@ -107,7 +107,7 @@ class _ReservationListViewState extends State<ReservationListView> {
             ),
           ],
         ),
-        bottomNavigationBar: AppBottomNav(currentIndex: isAdmin ? 2 : 2),
+        bottomNavigationBar: AppBottomNav(),
         floatingActionButton: !isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () =>

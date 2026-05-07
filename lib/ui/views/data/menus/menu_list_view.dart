@@ -60,7 +60,7 @@ class _MenuListViewState extends State<MenuListView> {
             },
           ),
         ),
-        bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+        bottomNavigationBar: const AppBottomNav(),
         floatingActionButton: isAdmin
             ? FloatingActionButton.extended(
                 onPressed: () => context.push(AppRoutes.menuFormCreate()),
