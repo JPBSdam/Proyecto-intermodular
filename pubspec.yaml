@@ -30,6 +30,9 @@ dev_dependencies:
   json_serializable: ^6.11.1
   fake_cloud_firestore: ^4.0.0
   flutter_launcher_icons: ^0.14.3
+  mockito: ^5.6.4
+  firebase_auth_mocks: ^0.15.1
+  mock_exceptions: ^0.8.2
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -42,9 +45,6 @@ flutter_launcher_icons:
     image_path: "assets/icon_source.png"
   image_path: "assets/icon_source.png"
   min_sdk_android: 21
-  mockito: ^5.6.4
-  firebase_auth_mocks: ^0.15.1
-  mock_exceptions: ^0.8.2
 
 flutter:
   uses-material-design: true
