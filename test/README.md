@@ -1,10 +1,10 @@
 # 🧪 Guía de tests del proyecto
 
-## 📊 Estado actual: **20 tests pasando ✅**
+## 📊 Estado actual: **107 tests pasando ✅**
 
 ```bash
 flutter test
-# Output: 00:01 +20: All tests passed!
+# Output: 00:00 +107: All tests passed!
 ```
 ---
 **Nota**: los tests deben facilitar y mejorar la lógica de nuestro programa, si esto nos supone  un bloqueo o problema, los tests pueden omitirse de forma sencilla para evitar que rompan el workflow:
@@ -32,15 +32,26 @@ test/
 ├── widget_test.dart              # Test básico del framework
 │
 ├── data/
-│   └── models/                   # Tests de modelos de datos
-│       ├── dish_test.dart        
-│       ├── menu_test.dart        
-│       ├── user_test.dart        
-│       └── reservation_test.dart
+│   ├── models/                   # Tests de modelos de datos
+│   │   ├── dish_test.dart        
+│   │   ├── menu_test.dart        
+│   │   ├── user_test.dart        
+│   │   └── reservation_test.dart
+│   │
+│   └── services/                 # Tests de servicios
+│       ├── auth_service_test.dart
+│       └── auth_service_test.mocks.dart  # Generado automáticamente
 │
 └── ui/
     └── viewmodels/               # Tests de ViewModels
-        └── home_viewmodel_test.dart
+        ├── login_viewmodel_test.dart
+        ├── login_viewmodel_test.mocks.dart       # Generado automáticamente
+        ├── register_viewmodel_test.dart
+        ├── register_viewmodel_test.mocks.dart    # Generado automáticamente
+        ├── dish_viewmodel_test.dart
+        ├── dish_viewmodel_test.mocks.dart        # Generado automáticamente
+        ├── reservation_viewmodel_test.dart
+        └── reservation_viewmodel_test.mocks.dart # Generado automáticamente
 ```
 
 ---
@@ -92,20 +103,123 @@ test('toFirestore convierte correctamente a Map', () {
 
 ---
 
-### 2. **Tests de ViewModels** (`test/ui/viewmodels/`)
-** PENDIENTE DE IMPLANTAR **
-Verifican la lógica de negocio de la UI:
-- Estado inicial correcto
-- Cambios de estado durante operaciones
-- Notificaciones con `notifyListeners()`
-- Manejo de errores
-- Reset de datos
+### 2. **Tests de Servicios** (`test/data/services/`)
 
-**Ejemplo:**
+Verifican la lógica de negocio de los servicios de datos, aislando las dependencias externas (Firebase, Google Sign-In) mediante mocks:
+
+**`auth_service_test.dart` — 31 tests**
+- ✅ `signUpWithEmail`: registro exitoso + errores (contraseña débil, email en uso, email inválido)
+- ✅ `signInWithEmail`: login exitoso + errores (usuario no encontrado, contraseña incorrecta, cuenta deshabilitada, demasiados intentos)
+- ✅ `signInAnonymously`: sesión anónima
+- ✅ `signInWithGoogle`: cancela, PlatformException cancelada (x2), PlatformException otro, éxito, FirebaseAuthException
+- ✅ `signOut`: con/sin sesión Google activa + cierre de Firebase
+- ✅ `currentUser`: sin sesión / con sesión
+- ✅ `isAnonymous`: sin usuario / usuario normal / anónimo
+- ✅ `isEmailVerified`: sin usuario / verificado / no verificado
+- ✅ `authStateChanges`: emite usuario al login, emite null al logout
+- ✅ `resetPassword`: éxito + error usuario no encontrado
+
+#### Herramientas de mocking para servicios
+
+| Dependencia | Rol |
+|---|---|
+| `firebase_auth_mocks` | Implementación falsa de `FirebaseAuth` que simula el comportamiento real sin conexión |
+| `mock_exceptions` | Permite configurar qué excepciones lanza `MockFirebaseAuth` en cada test |
+| `mockito` + `@GenerateMocks` | Genera mocks para `GoogleSignIn`, `GoogleSignInAccount` y `GoogleSignInAuthentication` |
+
+#### Patrón para testear errores de Firebase
+
 ```dart
-test('loadHomeData carga menús correctamente', () async {
-  await viewModel.loadHomeData();
-  expect(viewModel.menus, isNotEmpty);
+// Configura MockFirebaseAuth para que lance un error concreto
+whenCalling(Invocation.method(#signInWithEmailAndPassword, null, {}))
+    .on(mockAuth)
+    .thenThrow(FirebaseAuthException(code: 'wrong-password'));
+
+// Verifica que el servicio traduce el error al mensaje en español
+await expectLater(
+  authService.signInWithEmail(email: 'user@test.com', password: 'mal'),
+  throwsA('Contraseña incorrecta.'),
+);
+```
+
+#### Inyección de dependencias
+
+Para poder inyectar los mocks, `AuthService` acepta dependencias opcionales en el constructor. El código de producción no cambia (`AuthService()` sigue funcionando igual):
+
+```dart
+// Producción — usa las instancias reales
+final service = AuthService();
+
+// Tests — inyecta los mocks
+final service = AuthService(auth: mockAuth, googleSignIn: mockGoogleSignIn);
+```
+
+#### Regenerar los mocks tras cambios en las clases mockeadas
+
+```bash
+dart run build_runner build
+```
+
+---
+
+### 3. **Tests de ViewModels** (`test/ui/viewmodels/`)
+
+Verifican la lógica de presentación: estado inicial, ciclo de carga, propagación de errores y notificaciones a la UI mediante `notifyListeners()`.
+
+**`login_viewmodel_test.dart` — 16 tests**
+- ✅ Estado inicial (`isLoading`, `errorMessage`)
+- ✅ `signInWithEmail`: éxito, error, `isLoading` al terminar, limpieza del error previo, `notifyListeners`
+- ✅ `signInWithGoogle`: éxito, cancelación (retorna `null`), error
+- ✅ `signInAnonymously`: éxito, error
+- ✅ `resetPassword`: éxito, error
+
+**`register_viewmodel_test.dart` — 7 tests**
+- ✅ Estado inicial
+- ✅ `signUpWithEmail`: éxito + envío de verificación, error en registro, fallo en verificación sigue devolviendo `true`, `isLoading` al terminar, `notifyListeners`
+
+**`dish_viewmodel_test.dart` — 16 tests**
+- ✅ Estado inicial (`dishes`, `isLoading`, `errorMessage`, `isWatchingDishes`)
+- ✅ `watchDishes`: recibe datos, no re-suscribe, lista vacía, `notifyListeners`
+- ✅ `addDish`: delega al servicio, `errorMessage` en fallo, `isLoading` al terminar
+- ✅ `updateDish`: delega al servicio, `errorMessage` en fallo
+- ✅ `deleteDish`: delega al servicio, `errorMessage` en fallo
+- ✅ `fetchDishById`: retorna plato, retorna `null` en fallo
+
+**`reservation_viewmodel_test.dart` — 20 tests**
+- ✅ Estado inicial (`reservations`, `isLoading`, `errorMessage`, `isWatching`, `pendingCount`)
+- ✅ `watchAll`: recibe lista, no re-suscribe, `isWatching` activo
+- ✅ `watchByUser`: recibe lista filtrada, no re-suscribe mismo userId, re-suscribe al cambiar userId
+- ✅ `pendingCount`: cuenta solo las `pending`, cero sin pendientes
+- ✅ `confirmReservation`: delega con estado `confirmed`, `errorMessage` en fallo
+- ✅ `cancelReservation`: delega con estado `cancelled`
+- ✅ `completeReservation`: delega con estado `completed`
+- ✅ `completeMultipleReservations`: delega con lista de ids
+- ✅ `addReservation`: delega al servicio, `errorMessage` en fallo
+- ✅ `deleteReservation`: delega al servicio
+
+#### Herramientas de mocking para ViewModels
+
+| Dependencia | Rol |
+|---|---|
+| `mockito` + `@GenerateMocks` | Genera mocks estrictos para `AuthService`, `DishService` y `ReservationService` |
+| `_FakeUserCredential extends Fake` | Tipo mínimo que implementa `UserCredential` sin métodos reales, necesario para stubear retornos de login |
+| `StreamController.broadcast()` | Simula los streams de Firestore en tiempo real dentro de los tests |
+
+#### Patrón para tests de streams
+
+```dart
+setUp(() {
+  streamController = StreamController<List<Dish>>.broadcast();
+  when(mockService.watchDishes()).thenAnswer((_) => streamController.stream);
+  dishVM = DishViewModel(mockService);
+});
+
+test('actualiza dishes cuando el stream emite datos', () async {
+  dishVM.watchDishes();
+  streamController.add([testDish]);
+  await Future.microtask(() {}); // deja que el evento se procese
+
+  expect(dishVM.dishes, hasLength(1));
 });
 ```
 
@@ -218,17 +332,22 @@ expect(map.containsKey('key'), true); // Contiene clave
 
 ---
 
-## 🔧 Configuración para Mocks (Próximos Pasos)
+## 🔧 Dependencias de testing activas
 
-Para probar servicios que dependen de Firebase, necesitarás agregar estas dependencias:
+Las siguientes dependencias de desarrollo están configuradas en `pubspec.yaml`:
 
 ```yaml
 dev_dependencies:
-  mockito: ^5.4.0
-  build_runner: ^2.4.0
+  flutter_test:
+    sdk: flutter
+  mockito: ^5.6.4           # Generación de mocks con @GenerateMocks
+  build_runner: ^2.15.0     # Ejecuta la generación de código
+  fake_cloud_firestore: ^4.0.0   # Firestore en memoria para tests
+  firebase_auth_mocks: ^0.15.1   # Implementación falsa de FirebaseAuth
+  mock_exceptions: ^0.8.2        # Configura excepciones en firebase_auth_mocks
 ```
 
-Luego generar los mocks:
+Para regenerar los mocks tras modificar alguna clase mockeada:
 ```bash
 dart run build_runner build
 ```

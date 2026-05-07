@@ -22,9 +22,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 /// manteniendo la lógica de autenticación desacoplada de la UI.
 
 class AuthService {
-  // Instancias (dependencias)
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth;
+  final GoogleSignIn _googleSignIn;
+
+  // Constructor con inyección de dependencias opcional para facilitar testing
+  // Se añade la opción de inyectar GoogleSignIn para permitir mocks en tests.
+  AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   // ─── Streams ─────────────────────────────
   Stream<User?> get authStateChanges => _auth.authStateChanges();
