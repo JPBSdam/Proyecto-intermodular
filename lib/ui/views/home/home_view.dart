@@ -6,6 +6,7 @@ import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
+import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'dart:ui';
@@ -31,6 +32,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DishViewModel>().watchDishes();
+      context.read<RestaurantViewModel>().watchRestaurant();
 
       // Si el usuario ya está logueado como ADMIN, activamos la escucha de reservas
       final homeVM = context.read<HomeViewModel>();
@@ -114,7 +116,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   Widget _buildBody(HomeViewModel viewModel) {
     if (viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingOverlay(isLoading: true, child: SizedBox.shrink());
     }
 
     // Mostrar error si existe
@@ -145,7 +147,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             children: [
               _buildHeroSection(viewModel),
               _buildSuggestionsSection(dishViewModel),
-              _buildRestaurantSection(context, viewModel),
+              _buildRestaurantSection(viewModel),
               const SizedBox(height: 40),
             ],
           ),
@@ -345,9 +347,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     final colorScheme = theme.colorScheme;
 
     if (dishVM.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(40),
-        child: Center(child: CircularProgressIndicator()),
+      return const SizedBox(
+        height: 120,
+        child: LoadingOverlay(isLoading: true, child: SizedBox.expand()),
       );
     }
 
@@ -443,16 +445,14 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                 loadingBuilder: (_, child, progress) =>
                                     progress == null
                                     ? child
-                                    : Container(
-                                        width: 95,
-                                        height: 95,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary.withAlpha(20),
-                                        child: const Center(
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
+                                    : LoadingOverlay(
+                                        isLoading: true,
+                                        child: Container(
+                                          width: 95,
+                                          height: 95,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary.withAlpha(20),
                                         ),
                                       ),
                                 errorBuilder: (_, __, ___) => Container(
@@ -515,17 +515,19 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildRestaurantSection(BuildContext context, HomeViewModel homeVM) {
+  Widget _buildRestaurantSection(HomeViewModel homeVM) {
     final restaurantVM = context.watch<RestaurantViewModel>();
-    final restaurant = restaurantVM.restaurant;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    if (restaurantVM.isLoading || restaurant == null) {
-      return const SizedBox.shrink();
+    if (restaurantVM.isLoading) {
+      return const SizedBox(
+        height: 120,
+        child: LoadingOverlay(isLoading: true, child: SizedBox.expand()),
+      );
     }
 
-    final isOpen = restaurant.open == true;
+    final isOpen = restaurantVM.restaurant?.open == true;
     final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     return AppCard(
@@ -538,7 +540,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             children: [
               Expanded(
                 child: Text(
-                  restaurant.name ?? 'Nuestro Restaurante',
+                  restaurantVM.restaurant?.name ?? '',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -549,10 +551,10 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                   : AppBadge.error(label: "Cerrado"),
             ],
           ),
-          if (restaurant.description != null) ...[
+          if (restaurantVM.restaurant?.description != null) ...[
             const SizedBox(height: 12),
             Text(
-              restaurant.description!,
+              restaurantVM.restaurant!.description!,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -564,12 +566,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           ),
           _buildInfoRow(
             Icons.location_on_outlined,
-            restaurant.address ?? 'Sin dirección',
+            restaurantVM.restaurant?.address ?? 'Sin dirección',
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
             Icons.phone_outlined,
-            restaurant.phoneNumber ?? 'Sin teléfono',
+            restaurantVM.restaurant?.phoneNumber ?? 'Sin teléfono',
           ),
           // Solo mostrar botón de gestión si es ADMIN
           if (isAdmin) ...[
