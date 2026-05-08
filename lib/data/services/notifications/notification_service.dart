@@ -14,6 +14,9 @@ import 'package:intl/intl.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 
+// Tipo de callback para manejar navegación cuando se hace click en una notificación
+typedef NotificationTapCallback = void Function(String? reservationId);
+
 // ─── Capa de abstracción del plugin ─────────────────────────────────────────
 // FlutterLocalNotificationsPlugin es un singleton con constructor privado;
 // no se puede instanciar en tests sin el entorno nativo Android/iOS.
@@ -29,8 +32,9 @@ abstract class NotificationsApi {
     int id,
     String? title,
     String? body,
-    NotificationDetails details,
-  );
+    NotificationDetails details, {
+    String? payload,
+  });
 
   // Programa una notificación para una fecha y hora exacta
   Future<void> zonedSchedule(
@@ -55,8 +59,8 @@ class _RealNotificationsApi implements NotificationsApi {
       FlutterLocalNotificationsPlugin();
 
   @override
-  Future<void> show(id, title, body, details) =>
-      _plugin.show(id, title, body, details);
+  Future<void> show(id, title, body, details, {payload}) =>
+      _plugin.show(id, title, body, details, payload: payload);
 
   @override
   Future<void> zonedSchedule(
@@ -107,6 +111,15 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _initPlugin =
       FlutterLocalNotificationsPlugin();
 
+  // ─── Callback para navegación cuando se hace click en notificación ────────
+  static NotificationTapCallback? _onNotificationTap;
+
+  /// Establece el callback que se ejecutará cuando el usuario haga click
+  /// en una notificación. Se utiliza para navegar a la reserva confirmada.
+  static void setNavigationCallback(NotificationTapCallback callback) {
+    _onNotificationTap = callback;
+  }
+
   // ─── Canales de Android ──────────────────────────────────────────────────
   // Android agrupa las notificaciones en "canales"; el usuario puede silenciar
   // cada canal de forma independiente desde los ajustes del sistema.
@@ -154,11 +167,16 @@ class NotificationService {
     );
 
     // Inicializamos el plugin con la configuración anterior
-    await _initPlugin.initialize(initSettings);
+    await _initPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        // Se ejecuta cuando el usuario hace click en una notificación
+        onNotificationTapped(response.payload);
+      },
+    );
 
-    // En Android 13+ (API 33) es obligatorio pedir permiso explícito
-    // para mostrar notificaciones; lo solicitamos aquí al iniciar
-    await _initPlugin
+    // Configuramos permisos de notificación
+    _initPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
@@ -379,6 +397,8 @@ class NotificationService {
   static Future<void> showFromQueue({
     required String title,
     required String body,
+    String? type,
+    String? reservationId,
   }) async {
     // Generamos un ID único basado en el tiempo para evitar colisiones
     // cuando llegan varias notificaciones de cola en poco tiempo
@@ -405,6 +425,17 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+      payload: reservationId,
     );
+  }
+
+  /// Se llama cuando el usuario hace click en una notificación.
+  /// El payload contiene el ID de la reserva, que usamos para navegar.
+  static void onNotificationTapped(String? payload) {
+    // Solo procesamos si hay un callback configurado
+    if (_onNotificationTap != null && payload != null && payload.isNotEmpty) {
+      // Llamamos el callback con el ID de la reserva para que navegue
+      _onNotificationTap!(payload);
+    }
   }
 }

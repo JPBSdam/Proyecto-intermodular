@@ -15,10 +15,12 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
-// Importamos ReservationViewModel para activar el stream global de reservas
+import 'package:app_restaurante/data/services/notifications/notification_service.dart';
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 
 class FcmInitWrapper extends StatefulWidget {
@@ -41,6 +43,17 @@ class _FcmInitWrapperState extends State<FcmInitWrapper> {
     // Nos suscribimos al stream de autenticación de Firebase.
     // Se emite cada vez que el usuario inicia o cierra sesión.
     FirebaseAuth.instance.authStateChanges().listen(_onAuthStateChanged);
+
+    // Configuramos el callback para cuando el usuario hace click en una notificación
+    // (solo para notificaciones de reserva confirmada)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.setNavigationCallback((reservationId) {
+        if (reservationId != null && mounted) {
+          // Navegamos a la reserva cuando se hace click en la notificación
+          GoRouter.of(context).go(AppRoutes.reservationDetail(reservationId));
+        }
+      });
+    });
   }
 
   /// Se ejecuta cada vez que cambia el estado de autenticación.
