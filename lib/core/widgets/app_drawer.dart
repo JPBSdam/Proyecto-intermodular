@@ -20,7 +20,6 @@ class AppDrawer extends StatelessWidget {
     final reservationVM = context.watch<ReservationViewModel>();
     final bool isAnonymous = homeVM.isGuest;
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     // Datos de visualización centralizados
     final String name = homeVM.displayName;
@@ -130,9 +129,6 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
           ),
-          Divider(indent: 20, endIndent: 20, color: colorScheme.outlineVariant),
-          _buildLogoutTile(context, isAnonymous, homeVM),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -353,32 +349,6 @@ class AppDrawer extends StatelessWidget {
           letterSpacing: 1.1,
         ),
       ),
-    );
-  }
-
-  Widget _buildLogoutTile(
-    BuildContext context,
-    bool isAnonymous,
-    HomeViewModel homeVM,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final color = isAnonymous ? colorScheme.primary : colorScheme.error;
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-      leading: Icon(isAnonymous ? Icons.login : Icons.logout, color: color),
-      title: Text(
-        isAnonymous ? 'Iniciar Sesión' : 'Cerrar sesión',
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
-      ),
-      onTap: () async {
-        Navigator.pop(context);
-        if (isAnonymous) {
-          context.push(AppRoutes.login);
-        } else {
-          await homeVM.signOut();
-        }
-      },
     );
   }
 }
