@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
-import 'package:app_restaurante/data/services/auth/auth_service.dart';
 
 class UserProfileView extends StatefulWidget {
   const UserProfileView({super.key});
@@ -298,36 +297,6 @@ class _UserProfileViewState extends State<UserProfileView> {
             title: 'Mis reservas',
             onTap: () => context.go(AppRoutes.reservations),
           ),
-          const SizedBox(height: 12),
-          _buildActivityCard(
-            icon: Icons.notifications_none_outlined,
-            title: 'Notificaciones',
-            onTap: () {},
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: colorScheme.error.withAlpha(100)),
-                backgroundColor: colorScheme.errorContainer.withAlpha(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () async => await AuthService().signOut(),
-              icon: Icon(Icons.logout, color: colorScheme.error),
-              label: Text(
-                'Cerrar sesión',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.error,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 40),
         ],
       ),
     );
