@@ -65,15 +65,14 @@ class AppBottomNav extends StatelessWidget {
               ),
 
       // Pestaña de AVISOS: solo visible para admins.
-      // El badge muestra las reservas nuevas que aún no han sido vistas.
+      // El badge muestra todas las reservas SIN CONFIRMAR (pending) que requieren acción del admin.
       if (isAdmin)
         _BottomNavItem(
           icon: Icons.notifications_outlined,
           activeIcon: Icons.notifications,
           label: 'AVISOS',
           route: AppRoutes.adminNotifications,
-          // newReservationsCount: 0 cuando el admin ya ha abierto la vista
-          badgeCount: reservationVM.newReservationsCount,
+          badgeCount: reservationVM.pendingCount,
         ),
 
       _BottomNavItem(

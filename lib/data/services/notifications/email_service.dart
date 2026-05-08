@@ -14,7 +14,10 @@ import 'package:app_restaurante/data/model/reservation.dart';
 class EmailService {
   // ─── Credenciales de EmailJS ─────────────────────────────────────────────
   static const String _serviceId = 'service_5y9zjld'; // EmailJS Service ID
-  static const String _templateId = 'template_7xonz2m'; // EmailJS Template ID
+  static const String _templateId =
+      'template_7xonz2m'; // Template: nuevo aviso a admins
+  static const String _templateIdClientConfirm =
+      'template_6ruvyqk'; // Template: confirmación al cliente
   static const String _publicKey = 'N_djxO1LI2WPKf-Jk'; // EmailJS Public Key
   static const String _privateKey =
       'JxxlroAkO5CYOb_M74yqF'; // EmailJS Private Key (modo no-browser)
@@ -55,7 +58,8 @@ class EmailService {
     //    (EmailJS free plan no soporta múltiples destinatarios en 1 llamada)
     for (final adminEmail in adminEmails) {
       debugPrint('[EmailService] 📧 Enviando email a admin: $adminEmail');
-      await _send(
+      await _sendClient(
+        templateId: _templateId,
         templateParams: {
           // {{to_email}} → destinatario dinámico (campo "To Email" de la plantilla)
           'to_email': adminEmail,
@@ -96,10 +100,53 @@ class EmailService {
     }
   }
 
-  // ─── Llamada HTTP al API de EmailJS ──────────────────────────────────────
+  // ─── Enviar email de confirmación de reserva al CLIENTE ───────────────────
 
-  /// Realiza el POST al endpoint de EmailJS con los parámetros de la plantilla.
-  static Future<void> _send({
+  /// Envía un email al cliente notificándole que su reserva ha sido confirmada
+  /// por un admin. Se llama desde ReservationViewModel.confirmReservation().
+  static Future<void> sendReservationConfirmedToClient(
+    Reservation reservation,
+  ) async {
+    // Si el Template ID no está configurado, salimos
+    if (_templateIdClientConfirm.contains('CAMBIAR_POR')) {
+      debugPrint('[EmailService] ⚠️ Template ID para cliente no configurado');
+      return;
+    }
+
+    // Obtenemos el email del cliente
+    final clientEmail = reservation.userEmail;
+    if (clientEmail == null || clientEmail.isEmpty) {
+      debugPrint('[EmailService] ⚠️ Email del cliente no disponible');
+      return;
+    }
+
+    final clientName = reservation.userName ?? 'Cliente';
+    final dateStr = reservation.reservationDate != null
+        ? DateFormat(
+            "dd/MM/yyyy 'a las' HH:mm",
+          ).format(reservation.reservationDate!)
+        : 'fecha por confirmar';
+    final seats = reservation.seats?.toString() ?? '?';
+
+    debugPrint(
+      '[EmailService] 📧 Enviando confirmación a cliente: $clientEmail',
+    );
+    await _sendClient(
+      templateId: _templateIdClientConfirm,
+      templateParams: {
+        'to_email': clientEmail,
+        'client_name': clientName,
+        'reservation_date': dateStr,
+        'seats': seats,
+      },
+    );
+  }
+
+  // ─── Llamada HTTP genérica para templates ────────────────────────────────
+
+  /// POST genérico a EmailJS con template customizado.
+  static Future<void> _sendClient({
+    required String templateId,
     required Map<String, String> templateParams,
   }) async {
     try {
@@ -108,9 +155,8 @@ class EmailService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'service_id': _serviceId,
-          'template_id': _templateId,
+          'template_id': templateId,
           'user_id': _publicKey,
-          // accessToken con la Private Key: requerido en modo no-browser
           'accessToken': _privateKey,
           'template_params': templateParams,
         }),
@@ -122,7 +168,7 @@ class EmailService {
         );
       } else {
         debugPrint(
-          '[EmailService] ✅ Email enviado correctamente a ${templateParams['to_email']}',
+          '[EmailService] ✅ Email enviado a ${templateParams['to_email']}',
         );
       }
     } catch (e) {

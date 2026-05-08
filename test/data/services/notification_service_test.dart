@@ -51,9 +51,17 @@ class _SpyNotificationsApi implements NotificationsApi {
     int id,
     String? title,
     String? body,
-    NotificationDetails details,
-  ) async {
-    calls.add(_NotifCall('show', {'id': id, 'title': title, 'body': body}));
+    NotificationDetails details, {
+    String? payload, // <--- Agregar este parámetro opcional
+  }) async {
+    calls.add(
+      _NotifCall('show', {
+        'id': id,
+        'title': title,
+        'body': body,
+        'payload': payload, // Opcional: registrarlo también en la llamada
+      }),
+    );
   }
 
   // Simula zonedSchedule(): guarda id, titulo, cuerpo y fecha programada

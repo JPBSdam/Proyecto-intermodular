@@ -106,6 +106,7 @@ class FcmService {
   //   title:    "✅ Reserva Confirmada",
   //   body:     "Tu reserva para el 15/05 ha sido confirmada.",
   //   type:     "reservation_confirmed" | "reservation_cancelled" | "new_dish",
+  //   reservationId: "id_de_la_reserva" (opcional, para deep linking)
   //   isRead:   false,
   //   createdAt: Timestamp
   // }
@@ -139,6 +140,8 @@ class FcmService {
               NotificationService.showFromQueue(
                 title: data['title'] as String? ?? 'SabrosApp',
                 body: data['body'] as String? ?? '',
+                type: data['type'] as String? ?? 'default',
+                reservationId: data['reservationId'] as String?,
               );
 
               // Marcamos como leída para no volver a mostrarla en la próxima sesión
@@ -166,8 +169,10 @@ class FcmService {
     required String body,
     // Tipo para identificar la notificación (útil para navegación futura)
     required String type,
+    // ID de la reserva (opcional, para deep linking a la reserva confirmada)
+    String? reservationId,
   }) async {
-    await _db.collection('notification_queue').add({
+    final data = {
       // ID del usuario que va a recibir la notificación
       'toUserId': toUserId,
       // Contenido visible de la notificación
@@ -179,7 +184,14 @@ class FcmService {
       'createdAt': FieldValue.serverTimestamp(),
       // Estado inicial: no leída. Cuando el cliente la procesa, pasa a true.
       'isRead': false,
-    });
+    };
+
+    // Agregar ID de la reserva si se proporciona
+    if (reservationId != null && reservationId.isNotEmpty) {
+      data['reservationId'] = reservationId;
+    }
+
+    await _db.collection('notification_queue').add(data);
   }
 
   // ─── Notificar a TODOS los admins (reserva nueva) ────────────────────────

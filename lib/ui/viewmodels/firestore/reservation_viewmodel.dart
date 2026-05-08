@@ -38,7 +38,6 @@ class ReservationViewModel extends ChangeNotifier {
   // Se llena cuando llega una reserva nueva con estado pending mientras la app está abierta.
   // Se vacía cuando el admin abre la vista de notificaciones (markAllAsSeen).
   final Set<String> _newReservationIds = {};
-  int get newReservationsCount => _newReservationIds.length;
   final Set<String> _knownReservationIds = {};
 
   bool _isLoading = false;
@@ -187,9 +186,13 @@ class ReservationViewModel extends ChangeNotifier {
 
   // ─── Acciones ────────────────────────────────────────────────────────────
 
-  /// Confirma una reserva y envía notificación push al cliente.
-  /// Además de actualizar el estado en Firestore, escribe en la cola de
-  /// notificaciones para que el cliente lo reciba aunque tenga la app cerrada.
+  /// Confirma una reserva y envía notificaciones al cliente.
+  ///
+  /// Flujo:
+  /// 1. Actualiza estado en Firestore a 'confirmed'
+  /// 2. Encola notificación push al cliente (vía Firestore)
+  /// 3. Envía email de confirmación al cliente (vía EmailJS)
+  /// 4. Programa recordatorio local para las 9:00 AM del día de la reserva
   Future<void> confirmReservation(String id) async {
     // 1. Actualizamos el estado en Firestore
     await _run(
@@ -202,25 +205,35 @@ class ReservationViewModel extends ChangeNotifier {
       orElse: () => Reservation(),
     );
 
-    // 3. Si tenemos el userId del cliente, escribimos en la cola de Firestore.
-    //    Esto garantiza que le llegue la notificación aunque la app esté cerrada.
+    // 3. Si tenemos el userId del cliente, enviamos notificaciones
     if (reservation.userId != null) {
-      // Formateamos la fecha para incluirla en el mensaje
       final dateStr = reservation.reservationDate != null
           ? DateFormat(
               'dd/MM/yyyy \'a las\' HH:mm',
             ).format(reservation.reservationDate!)
           : 'la fecha acordada';
 
-      // Escribimos en la colección "notification_queue".
-      // FcmInitWrapper escucha esta colección para el usuario actual y
-      // muestra la notificación local cuando la detecta.
+      // Push al cliente (vía cola Firestore)
       await FcmService.enqueueForUser(
         toUserId: reservation.userId!,
         title: '✅ Reserva Confirmada',
         body: 'Tu reserva para el $dateStr ha sido confirmada. ¡Te esperamos!',
         type: 'reservation_confirmed',
+        reservationId: id,
       );
+
+      // Email al cliente (vía EmailJS)
+      try {
+        await EmailService.sendReservationConfirmedToClient(reservation);
+        debugPrint(
+          '[ReservationVM] 📧 Email de confirmación enviado al cliente',
+        );
+      } catch (e) {
+        debugPrint('[ReservationVM] ⚠️ Email falló (no crítico): $e');
+      }
+
+      // Programa el recordatorio local para las 9:00 AM del día de la reserva
+      NotificationService.scheduleReservationReminder(reservation);
     }
   }
 
