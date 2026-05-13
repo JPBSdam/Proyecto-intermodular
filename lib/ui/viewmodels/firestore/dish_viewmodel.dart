@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
+import 'package:app_restaurante/data/services/notifications/notification_service.dart';
 
 /// ViewModel que gestiona la lógica de negocio y estado de los platos (Dish)
 /// Se encarga de:
 ///  - Escuchar cambios en tiempo real de los platos desde Firestore
 ///  - Realizar operaciones CRUD (crear, actualizar, eliminar)
 ///  - Mantener estado de carga y mensajes de error
+///  - Notificar a los clientes cuando se añade un plato nuevo a la carta
 ///  - Exponer datos y estado a la UI mediante getters y ChangeNotifier
 
 class DishViewModel extends ChangeNotifier {
@@ -28,6 +30,14 @@ class DishViewModel extends ChangeNotifier {
   bool _isWatching = false;
   bool get isWatchingDishes => _isWatching;
 
+  // Conjunto de IDs de platos que ya conocemos (cargados en la sesión actual).
+  // Usamos un Set para búsquedas O(1) y evitar duplicados.
+  final Set<String> _knownDishIds = {};
+
+  // Flag para ignorar la primera emisión del stream (evita notificar todos los
+  // platos existentes como "nuevos" al abrir la app por primera vez)
+  bool _isDishFirstLoad = true;
+
   // ─── Escuchar todos los platos ─────────────────────────
   void watchDishes() {
     if (_isWatching) return;
@@ -38,6 +48,21 @@ class DishViewModel extends ChangeNotifier {
     _dishesSub?.cancel();
     _dishesSub = _service.watchDishes().listen(
       (dishes) {
+        // Solo buscamos platos nuevos después de la primera carga
+        // En la primera carga simplemente registramos los platos ya existentes
+        if (!_isDishFirstLoad) {
+          _checkForNewDishes(dishes);
+        }
+
+        // Actualizamos el conjunto de IDs conocidos con la lista más reciente
+        _knownDishIds.clear();
+        for (final dish in dishes) {
+          if (dish.id != null) _knownDishIds.add(dish.id!);
+        }
+
+        // Marcamos que ya superamos la carga inicial
+        _isDishFirstLoad = false;
+
         _dishes = dishes;
         _setLoading(false);
         notifyListeners();
@@ -47,6 +72,18 @@ class DishViewModel extends ChangeNotifier {
         _setLoading(false);
       },
     );
+  }
+
+  /// Compara la lista nueva con los IDs conocidos y lanza notificación
+  /// por cada plato cuyo ID no existía en la carga anterior.
+  void _checkForNewDishes(List<Dish> updatedDishes) {
+    for (final dish in updatedDishes) {
+      // Si el ID del plato no está en el conjunto que conocemos → es nuevo
+      if (dish.id != null && !_knownDishIds.contains(dish.id)) {
+        // Disparamos la notificación de "nuevo plato en carta"
+        NotificationService.showNewDish(dish);
+      }
+    }
   }
 
   // ─── CRUD ──────────────────────────────
