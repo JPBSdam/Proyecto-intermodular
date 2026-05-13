@@ -164,6 +164,7 @@ class NotificationService {
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      macOS: iosSettings,
     );
 
     // Inicializamos el plugin con la configuración anterior
@@ -226,6 +227,11 @@ class NotificationService {
           presentBadge: true,
           presentSound: true,
         ),
+        macOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }
@@ -283,6 +289,11 @@ class NotificationService {
           presentBadge: true,
           presentSound: true,
         ),
+        macOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
       // exactAllowWhileIdle: la notificación se dispara a la hora exacta
       // incluso si el dispositivo está en modo reposo (Doze)
@@ -324,6 +335,11 @@ class NotificationService {
           icon: '@mipmap/ic_launcher',
         ),
         iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+        macOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
@@ -385,6 +401,11 @@ class NotificationService {
           presentBadge: true,
           presentSound: true,
         ),
+        macOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }
@@ -420,6 +441,11 @@ class NotificationService {
           icon: '@mipmap/ic_launcher',
         ),
         iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+        macOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
