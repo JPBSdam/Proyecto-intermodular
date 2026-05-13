@@ -29,6 +29,11 @@ class _ReservationListViewState extends State<ReservationListView> {
   // Guardamos el rol anterior para detectar cambios reales y evitar parpadeos
   String? _lastRole;
 
+  // Flag que evita hacer la redirección automática más de una vez por sesión.
+  // Si el usuario entra, no tiene reservas, va al formulario y vuelve atrás,
+  // se queda en la lista vacía (ya no redirige de nuevo automáticamente).
+  bool _didAutoNavigateToForm = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -70,6 +75,33 @@ class _ReservationListViewState extends State<ReservationListView> {
       if (_filterStatus == 'all') return true;
       return r.state == _filterStatus;
     }).toList();
+
+    // ── Redirección automática al formulario ──────────────────────────────
+    // Condiciones para redirigir:
+    //   1. No es admin (el cliente nunca ha reservado)
+    //   2. Ya terminó la carga inicial (isWatching = true, isLoading = false)
+    //   3. No tiene ninguna reserva en absoluto
+    //   4. Estamos viendo el filtro "todas" (no uno específico)
+    //   5. Todavía no hemos redirigido en esta sesión de pantalla
+    if (!isAdmin &&
+        resVM.isWatching &&
+        !resVM.isLoading &&
+        resVM.reservations.isEmpty &&
+        _filterStatus == 'all' &&
+        !_didAutoNavigateToForm) {
+      // Marcamos que ya redirigimos antes de programar la navegación,
+      // para que no se dispare varias veces en rebuilds del mismo frame
+      _didAutoNavigateToForm = true;
+      // Se ejecuta después del frame actual para no interrumpir el build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Navegamos al formulario de nueva reserva.
+          // Usamos push (no go) para que el usuario pueda volver atrás con
+          // el botón "back" y quedarse en la lista (ya con _didAutoNavigate = true)
+          context.push(AppRoutes.reservationFormCreate());
+        }
+      });
+    }
 
     return LoadingOverlay(
       isLoading: resVM.isLoading,
@@ -298,21 +330,87 @@ class _ReservationListViewState extends State<ReservationListView> {
     }
 
     if (list.isEmpty) {
+      // Estado vacío diferente según si es admin o cliente
+      if (isAdmin) {
+        // El admin ve un mensaje neutro
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 64,
+                color: Colors.grey.withAlpha(50),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'No hay reservas que mostrar',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // El cliente ve una pantalla que invita a reservar
+      // (llega aquí si volvió atrás del formulario sin reservar)
+      final colorScheme = Theme.of(context).colorScheme;
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 64,
-              color: Colors.grey.withAlpha(50),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No hay reservas que mostrar',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icono decorativo grande
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withAlpha(80),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.restaurant_outlined,
+                  size: 56,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Título
+              Text(
+                '¡Aún no tienes reservas!',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              // Subtítulo
+              Text(
+                'Reserva tu mesa ahora y disfruta de una experiencia única.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              // Botón de acción
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () =>
+                      context.push(AppRoutes.reservationFormCreate()),
+                  icon: const Icon(Icons.add),
+                  label: const Text('RESERVAR AHORA'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }

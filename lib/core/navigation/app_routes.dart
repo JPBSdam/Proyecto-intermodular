@@ -38,4 +38,8 @@ class AppRoutes {
   static String reservationDetail(String id) => '$reservations/detail/$id';
   static String reservationFormCreate() => '$reservations/form';
   static String reservationFormEdit(String id) => '$reservations/form/$id';
+
+  // ────── ADMIN NOTIFICATIONS ──────
+  // Vista exclusiva para administradores con las reservas pendientes de gestionar
+  static const String adminNotifications = '/notifications';
 }
