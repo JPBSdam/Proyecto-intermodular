@@ -41,12 +41,18 @@ class FcmService {
     // Pedimos permiso al usuario para recibir notificaciones push.
     // En Android 13+ esto muestra un diálogo al usuario.
     // En iOS siempre muestra el diálogo.
-    await _fcm.requestPermission(
-      alert: true, // Mostrar alerta
-      badge: true, // Mostrar badge (número) en el icono de la app
-      sound: true, // Reproducir sonido
-      provisional: false, // Pedir permiso definitivo (no provisional)
-    );
+    // En macOS (simulador/desarrollo) puede fallar si las notificaciones están
+    // desactivadas a nivel de sistema; capturamos el error para no crashear.
+    try {
+      await _fcm.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
+    } catch (_) {
+      // Notificaciones no permitidas: la app sigue funcionando sin push
+    }
 
     // Escuchamos mensajes FCM cuando la app está en PRIMER PLANO.
     // (En background/cerrada, Android los muestra automáticamente en la bandeja)
