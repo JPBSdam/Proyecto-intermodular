@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
@@ -26,6 +29,8 @@ class _UserFormViewState extends State<UserFormView> {
   late TextEditingController _phoneController;
 
   User? _user;
+  File? _selectedImageFile;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -53,42 +58,96 @@ class _UserFormViewState extends State<UserFormView> {
   void _showPickImageOptions() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    // TODO implementación de carga de imágenes pendiente
+    // Opciones: tomar foto o elegir de galería
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Wrap(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                title: Text(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
                   'Actualizar foto',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              const Divider(),
               ListTile(
                 leading: Icon(Icons.photo_camera, color: colorScheme.primary),
                 title: const Text('Hacer foto'),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  Future.microtask(() => _pickImage(ImageSource.camera));
+                },
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: colorScheme.primary),
                 title: const Text('Elegir de la galería'),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  Future.microtask(() => _pickImage(ImageSource.gallery));
+                },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final permissionGranted = await _requestMediaPermission(source);
+    if (!permissionGranted) {
+      if (mounted)
+        showSnackBar(
+          context,
+          'Permiso necesario para acceder a la cámara/galería.',
+        );
+      return;
+    }
+
+    final picked = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 80,
+      maxWidth: 1200,
+    );
+    if (picked == null) return;
+
+    setState(() {
+      _selectedImageFile = File(picked.path);
+    });
+  }
+
+  Future<bool> _requestMediaPermission(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final status = await Permission.camera.request();
+      return status.isGranted;
+    }
+
+    if (Platform.isIOS) {
+      final status = await Permission.photos.request();
+      return status.isGranted;
+    }
+
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isGranted) return true;
+      final photos = await Permission.photos.request();
+      return photos.isGranted;
+    }
+
+    return true;
   }
 
   Future<void> _apply(UserViewModel viewmodel) async {
@@ -103,10 +162,18 @@ class _UserFormViewState extends State<UserFormView> {
       urlImage: _user?.urlImage,
     );
 
-    await viewmodel.updateUser(updatedUser);
-    if (mounted && viewmodel.error.isEmpty) {
-      context.pop();
-      showSnackBar(context, 'Perfil actualizado correctamente', success: true);
+    try {
+      await viewmodel.saveUser(updatedUser, _selectedImageFile);
+      if (mounted && viewmodel.error.isEmpty) {
+        context.pop();
+        showSnackBar(
+          context,
+          'Perfil actualizado correctamente',
+          success: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) showSnackBar(context, 'Error al guardar el perfil: $e');
     }
   }
 
@@ -148,13 +215,14 @@ class _UserFormViewState extends State<UserFormView> {
 
     // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
     final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
-    final effectivePhotoUrl =
-        (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
+    final effectivePhotoUrl = (_selectedImageFile != null)
+        ? null
+        : (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
         ? _user!.urlImage
         : firebaseUser?.photoURL;
 
     return SizedBox(
-      height: 140,
+      height: 190,
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -175,7 +243,7 @@ class _UserFormViewState extends State<UserFormView> {
             ),
           ),
           Positioned(
-            bottom: -50,
+            bottom: 0,
             child: Stack(
               children: [
                 Container(
@@ -193,13 +261,16 @@ class _UserFormViewState extends State<UserFormView> {
                   child: CircleAvatar(
                     radius: 60,
                     backgroundColor: colorScheme.surfaceContainerHighest,
-                    backgroundImage:
-                        (effectivePhotoUrl != null &&
-                            effectivePhotoUrl.isNotEmpty)
+                    backgroundImage: _selectedImageFile != null
+                        ? FileImage(_selectedImageFile!) as ImageProvider
+                        : (effectivePhotoUrl != null &&
+                              effectivePhotoUrl.isNotEmpty)
                         ? NetworkImage(effectivePhotoUrl)
                         : null,
                     child:
-                        (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
+                        (_selectedImageFile == null &&
+                            (effectivePhotoUrl == null ||
+                                effectivePhotoUrl.isEmpty))
                         ? Icon(
                             Icons.person,
                             size: 70,
