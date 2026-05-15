@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/data/model/dish.dart';
@@ -33,6 +36,8 @@ class _DishFormViewState extends State<DishFormView> {
     'Otro',
   ];
   String? _imageUrl;
+  File? _selectedImageFile;
+  final ImagePicker _imagePicker = ImagePicker();
 
   Dish? _dish;
 
@@ -81,11 +86,7 @@ class _DishFormViewState extends State<DishFormView> {
       available: _dish?.available ?? true,
     );
 
-    if (_dish == null) {
-      await viewmodel.addDish(newDish);
-    } else {
-      await viewmodel.updateDish(newDish);
-    }
+    await viewmodel.saveDish(newDish, _selectedImageFile);
 
     if (mounted && viewmodel.errorMessage.isEmpty) {
       showSnackBar(
@@ -244,15 +245,19 @@ class _DishFormViewState extends State<DishFormView> {
     final theme = Theme.of(context);
     return Center(
       child: GestureDetector(
-        // TODO implementar selector de imagen
-        onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
+        onTap: _pickImage,
         child: AppCard(
           padding: EdgeInsets.zero,
           borderRadius: 20,
           child: SizedBox(
             width: double.infinity,
             height: 160,
-            child: _imageUrl != null && _imageUrl!.isNotEmpty
+            child: _selectedImageFile != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.file(_selectedImageFile!, fit: BoxFit.cover),
+                  )
+                : _imageUrl != null && _imageUrl!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Image.network(_imageUrl!, fit: BoxFit.cover),
@@ -279,6 +284,49 @@ class _DishFormViewState extends State<DishFormView> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    final permissionGranted = await _requestGalleryPermission();
+    if (!permissionGranted) {
+      showSnackBar(
+        context,
+        'Permiso necesario para acceder a la galería de fotos.',
+      );
+      return;
+    }
+
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 1200,
+    );
+
+    if (pickedFile == null) return;
+
+    if (mounted) {
+      setState(() {
+        _selectedImageFile = File(pickedFile.path);
+        _imageUrl = null;
+      });
+    }
+  }
+
+  Future<bool> _requestGalleryPermission() async {
+    if (Platform.isIOS) {
+      final status = await Permission.photos.request();
+      return status.isGranted;
+    }
+
+    if (Platform.isAndroid) {
+      final storageStatus = await Permission.storage.request();
+      if (storageStatus.isGranted) return true;
+
+      final photosStatus = await Permission.photos.request();
+      return photosStatus.isGranted;
+    }
+
+    return true;
   }
 
   @override

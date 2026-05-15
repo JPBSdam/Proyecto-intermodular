@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
+import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 /// ViewModel que gestiona la lógica de negocio y estado de los platos (Dish)
 /// Se encarga de:
@@ -14,6 +16,7 @@ import 'package:app_restaurante/data/services/notifications/notification_service
 
 class DishViewModel extends ChangeNotifier {
   final DishService _service;
+  final StorageService _storageService = StorageService();
 
   DishViewModel(this._service);
 
@@ -92,6 +95,38 @@ class DishViewModel extends ChangeNotifier {
 
   Future<void> updateDish(Dish dish) async =>
       _execute(() => _service.updateDish(dish));
+
+  Future<void> saveDish(Dish dish, File? imageFile) async {
+    await _execute(() async {
+      final bool isNew = dish.id == null;
+
+      if (isNew) {
+        await _service.createDish(dish);
+      }
+
+      if (imageFile != null) {
+        if (dish.urlImage != null && dish.urlImage!.isNotEmpty) {
+          await _storageService.deleteDishImage(dish.urlImage!);
+        }
+
+        try {
+          dish.urlImage = await _storageService.uploadDishImage(
+            imageFile,
+            dish.id!,
+          );
+        } catch (e) {
+          if (isNew && dish.id != null) {
+            await _service.deleteDish(dish.id!);
+          }
+          rethrow;
+        }
+      }
+
+      if (!isNew || imageFile != null) {
+        await _service.updateDish(dish);
+      }
+    });
+  }
 
   Future<void> deleteDish(String id) async =>
       _execute(() => _service.deleteDish(id));
