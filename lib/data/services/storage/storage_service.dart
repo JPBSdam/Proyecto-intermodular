@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:app_restaurante/data/repositories/storage_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 /// Servicio de gestión de Firebase Storage.
 ///
@@ -26,10 +27,9 @@ class StorageService {
   final StorageRepository _repository = StorageRepository();
 
   // ─── Rutas base ──────────────────────────────────────────────────
-  static const String _basePath = 'sabrosaapp';
-  static const String _dishesPath = '$_basePath/dishes';
-  static const String _restaurantsPath = '$_basePath/restaurants';
-  static const String _usersPath = '$_basePath/users';
+  static const String _dishesPath = 'sabrosaapp/dishes';
+  static const String _restaurantsPath = 'sabrosaapp/restaurants';
+  static const String _usersPath = 'sabrosaapp/users';
 
   // ─── Validaciones ────────────────────────────────────────────────
   /// Tamaño máximo de imagen: 5MB
@@ -74,6 +74,7 @@ class StorageService {
       _validateImageFile(imageFile);
 
       final storagePath = '$_dishesPath/$dishId/image.jpg';
+      debugPrint('📸 StorageService.uploadDishImage - Ruta: $storagePath');
       await _repository.uploadFile(imageFile, storagePath);
       return await _repository.getDownloadUrl(storagePath);
     });

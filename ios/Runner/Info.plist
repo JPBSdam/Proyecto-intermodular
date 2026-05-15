@@ -16,6 +16,12 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>app_restaurante</string>
+	<key>NSCameraUsageDescription</key>
+	<string>La app necesita usar la cámara para tomar fotos de los platos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>La app necesita acceder a la galería para seleccionar fotos de los platos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>La app necesita guardar imágenes en la galería.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
