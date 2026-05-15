@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
@@ -5,6 +6,8 @@ import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/data/model/restaurant.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
@@ -29,6 +32,9 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
 
   bool _open = false;
   bool _initialized = false;
+  File? _selectedImageFile;
+  String? _imageUrl;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -244,10 +250,27 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     );
   }
 
+  Future<void> _pickImage() async {
+    final status = await Permission.photos.request();
+    if (!status.isGranted) {
+      if (mounted) showSnackBar(context, 'Permiso de galería requerido');
+      return;
+    }
+
+    final XFile? picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedImageFile = File(picked.path);
+      });
+    }
+  }
+
   Widget _buildImageSelector(Color primaryColor) {
     return Center(
       child: GestureDetector(
-        onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
+        onTap: _pickImage,
         child: Container(
           width: double.infinity,
           height: 180,
@@ -263,11 +286,16 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
               ),
             ],
           ),
-          child: _imageController.text.isNotEmpty
+          child: _selectedImageFile != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Image.file(_selectedImageFile!, fit: BoxFit.cover),
+                )
+              : _imageUrl != null && _imageUrl!.isNotEmpty
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: Image.network(
-                    _imageController.text,
+                    _imageUrl!,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.broken_image,
@@ -306,7 +334,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     _emailController.text = r.email ?? '';
     _descriptionController.text = r.description ?? '';
     _capacityController.text = r.capacity?.toString() ?? '';
-    _imageController.text = r.urlImage ?? '';
+    _imageUrl = r.urlImage;
     _open = r.open ?? false;
   }
 
@@ -332,18 +360,12 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
       capacity: _capacityController.text.isEmpty
           ? current?.capacity
           : int.tryParse(_capacityController.text),
-      urlImage: _imageController.text.isEmpty
-          ? current?.urlImage
-          : _imageController.text,
+      urlImage: _imageUrl,
       open: _open,
     );
 
     try {
-      if (current == null) {
-        await vm.createRestaurant(restaurant);
-      } else {
-        await vm.updateRestaurant(restaurant);
-      }
+      await vm.saveRestaurant(restaurant, _selectedImageFile);
 
       if (!mounted) return;
 

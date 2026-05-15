@@ -536,6 +536,20 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (restaurantVM.restaurant?.urlImage != null &&
+              restaurantVM.restaurant!.urlImage!.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                restaurantVM.restaurant!.urlImage!,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Expanded(
