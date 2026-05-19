@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ImageSelectorCard extends StatelessWidget {
   final File? localImage;
@@ -63,11 +64,12 @@ class ImageSelectorCard extends StatelessWidget {
 
     // Imagen remota
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return Image.network(
-        imageUrl!,
+      return CachedNetworkImage(
+        imageUrl: imageUrl!,
         fit: BoxFit.cover,
-
-        errorBuilder: (_, __, ___) {
+        placeholder: (_, __) =>
+            Container(color: theme.colorScheme.primaryContainer),
+        errorWidget: (_, __, ___) {
           return _buildPlaceholder(primaryColor, theme);
         },
       );

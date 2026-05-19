@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Avatar de usuario unificado que se muestra en la AppBar.
 /// Utiliza HomeViewModel como fuente única de verdad.
@@ -21,12 +22,17 @@ class AppUserAvatar extends StatelessWidget {
     if (homeVM.photoUrl != null && homeVM.photoUrl!.isNotEmpty) {
       avatarChild = ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: Image.network(
-          homeVM.photoUrl!,
+        child: CachedNetworkImage(
+          imageUrl: homeVM.photoUrl!,
           fit: BoxFit.cover,
           width: 36,
           height: 36,
-          errorBuilder: (_, __, ___) => Icon(
+          placeholder: (_, __) => Icon(
+            Icons.account_circle_outlined,
+            color: colorScheme.primary,
+            size: 24,
+          ),
+          errorWidget: (_, __, ___) => Icon(
             Icons.account_circle_outlined,
             color: colorScheme.primary,
             size: 24,
@@ -142,7 +148,7 @@ class AppUserAvatar extends StatelessWidget {
                   radius: 36,
                   backgroundColor: colorScheme.surfaceContainerHighest,
                   backgroundImage: (homeVM.photoUrl != null)
-                      ? NetworkImage(homeVM.photoUrl!)
+                      ? CachedNetworkImageProvider(homeVM.photoUrl!)
                       : null,
                   child: (homeVM.photoUrl == null)
                       ? Icon(

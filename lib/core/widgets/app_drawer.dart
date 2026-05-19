@@ -7,6 +7,7 @@ import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Drawer lateral unificado con estética Premium.
 ///
@@ -158,7 +159,7 @@ class AppDrawer extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.primary,
         image: const DecorationImage(
-          image: NetworkImage(
+          image: CachedNetworkImageProvider(
             'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
           ),
           fit: BoxFit.cover,
@@ -198,7 +199,7 @@ class AppDrawer extends StatelessWidget {
                   radius: 30,
                   backgroundColor: colorScheme.surfaceContainerHighest,
                   backgroundImage: (photo != null && photo.isNotEmpty)
-                      ? NetworkImage(photo)
+                      ? CachedNetworkImageProvider(photo)
                       : null,
                   child: (photo == null || photo.isEmpty)
                       ? Text(
