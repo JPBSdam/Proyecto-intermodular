@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserProfileView extends StatefulWidget {
   const UserProfileView({super.key});
@@ -178,7 +179,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                 backgroundColor: colorScheme.surfaceContainerHighest,
                 backgroundImage:
                     (effectivePhotoUrl != null && effectivePhotoUrl.isNotEmpty)
-                    ? NetworkImage(effectivePhotoUrl)
+                    ? CachedNetworkImageProvider(effectivePhotoUrl)
                     : null,
                 child: (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
                     ? Icon(

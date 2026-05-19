@@ -32,7 +32,7 @@ class StorageService {
   static const String _usersPath = 'sabrosaapp/users';
 
   // ─── Validaciones ────────────────────────────────────────────────
-  /// Tamaño máximo de imagen: 5MB
+  /// Tamaño máximo de imagen: 2MB
   static const int _maxFileSizeBytes = 2 * 1024 * 1024;
 
   /// Valida un archivo de imagen antes de subirlo.

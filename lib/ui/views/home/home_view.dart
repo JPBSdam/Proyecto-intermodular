@@ -11,6 +11,7 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
@@ -174,9 +175,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           ),
         ],
         image: const DecorationImage(
-          image: NetworkImage(
+          image: CachedNetworkImageProvider(
             'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
           ),
           fit: BoxFit.cover,
         ),
@@ -540,12 +540,16 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
               restaurantVM.restaurant!.urlImage!.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                restaurantVM.restaurant!.urlImage!,
+              child: CachedNetworkImage(
+                imageUrl: restaurantVM.restaurant!.urlImage!,
                 width: double.infinity,
                 height: 160,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                placeholder: (_, __) => const SizedBox(
+                  height: 160,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
             const SizedBox(height: 12),

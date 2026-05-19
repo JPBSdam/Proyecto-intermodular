@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserFormView extends StatefulWidget {
   final String userId;
@@ -194,7 +195,7 @@ class _UserFormViewState extends State<UserFormView> {
                           ? FileImage(_selectedImageFile!) as ImageProvider
                           : (effectivePhotoUrl != null &&
                                 effectivePhotoUrl.isNotEmpty)
-                          ? NetworkImage(effectivePhotoUrl)
+                          ? CachedNetworkImageProvider(effectivePhotoUrl)
                           : null,
                       child:
                           (_selectedImageFile == null &&
