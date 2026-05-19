@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
+import 'package:app_restaurante/core/widgets/image_selector_card.dart';
+import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
+import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/data/model/dish.dart';
@@ -37,7 +38,7 @@ class _DishFormViewState extends State<DishFormView> {
   ];
   String? _imageUrl;
   File? _selectedImageFile;
-  final ImagePicker _imagePicker = ImagePicker();
+  final ImagePickerService _imagePickerService = ImagePickerService();
 
   Dish? _dish;
 
@@ -124,7 +125,14 @@ class _DishFormViewState extends State<DishFormView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildImageSelector(primaryColor),
+                ImageSelectorCard(
+                  localImage: _selectedImageFile,
+                  imageUrl: _imageUrl,
+                  height: 160,
+                  borderRadius: 20,
+                  placeholderText: 'Añadir foto',
+                  onTap: _pickImage,
+                ),
                 const SizedBox(height: 32),
 
                 AppTextField(
@@ -241,99 +249,26 @@ class _DishFormViewState extends State<DishFormView> {
     );
   }
 
-  Widget _buildImageSelector(Color primaryColor) {
-    final theme = Theme.of(context);
-    return Center(
-      child: GestureDetector(
-        onTap: _pickImage,
-        child: AppCard(
-          padding: EdgeInsets.zero,
-          borderRadius: 20,
-          child: SizedBox(
-            width: double.infinity,
-            height: 160,
-            child: _selectedImageFile != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.file(_selectedImageFile!, fit: BoxFit.cover),
-                  )
-                : _imageUrl != null && _imageUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(_imageUrl!, fit: BoxFit.cover),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.camera_alt_outlined,
-                        size: 40,
-                        color: primaryColor,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Añadir foto',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _pickImage() async {
-    final permissionGranted = await _requestGalleryPermission();
-    if (!permissionGranted) {
-      showSnackBar(
-        context,
-        'Permiso necesario para acceder a la galería de fotos.',
-      );
-      return;
+    final source = await ImageSourceSheet.show(context);
+
+    if (source == null) return;
+
+    try {
+      final file = await _imagePickerService.pickImage(source: source);
+
+      if (file == null) return;
+
+      if (mounted) {
+        setState(() {
+          _selectedImageFile = file;
+          _imageUrl = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, e.toString());
+      }
     }
-
-    final pickedFile = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-      maxWidth: 1200,
-    );
-
-    if (pickedFile == null) return;
-
-    if (mounted) {
-      setState(() {
-        _selectedImageFile = File(pickedFile.path);
-        _imageUrl = null;
-      });
-    }
-  }
-
-  Future<bool> _requestGalleryPermission() async {
-    if (Platform.isIOS) {
-      final status = await Permission.photos.request();
-      return status.isGranted;
-    }
-
-    if (Platform.isAndroid) {
-      final storageStatus = await Permission.storage.request();
-      if (storageStatus.isGranted) return true;
-
-      final photosStatus = await Permission.photos.request();
-      return photosStatus.isGranted;
-    }
-
-    return true;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descController.dispose();
-    _priceController.dispose();
-    super.dispose();
   }
 }

@@ -72,19 +72,16 @@ class UserViewModel extends ChangeNotifier {
     _setLoading(true);
     _error = '';
     try {
-      // Subir avatar si se ha seleccionado uno
+      // Subir avatar si se ha seleccionado uno. Usamos un path fijo para
+      // el avatar que sobrescribe la imagen anterior, evitando el borrado.
       if (imageFile != null) {
-        if (user.urlImage != null && user.urlImage!.isNotEmpty) {
-          await _storageService.deleteUserAvatar(user.urlImage!);
-        }
-
         user.urlImage = await _storageService.uploadUserAvatar(
           imageFile,
           user.id!,
         );
       }
 
-      // Actualizamos siempre el documento del usuario (sin crear uno nuevo)
+      // Actualizamos siempre el documento del usuario.
       await _service.updateUser(user);
     } catch (e) {
       _error = 'Error al guardar usuario: $e';

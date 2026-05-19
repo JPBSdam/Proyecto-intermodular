@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
+import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
@@ -30,7 +30,7 @@ class _UserFormViewState extends State<UserFormView> {
 
   User? _user;
   File? _selectedImageFile;
-  final ImagePicker _imagePicker = ImagePicker();
+  final ImagePickerService _imagePickerService = ImagePickerService();
 
   @override
   void initState() {
@@ -55,99 +55,26 @@ class _UserFormViewState extends State<UserFormView> {
     });
   }
 
-  void _showPickImageOptions() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    // Opciones: tomar foto o elegir de galería
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  'Actualizar foto',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const Divider(),
-              ListTile(
-                leading: Icon(Icons.photo_camera, color: colorScheme.primary),
-                title: const Text('Hacer foto'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Future.microtask(() => _pickImage(ImageSource.camera));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_library, color: colorScheme.primary),
-                title: const Text('Elegir de la galería'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Future.microtask(() => _pickImage(ImageSource.gallery));
-                },
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _showPickImageOptions() async {
+    final source = await ImageSourceSheet.show(context);
 
-  Future<void> _pickImage(ImageSource source) async {
-    final permissionGranted = await _requestMediaPermission(source);
-    if (!permissionGranted) {
-      if (mounted)
-        showSnackBar(
-          context,
-          'Permiso necesario para acceder a la cámara/galería.',
-        );
-      return;
+    if (source == null) return;
+
+    try {
+      final file = await _imagePickerService.pickImage(source: source);
+
+      if (file == null) return;
+
+      if (mounted) {
+        setState(() {
+          _selectedImageFile = file;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, e.toString());
+      }
     }
-
-    final picked = await _imagePicker.pickImage(
-      source: source,
-      imageQuality: 80,
-      maxWidth: 1200,
-    );
-    if (picked == null) return;
-
-    setState(() {
-      _selectedImageFile = File(picked.path);
-    });
-  }
-
-  Future<bool> _requestMediaPermission(ImageSource source) async {
-    if (source == ImageSource.camera) {
-      final status = await Permission.camera.request();
-      return status.isGranted;
-    }
-
-    if (Platform.isIOS) {
-      final status = await Permission.photos.request();
-      return status.isGranted;
-    }
-
-    if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      if (status.isGranted) return true;
-      final photos = await Permission.photos.request();
-      return photos.isGranted;
-    }
-
-    return true;
   }
 
   Future<void> _apply(UserViewModel viewmodel) async {
@@ -246,37 +173,40 @@ class _UserFormViewState extends State<UserFormView> {
             bottom: 0,
             child: Stack(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: colorScheme.surface, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(20),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    backgroundImage: _selectedImageFile != null
-                        ? FileImage(_selectedImageFile!) as ImageProvider
-                        : (effectivePhotoUrl != null &&
-                              effectivePhotoUrl.isNotEmpty)
-                        ? NetworkImage(effectivePhotoUrl)
-                        : null,
-                    child:
-                        (_selectedImageFile == null &&
-                            (effectivePhotoUrl == null ||
-                                effectivePhotoUrl.isEmpty))
-                        ? Icon(
-                            Icons.person,
-                            size: 70,
-                            color: colorScheme.onSurfaceVariant,
-                          )
-                        : null,
+                GestureDetector(
+                  onTap: _showPickImageOptions,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.surface, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(20),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      backgroundImage: _selectedImageFile != null
+                          ? FileImage(_selectedImageFile!) as ImageProvider
+                          : (effectivePhotoUrl != null &&
+                                effectivePhotoUrl.isNotEmpty)
+                          ? NetworkImage(effectivePhotoUrl)
+                          : null,
+                      child:
+                          (_selectedImageFile == null &&
+                              (effectivePhotoUrl == null ||
+                                  effectivePhotoUrl.isEmpty))
+                          ? Icon(
+                              Icons.person,
+                              size: 70,
+                              color: colorScheme.onSurfaceVariant,
+                            )
+                          : null,
+                    ),
                   ),
                 ),
                 Positioned(
