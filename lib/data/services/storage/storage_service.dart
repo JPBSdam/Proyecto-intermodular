@@ -33,7 +33,7 @@ class StorageService {
 
   // ─── Validaciones ────────────────────────────────────────────────
   /// Tamaño máximo de imagen: 5MB
-  static const int _maxFileSizeBytes = 5 * 1024 * 1024;
+  static const int _maxFileSizeBytes = 2 * 1024 * 1024;
 
   /// Valida un archivo de imagen antes de subirlo.
   ///
