@@ -16,9 +16,9 @@ import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class DishViewModel extends ChangeNotifier {
   final DishService _service;
-  final StorageService _storageService = StorageService();
+  final StorageService? _storageService;
 
-  DishViewModel(this._service);
+  DishViewModel(this._service, [this._storageService]);
 
   List<Dish> _dishes = [];
   List<Dish> get dishes => _dishes;
@@ -105,12 +105,13 @@ class DishViewModel extends ChangeNotifier {
       }
 
       if (imageFile != null) {
+        final storageService = _storageService ?? StorageService();
         if (dish.urlImage != null && dish.urlImage!.isNotEmpty) {
-          await _storageService.deleteDishImage(dish.urlImage!);
+          await storageService.deleteDishImage(dish.urlImage!);
         }
 
         try {
-          dish.urlImage = await _storageService.uploadDishImage(
+          dish.urlImage = await storageService.uploadDishImage(
             imageFile,
             dish.id!,
           );
