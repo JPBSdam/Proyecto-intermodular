@@ -61,16 +61,6 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  Future<void> _handleAnonymousLogin(LoginViewModel viewModel) async {
-    final success = await viewModel.signInAnonymously();
-    if (!mounted) return;
-    if (success) {
-      context.go(AppRoutes.home);
-    } else {
-      _showError(viewModel.errorMessage);
-    }
-  }
-
   void _showError(String? message) {
     showSnackBar(context, message ?? 'Error desconocido', error: true);
   }
@@ -230,26 +220,6 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  Widget _buildAnonymousButton(LoginViewModel viewModel) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: OutlinedButton(
-        onPressed: viewModel.isLoading
-            ? null
-            : () => _handleAnonymousLogin(viewModel),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppTheme.brandPrimary,
-          side: BorderSide(color: AppTheme.brandPrimary.withAlpha(100)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-        ),
-        child: const Text('Continuar como invitado'),
-      ),
-    );
-  }
-
   Widget _buildRegisterLink(LoginViewModel viewModel) {
     return Column(
       children: [
@@ -283,8 +253,6 @@ class _LoginViewState extends State<LoginView> {
           _buildLoginButton(viewModel),
           const SizedBox(height: 16),
           _buildGoogleButton(viewModel),
-          const SizedBox(height: 16),
-          _buildAnonymousButton(viewModel),
           const SizedBox(height: 16),
           _buildRegisterLink(viewModel),
         ],

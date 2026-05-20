@@ -73,8 +73,8 @@ final GoRouter appRouter = GoRouter(
     final isProtectedRoute =
         location.startsWith('/profile') || location.startsWith('/reservations');
 
-    // 1. Si no hay usuario y trata de ir a zona protegida -> Login
-    if (user == null && isProtectedRoute) {
+    // 1. Si no hay sesión real (sin usuario o anónimo) y trata de ir a zona protegida -> Login
+    if ((user == null || user.isAnonymous) && isProtectedRoute) {
       return AppRoutes.login;
     }
 

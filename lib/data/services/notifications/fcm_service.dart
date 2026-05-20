@@ -43,16 +43,18 @@ class FcmService {
     // En iOS siempre muestra el diálogo.
     // En macOS (simulador/desarrollo) puede fallar si las notificaciones están
     // desactivadas a nivel de sistema; capturamos el error para no crashear.
-    try {
-      await _fcm.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-        provisional: false,
-      );
-    } catch (_) {
-      // Notificaciones no permitidas: la app sigue funcionando sin push
-    }
+    // No bloqueamos el arranque con requestPermission — el diálogo se pide
+    // una vez que runApp() ya ha montado la UI.
+    unawaited(() async {
+      try {
+        await _fcm.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+          provisional: false,
+        );
+      } catch (_) {}
+    }());
 
     // Escuchamos mensajes FCM cuando la app está en PRIMER PLANO.
     // (En background/cerrada, Android los muestra automáticamente en la bandeja)

@@ -10,6 +10,7 @@ import 'package:app_restaurante/data/services/firestore/reservation_service.dart
 import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Inicializamos Firebase con las opciones generadas automáticamente
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Si no hay sesión activa, iniciamos sesión anónima para que Firestore
+  // pueda leer datos públicos (restaurante, carta) sin autenticación real.
+  if (FirebaseAuth.instance.currentUser == null) {
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } catch (_) {}
+  }
 
   // Inicializamos el servicio de notificaciones locales.
   // Esto configura los canales de Android, pide permisos al usuario
