@@ -313,10 +313,19 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ),
                         ),
                         child: TextButton(
-                          // Si es invitado, muestra el diálogo de login; si está autenticado, va a reservar
+                          // Si es invitado → login; sin verificar → aviso; autenticado → reservar
                           onPressed: () {
                             if (viewModel.isGuest) {
                               _showLoginRequiredDialog(context);
+                            } else if (!viewModel.isEmailVerified) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Verifica tu correo electrónico para poder hacer reservas',
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
                             } else {
                               context.go(AppRoutes.reservationFormCreate());
                             }

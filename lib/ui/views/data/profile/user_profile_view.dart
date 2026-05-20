@@ -289,9 +289,21 @@ class _UserProfileViewState extends State<UserProfileView> {
           _buildActivityCard(
             icon: Icons.calendar_today_outlined,
             title: 'Mis reservas',
-            // Corregido: la ruta '/reservations/my' no existía,
-            // usamos AppRoutes.reservations que sí está registrada en el router
-            onTap: () => context.go(AppRoutes.reservations),
+            onTap: () {
+              final homeVM = context.read<HomeViewModel>();
+              if (!homeVM.isEmailVerified) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Verifica tu correo electrónico para poder hacer reservas',
+                    ),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              } else {
+                context.go(AppRoutes.reservations);
+              }
+            },
           ),
         ],
       ),

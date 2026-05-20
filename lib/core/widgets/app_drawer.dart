@@ -29,6 +29,7 @@ class AppDrawer extends StatelessWidget {
         : homeVM.email;
     final String? photoUrl = homeVM.photoUrl;
     final bool isAdmin = homeVM.userRole == 'ADMIN';
+    final bool isEmailVerified = homeVM.isEmailVerified;
     final bool isRealAdmin = homeVM.actualRole == 'ADMIN';
     final bool previewMode = homeVM.previewMode;
 
@@ -78,6 +79,9 @@ class AppDrawer extends StatelessWidget {
                     label: 'Reservar mesa',
                     route: AppRoutes.reservationFormCreate(),
                     currentPath: currentPath,
+                    onTap: isEmailVerified
+                        ? null
+                        : () => _showVerificationRequired(context),
                   ),
                   if (!isAdmin)
                     _buildDrawerItem(
@@ -86,6 +90,9 @@ class AppDrawer extends StatelessWidget {
                       label: 'Mis reservas',
                       route: AppRoutes.reservations,
                       currentPath: currentPath,
+                      onTap: isEmailVerified
+                          ? null
+                          : () => _showVerificationRequired(context),
                     ),
                 ],
 
@@ -272,6 +279,18 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
+  void _showVerificationRequired(BuildContext context) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Verifica tu correo electrónico para poder hacer reservas',
+        ),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
   Widget _buildDrawerItem({
     required BuildContext context,
     required IconData icon,
@@ -280,6 +299,7 @@ class AppDrawer extends StatelessWidget {
     required String currentPath,
     bool isAction = false,
     Widget? trailing,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -305,13 +325,15 @@ class AppDrawer extends StatelessWidget {
       trailing: trailing,
       selected: isSelected,
       selectedTileColor: colorScheme.primaryContainer.withAlpha(100),
-      onTap: () {
-        Navigator.pop(context);
-        if (isSelected && currentPath == route) return;
-        try {
-          isAction ? context.push(route) : context.go(route);
-        } catch (_) {}
-      },
+      onTap:
+          onTap ??
+          () {
+            Navigator.pop(context);
+            if (isSelected && currentPath == route) return;
+            try {
+              isAction ? context.push(route) : context.go(route);
+            } catch (_) {}
+          },
     );
   }
 

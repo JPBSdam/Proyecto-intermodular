@@ -30,13 +30,27 @@ class UserService {
           email: firebaseUser.email,
           name: firebaseUser.displayName,
           googlePhotoUrl: firebaseUser.photoURL,
+          isActive: true,
         );
 
         await _repository.create(newUser);
-      } else if (firebaseUser.photoURL != null &&
-          existingUser.googlePhotoUrl != firebaseUser.photoURL) {
-        existingUser.googlePhotoUrl = firebaseUser.photoURL;
-        await _repository.update(existingUser);
+      } else {
+        // Actualizamos si cambió la foto de Google o si isActive no está definido
+        // (documentos creados antes de que se añadiera el campo)
+        bool needsUpdate = false;
+
+        if (firebaseUser.photoURL != null &&
+            existingUser.googlePhotoUrl != firebaseUser.photoURL) {
+          existingUser.googlePhotoUrl = firebaseUser.photoURL;
+          needsUpdate = true;
+        }
+
+        if (existingUser.isActive == null) {
+          existingUser.isActive = true;
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) await _repository.update(existingUser);
       }
     });
   }

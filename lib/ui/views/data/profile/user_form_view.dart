@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
 import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
@@ -284,6 +285,10 @@ class _UserFormViewState extends State<UserFormView> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+          _buildDeleteAccountSection(viewmodel),
           if (homeVM.actualRole == 'ADMIN') ...[
             const SizedBox(height: 48),
             const Divider(),
@@ -314,6 +319,92 @@ class _UserFormViewState extends State<UserFormView> {
         ],
       ),
     );
+  }
+
+  Widget _buildDeleteAccountSection(UserViewModel viewmodel) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'ZONA DE PELIGRO',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.red.withAlpha(180),
+            letterSpacing: 1.1,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+            label: const Text(
+              'Eliminar mi cuenta',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.red),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+            onPressed: () => _confirmDeleteAccount(viewmodel),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmDeleteAccount(UserViewModel viewmodel) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Eliminar cuenta'),
+          ],
+        ),
+        content: const Text(
+          'Se borrarán todos tus datos personales de forma permanente y '
+          'perderás el acceso a tu historial de reservas.\n\n'
+          'Esta operación es irreversible. Si te registras de nuevo con el '
+          'mismo correo, será una cuenta completamente nueva.\n\n'
+          '¿Estás seguro de que quieres continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Sí, eliminar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await viewmodel.deleteAccount(widget.userId);
+      if (mounted) context.go(AppRoutes.home);
+    } catch (_) {
+      if (mounted) {
+        showSnackBar(
+          context,
+          'No se pudo eliminar la cuenta. Inténtalo de nuevo.',
+        );
+      }
+    }
   }
 
   @override
