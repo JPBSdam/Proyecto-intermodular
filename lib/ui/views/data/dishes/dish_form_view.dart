@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
+import 'package:app_restaurante/core/widgets/image_selector_card.dart';
+import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
+import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +37,8 @@ class _DishFormViewState extends State<DishFormView> {
     'Otro',
   ];
   String? _imageUrl;
+  File? _selectedImageFile;
+  final ImagePickerService _imagePickerService = ImagePickerService();
 
   Dish? _dish;
 
@@ -81,11 +87,7 @@ class _DishFormViewState extends State<DishFormView> {
       available: _dish?.available ?? true,
     );
 
-    if (_dish == null) {
-      await viewmodel.addDish(newDish);
-    } else {
-      await viewmodel.updateDish(newDish);
-    }
+    await viewmodel.saveDish(newDish, _selectedImageFile);
 
     if (mounted && viewmodel.errorMessage.isEmpty) {
       showSnackBar(
@@ -123,7 +125,14 @@ class _DishFormViewState extends State<DishFormView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildImageSelector(primaryColor),
+                ImageSelectorCard(
+                  localImage: _selectedImageFile,
+                  imageUrl: _imageUrl,
+                  height: 160,
+                  borderRadius: 20,
+                  placeholderText: 'Añadir foto',
+                  onTap: _pickImage,
+                ),
                 const SizedBox(height: 32),
 
                 AppTextField(
@@ -240,52 +249,26 @@ class _DishFormViewState extends State<DishFormView> {
     );
   }
 
-  Widget _buildImageSelector(Color primaryColor) {
-    final theme = Theme.of(context);
-    return Center(
-      child: GestureDetector(
-        // TODO implementar selector de imagen
-        onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
-        child: AppCard(
-          padding: EdgeInsets.zero,
-          borderRadius: 20,
-          child: SizedBox(
-            width: double.infinity,
-            height: 160,
-            child: _imageUrl != null && _imageUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(_imageUrl!, fit: BoxFit.cover),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.camera_alt_outlined,
-                        size: 40,
-                        color: primaryColor,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Añadir foto',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _pickImage() async {
+    final source = await ImageSourceSheet.show(context);
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descController.dispose();
-    _priceController.dispose();
-    super.dispose();
+    if (source == null) return;
+
+    try {
+      final file = await _imagePickerService.pickImage(source: source);
+
+      if (file == null) return;
+
+      if (mounted) {
+        setState(() {
+          _selectedImageFile = file;
+          _imageUrl = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, e.toString());
+      }
+    }
   }
 }

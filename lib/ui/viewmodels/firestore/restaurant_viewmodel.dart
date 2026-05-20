@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/restaurant.dart';
 import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
+import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class RestaurantViewModel extends ChangeNotifier {
   final RestaurantService _service;
+  final StorageService _storageService = StorageService();
 
   RestaurantViewModel(this._service);
 
@@ -49,6 +52,38 @@ class RestaurantViewModel extends ChangeNotifier {
 
   Future<void> updateRestaurant(Restaurant r) async =>
       _execute(() => _service.updateRestaurant(r));
+
+  Future<void> saveRestaurant(Restaurant r, File? imageFile) async {
+    await _execute(() async {
+      final bool isNew = r.id == null;
+
+      if (isNew) {
+        await _service.createRestaurant(r);
+      }
+
+      if (imageFile != null) {
+        if (r.urlImage != null && r.urlImage!.isNotEmpty) {
+          await _storageService.deleteRestaurantImage(r.urlImage!);
+        }
+
+        try {
+          r.urlImage = await _storageService.uploadRestaurantImage(
+            imageFile,
+            r.id!,
+          );
+        } catch (e) {
+          if (isNew && r.id != null) {
+            await _service.deleteRestaurant(r.id!);
+          }
+          rethrow;
+        }
+      }
+
+      if (!isNew || imageFile != null) {
+        await _service.updateRestaurant(r);
+      }
+    });
+  }
 
   Future<void> deleteRestaurant(String id) async =>
       _execute(() => _service.deleteRestaurant(id));

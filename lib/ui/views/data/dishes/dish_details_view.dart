@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../viewmodels/home/home_viewmodel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DishDetailView extends StatefulWidget {
   final String dishId;
@@ -132,12 +133,18 @@ class _DishDetailViewState extends State<DishDetailView> {
                         children: [
                           if (_dish!.urlImage != null &&
                               _dish!.urlImage!.isNotEmpty)
-                            Image.network(
-                              _dish!.urlImage!,
+                            CachedNetworkImage(
+                              imageUrl: _dish!.urlImage!,
                               fit: BoxFit.cover,
-                              webHtmlElementStrategy:
-                                  WebHtmlElementStrategy.fallback,
-                              errorBuilder: (context, _, __) => Container(
+                              placeholder: (_, __) => Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                              errorWidget: (context, _, __) => Container(
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.primaryContainer,
