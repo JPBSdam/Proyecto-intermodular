@@ -1,11 +1,22 @@
 # 🧪 Guía de tests del proyecto
 
-## 📊 Estado actual: **107 tests pasando ✅**
+## 📊 Estado actual: **166 tests pasando ✅**
 
 ```bash
 flutter test
-# Output: 00:00 +107: All tests passed!
+# Output: 00:00 +166: All tests passed!
 ```
+
+### Cobertura por capa
+
+| Capa | Estado |
+|---|---|
+| **Models** | ✅ Cubiertos (dish, menu, reservation, user) |
+| **Services** | ✅ AuthService cubierto — pendiente: firestore_service, storage_service |
+| **Repositories** | ❌ Sin tests |
+| **ViewModels** | ✅ Login, Register, Dish, Reservation, User — pendiente: Menu, Home |
+| **Views** | ❌ Sin tests (widget tests) |
+
 ---
 **Nota**: los tests deben facilitar y mejorar la lógica de nuestro programa, si esto nos supone  un bloqueo o problema, los tests pueden omitirse de forma sencilla para evitar que rompan el workflow:
 - Omitir un solo test:
@@ -51,7 +62,9 @@ test/
         ├── dish_viewmodel_test.dart
         ├── dish_viewmodel_test.mocks.dart        # Generado automáticamente
         ├── reservation_viewmodel_test.dart
-        └── reservation_viewmodel_test.mocks.dart # Generado automáticamente
+        ├── reservation_viewmodel_test.mocks.dart # Generado automáticamente
+        ├── user_viewmodel_test.dart
+        └── user_viewmodel_test.mocks.dart        # Generado automáticamente
 ```
 
 ---
@@ -172,6 +185,7 @@ Verifican la lógica de presentación: estado inicial, ciclo de carga, propagaci
 - ✅ `signInWithGoogle`: éxito, cancelación (retorna `null`), error
 - ✅ `signInAnonymously`: éxito, error
 - ✅ `resetPassword`: éxito, error
+- ✅ `_checkUserActive`: bloquea login si `isActive = false` (llama a `signOut`), permite acceso si `isActive = true`
 
 **`register_viewmodel_test.dart` — 7 tests**
 - ✅ Estado inicial
@@ -184,6 +198,14 @@ Verifican la lógica de presentación: estado inicial, ciclo de carga, propagaci
 - ✅ `updateDish`: delega al servicio, `errorMessage` en fallo
 - ✅ `deleteDish`: delega al servicio, `errorMessage` en fallo
 - ✅ `fetchDishById`: retorna plato, retorna `null` en fallo
+
+**`user_viewmodel_test.dart` — 13 tests**
+- ✅ Estado inicial (`isLoading`, `error`, `user`)
+- ✅ `fetchUserById`: retorna usuario en éxito, `null` + error en fallo, `isLoading` al terminar
+- ✅ `updateUser`: delega al servicio, setea error en fallo
+- ✅ `saveUser`: sin imagen solo actualiza documento, con imagen sube avatar primero, error relanzado
+- ✅ `watchUser`: actualiza `user` con datos del stream, setea error en fallo del stream
+- ✅ `deleteAccount`: cancela reservas activas antes de anonimizar, no llama `updateStatuses` si no hay reservas
 
 **`reservation_viewmodel_test.dart` — 20 tests**
 - ✅ Estado inicial (`reservations`, `isLoading`, `errorMessage`, `isWatching`, `pendingCount`)

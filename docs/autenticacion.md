@@ -77,33 +77,40 @@ class AuthService {
 
 ## 🎨 Cómo lo usan los ViewModels
 
-Los ViewModels llaman a `AuthService` y gestionan el estado de la UI (cargando, error):
+Los ViewModels llaman a `AuthService` y gestionan el estado de la UI (cargando, error). `LoginViewModel` también consulta `UserRepository` para bloquear cuentas eliminadas:
 
 ```dart
 class LoginViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
+  final UserRepository _userRepository;
 
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  Future<bool> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
+  Future<bool> signInWithEmail({required String email, required String password}) async {
+    _setLoading(true);
+    _clearError();
     try {
-      await _authService.signInWithEmail(email: email, password: password);
-      _isLoading = false;
-      notifyListeners();
+      final credential = await _authService.signInWithEmail(email: email, password: password);
+      await _checkUserActive(credential?.user?.uid);  // bloquea cuentas eliminadas
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
+      _setError(e.toString());
       return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> _checkUserActive(String? uid) async {
+    if (uid == null) return;
+    try {
+      final user = await _userRepository.getById(uid);
+      if (user != null && user.isActive == false) {
+        await _authService.signOut();
+        throw 'Esta cuenta no existe o ha sido eliminada.';
+      }
+    } catch (e) {
+      if (e is String) rethrow;
+      await _authService.signOut();  // fallo inesperado → cerrar sesión por seguridad
+      rethrow;
     }
   }
 }
