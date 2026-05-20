@@ -8,7 +8,6 @@ class Menu {
   List<String>? dishes;
   double? price;
   bool? available;
-  //DateTime? createdAt; no creo que sea necesario guardar cuando se crea un menu?
 
   //CONSTRUCTOR
   Menu({

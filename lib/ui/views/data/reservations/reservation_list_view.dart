@@ -2,6 +2,7 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
@@ -26,12 +27,8 @@ class _ReservationListViewState extends State<ReservationListView> {
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
 
-  // Guardamos el rol anterior para detectar cambios reales y evitar parpadeos
   String? _lastRole;
 
-  // Flag que evita hacer la redirección automática más de una vez por sesión.
-  // Si el usuario entra, no tiene reservas, va al formulario y vuelve atrás,
-  // se queda en la lista vacía (ya no redirige de nuevo automáticamente).
   bool _didAutoNavigateToForm = false;
 
   @override
@@ -76,13 +73,6 @@ class _ReservationListViewState extends State<ReservationListView> {
       return r.state == _filterStatus;
     }).toList();
 
-    // ── Redirección automática al formulario ──────────────────────────────
-    // Condiciones para redirigir:
-    //   1. No es admin (el cliente nunca ha reservado)
-    //   2. Ya terminó la carga inicial (isWatching = true, isLoading = false)
-    //   3. No tiene ninguna reserva en absoluto
-    //   4. Estamos viendo el filtro "todas" (no uno específico)
-    //   5. Todavía no hemos redirigido en esta sesión de pantalla
     if (!isAdmin &&
         resVM.isWatching &&
         !resVM.isLoading &&
@@ -122,18 +112,15 @@ class _ReservationListViewState extends State<ReservationListView> {
                 )
               : null,
         ),
+        drawer: AppDrawer(),
         body: Column(
           children: [
-            // 1. Filtros (Siempre arriba)
             if (!_isSelectionMode) _buildFilters(),
 
-            // 2. Acción Rápida (Solo Admin, debajo de filtros)
             if (isAdmin && !_isSelectionMode) _buildQuickActionTrigger(),
 
-            // 3. Panel de Selección (Sustituye a la acción rápida en modo selección)
             if (_isSelectionMode) _buildSelectionHeader(resVM),
 
-            // 4. Listado
             Expanded(
               child: _buildBody(filteredList, resVM.errorMessage, isAdmin),
             ),

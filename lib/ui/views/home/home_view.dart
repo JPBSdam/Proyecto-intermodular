@@ -575,6 +575,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             Icons.phone_outlined,
             restaurantVM.restaurant?.phoneNumber ?? 'Sin teléfono',
           ),
+          const SizedBox(height: 16),
+          _buildInfoRow(
+            Icons.mail,
+            restaurantVM.restaurant?.email ?? 'Sin email',
+          ),
+
           // Solo mostrar botón de gestión si es ADMIN
           if (isAdmin) ...[
             const SizedBox(height: 24),

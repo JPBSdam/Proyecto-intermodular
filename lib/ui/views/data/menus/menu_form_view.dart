@@ -27,6 +27,7 @@ class _MenuFormViewState extends State<MenuFormView> {
   late TextEditingController _descController;
   List<Dish> _selectedDishes = [];
   Menu? _menu;
+  bool _available = true;
   bool _initialized = false;
 
   @override
@@ -53,6 +54,7 @@ class _MenuFormViewState extends State<MenuFormView> {
         _nameController.text = menu.name ?? '';
         _priceController.text = menu.price?.toStringAsFixed(2) ?? '';
         _descController.text = menu.description ?? '';
+        _available = menu.available ?? true;
         _menu = menu;
       }
     }
@@ -118,6 +120,29 @@ class _MenuFormViewState extends State<MenuFormView> {
                 ),
                 const SizedBox(height: 32),
                 _buildDishSelector(primaryColor),
+                const SizedBox(height: 24),
+                SwitchListTile(
+                  title: Text(
+                    _available ? 'Disponible' : 'No disponible',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _available ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  secondary: Icon(
+                    _available
+                        ? Icons.check_circle_outline
+                        : Icons.highlight_off,
+                    color: _available ? Colors.green : Colors.red,
+                  ),
+                  value: _available,
+                  activeThumbColor: Colors.green,
+                  onChanged: (val) => setState(() => _available = val),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  tileColor: Theme.of(context).colorScheme.surface,
+                ),
                 const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
@@ -233,7 +258,7 @@ class _MenuFormViewState extends State<MenuFormView> {
       description: _descController.text.trim(),
       dishes: _selectedDishes.map((d) => d.id!).toList(),
       price: double.tryParse(_priceController.text),
-      available: _menu?.available ?? true,
+      available: _available,
     );
 
     await (_menu == null
