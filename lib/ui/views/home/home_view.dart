@@ -11,6 +11,7 @@ import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
@@ -159,6 +160,11 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   Widget _buildHeroSection(HomeViewModel viewModel) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final restaurantVM = context.watch<RestaurantViewModel>();
+    final restaurantImage = restaurantVM.restaurant?.urlImage;
+    final heroImage = (restaurantImage != null && restaurantImage.isNotEmpty)
+        ? restaurantImage
+        : 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1350&q=80';
 
     return Container(
       height: 380,
@@ -173,11 +179,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             offset: const Offset(0, 10),
           ),
         ],
-        image: const DecorationImage(
-          image: NetworkImage(
-            'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-          ),
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(heroImage),
           fit: BoxFit.cover,
         ),
       ),
@@ -536,6 +539,24 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (restaurantVM.restaurant?.urlImage != null &&
+              restaurantVM.restaurant!.urlImage!.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: restaurantVM.restaurant!.urlImage!,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => const SizedBox(
+                  height: 160,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Expanded(

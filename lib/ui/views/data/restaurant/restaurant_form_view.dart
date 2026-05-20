@@ -1,10 +1,15 @@
+import 'dart:io';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
+import 'package:app_restaurante/core/widgets/image_selector_card.dart';
+import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
+import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/data/model/restaurant.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
@@ -29,6 +34,9 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
 
   bool _open = false;
   bool _initialized = false;
+  File? _selectedImageFile;
+  String? _imageUrl;
+  final ImagePickerService _imagePickerService = ImagePickerService();
 
   @override
   void initState() {
@@ -39,7 +47,6 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     _emailController = TextEditingController();
     _descriptionController = TextEditingController();
     _capacityController = TextEditingController();
-    _imageController = TextEditingController();
   }
 
   @override
@@ -87,7 +94,12 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildImageSelector(colorScheme.primary),
+                ImageSelectorCard(
+                  localImage: _selectedImageFile,
+                  imageUrl: _imageUrl,
+                  onTap: _showPickImageOptions,
+                  placeholderText: 'Foto del Local',
+                ),
                 const SizedBox(height: 32),
 
                 _buildSectionTitle("DATOS GENERALES"),
@@ -244,59 +256,29 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     );
   }
 
-  Widget _buildImageSelector(Color primaryColor) {
-    return Center(
-      child: GestureDetector(
-        onTap: () => showSnackBar(context, 'Próximamente: Selector de imagen'),
-        child: Container(
-          width: double.infinity,
-          height: 180,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: primaryColor.withAlpha(30), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(5),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: _imageController.text.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(22),
-                  child: Image.network(
-                    _imageController.text,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.broken_image,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                  ),
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.camera_alt_outlined,
-                      size: 40,
-                      color: primaryColor,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Foto del Local',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
+  Future<void> _onPickImage(ImageSource source) async {
+    try {
+      final file = await _imagePickerService.pickImage(source: source);
+
+      if (!mounted || file == null) return;
+
+      setState(() {
+        _selectedImageFile = file;
+        _imageUrl = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, e.toString());
+      }
+    }
+  }
+
+  void _showPickImageOptions() async {
+    final source = await ImageSourceSheet.show(context);
+
+    if (source == null) return;
+
+    await _onPickImage(source);
   }
 
   void _fillForm(Restaurant r) {
@@ -306,7 +288,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     _emailController.text = r.email ?? '';
     _descriptionController.text = r.description ?? '';
     _capacityController.text = r.capacity?.toString() ?? '';
-    _imageController.text = r.urlImage ?? '';
+    _imageUrl = r.urlImage;
     _open = r.open ?? false;
   }
 
@@ -332,18 +314,12 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
       capacity: _capacityController.text.isEmpty
           ? current?.capacity
           : int.tryParse(_capacityController.text),
-      urlImage: _imageController.text.isEmpty
-          ? current?.urlImage
-          : _imageController.text,
+      urlImage: _imageUrl,
       open: _open,
     );
 
     try {
-      if (current == null) {
-        await vm.createRestaurant(restaurant);
-      } else {
-        await vm.updateRestaurant(restaurant);
-      }
+      await vm.saveRestaurant(restaurant, _selectedImageFile);
 
       if (!mounted) return;
 

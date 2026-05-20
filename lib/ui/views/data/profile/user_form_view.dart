@@ -1,9 +1,14 @@
+import 'dart:io';
+import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
+import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
+import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
+import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +31,8 @@ class _UserFormViewState extends State<UserFormView> {
   late TextEditingController _phoneController;
 
   User? _user;
+  File? _selectedImageFile;
+  final ImagePickerService _imagePickerService = ImagePickerService();
 
   @override
   void initState() {
@@ -50,45 +57,26 @@ class _UserFormViewState extends State<UserFormView> {
     });
   }
 
-  void _showPickImageOptions() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    // TODO implementación de carga de imágenes pendiente
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Wrap(
-            children: [
-              ListTile(
-                title: Text(
-                  'Actualizar foto',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_camera, color: colorScheme.primary),
-                title: const Text('Hacer foto'),
-                onTap: () => Navigator.pop(context),
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_library, color: colorScheme.primary),
-                title: const Text('Elegir de la galería'),
-                onTap: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
+  Future<void> _showPickImageOptions() async {
+    final source = await ImageSourceSheet.show(context);
+
+    if (source == null) return;
+
+    try {
+      final file = await _imagePickerService.pickImage(source: source);
+
+      if (file == null) return;
+
+      if (mounted) {
+        setState(() {
+          _selectedImageFile = file;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, e.toString());
+      }
+    }
   }
 
   Future<void> _apply(UserViewModel viewmodel) async {
@@ -101,12 +89,21 @@ class _UserFormViewState extends State<UserFormView> {
       phoneNumber: _phoneController.text,
       role: _user?.role,
       urlImage: _user?.urlImage,
+      googlePhotoUrl: _user?.googlePhotoUrl,
     );
 
-    await viewmodel.updateUser(updatedUser);
-    if (mounted && viewmodel.error.isEmpty) {
-      context.pop();
-      showSnackBar(context, 'Perfil actualizado correctamente', success: true);
+    try {
+      await viewmodel.saveUser(updatedUser, _selectedImageFile);
+      if (mounted && viewmodel.error.isEmpty) {
+        context.pop();
+        showSnackBar(
+          context,
+          'Perfil actualizado correctamente',
+          success: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) showSnackBar(context, 'Error al guardar el perfil: $e');
     }
   }
 
@@ -146,15 +143,17 @@ class _UserFormViewState extends State<UserFormView> {
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
     final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
-    final effectivePhotoUrl =
-        (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
-        ? _user!.urlImage
-        : firebaseUser?.photoURL;
+    final effectivePhotoUrl = _selectedImageFile != null
+        ? null
+        : AvatarService.resolveFromAuth(
+            storageImage: _user?.urlImage,
+            googlePhotoUrl: _user?.googlePhotoUrl,
+            authUser: firebaseUser,
+          );
 
     return SizedBox(
-      height: 140,
+      height: 190,
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -175,37 +174,30 @@ class _UserFormViewState extends State<UserFormView> {
             ),
           ),
           Positioned(
-            bottom: -50,
+            bottom: 0,
             child: Stack(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: colorScheme.surface, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(20),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    backgroundImage:
-                        (effectivePhotoUrl != null &&
-                            effectivePhotoUrl.isNotEmpty)
-                        ? NetworkImage(effectivePhotoUrl)
-                        : null,
-                    child:
-                        (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
-                        ? Icon(
-                            Icons.person,
-                            size: 70,
-                            color: colorScheme.onSurfaceVariant,
-                          )
-                        : null,
+                GestureDetector(
+                  onTap: _showPickImageOptions,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.surface, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(20),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: AvatarDisplay(
+                      localImage: _selectedImageFile,
+                      imageUrl: effectivePhotoUrl,
+                      size: 120,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      iconColor: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 Positioned(

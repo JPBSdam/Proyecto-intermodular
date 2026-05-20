@@ -8,6 +8,7 @@ class User {
   String? phoneNumber;
   String? role;
   String? urlImage;
+  String? googlePhotoUrl;
   //DateTime? createdAt; no se si sera necesario teniendo en cuenta los requisitos
 
   //CONSTRUCTOR
@@ -18,6 +19,7 @@ class User {
     this.phoneNumber,
     this.role,
     this.urlImage,
+    this.googlePhotoUrl,
   });
 
   //FROMFIRESTORE
@@ -33,10 +35,11 @@ class User {
       phoneNumber: map?['phoneNumber'] as String?,
       role: map?['role'] as String?,
       urlImage: map?['urlImage'] as String?,
+      googlePhotoUrl: map?['googlePhotoUrl'] as String?,
     );
   }
 
-  //TOFIRESTOREgit status
+  //TOFIRESTORE
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -45,6 +48,7 @@ class User {
       if (phoneNumber != null) "phoneNumber": phoneNumber,
       if (role != null) "role": role,
       if (urlImage != null) "urlImage": urlImage,
+      if (googlePhotoUrl != null) "googlePhotoUrl": googlePhotoUrl,
     };
   }
 }

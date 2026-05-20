@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
+import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserService _service = UserService();
+  final StorageService _storageService = StorageService();
 
   User? _user;
   User? get user => _user;
@@ -55,6 +58,34 @@ class UserViewModel extends ChangeNotifier {
       await _service.updateUser(user);
     } catch (e) {
       _error = 'Error al actualizar: $e';
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Guarda un usuario existente y opcionalmente sube/elimina su avatar.
+  ///
+  /// Nota: La creación de usuarios se gestiona en otro lugar (vinculada
+  /// al flujo de Auth). Aquí solo gestionamos la subida del avatar y la
+  /// actualización del documento del usuario.
+  Future<void> saveUser(User user, File? imageFile) async {
+    _setLoading(true);
+    _error = '';
+    try {
+      // Subir avatar si se ha seleccionado uno. Usamos un path fijo para
+      // el avatar que sobrescribe la imagen anterior, evitando el borrado.
+      if (imageFile != null) {
+        user.urlImage = await _storageService.uploadUserAvatar(
+          imageFile,
+          user.id!,
+        );
+      }
+
+      // Actualizamos siempre el documento del usuario.
+      await _service.updateUser(user);
+    } catch (e) {
+      _error = 'Error al guardar usuario: $e';
+      rethrow;
     } finally {
       _setLoading(false);
     }
