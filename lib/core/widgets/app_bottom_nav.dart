@@ -44,6 +44,12 @@ class AppBottomNav extends StatelessWidget {
         label: 'CARTA',
         route: AppRoutes.dishes,
       ),
+      _BottomNavItem(
+        icon: Icons.menu_book_outlined,
+        activeIcon: Icons.menu_book,
+        label: 'MENÚS',
+        route: AppRoutes.menus,
+      ),
 
       // Pestaña dinámica central
       if (!isGuest)
@@ -74,13 +80,6 @@ class AppBottomNav extends StatelessWidget {
           route: AppRoutes.adminNotifications,
           badgeCount: reservationVM.pendingCount,
         ),
-
-      _BottomNavItem(
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
-        label: 'PERFIL',
-        route: AppRoutes.profile,
-      ),
     ];
 
     // Calcular currentIndex basado en la ruta actual

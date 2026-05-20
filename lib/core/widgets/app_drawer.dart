@@ -68,21 +68,6 @@ class AppDrawer extends StatelessWidget {
                     route: AppRoutes.profile,
                     currentPath: currentPath,
                   ),
-                _buildSectionTitle(context, 'EXPLORAR'),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.restaurant_menu_outlined,
-                  label: 'Platos',
-                  route: AppRoutes.dishes,
-                  currentPath: currentPath,
-                ),
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.menu_book_outlined,
-                  label: 'Menús',
-                  route: AppRoutes.menus,
-                  currentPath: currentPath,
-                ),
 
                 // Sección de Reservas (Solo para usuarios autenticados)
                 if (!isAnonymous) ...[
@@ -94,13 +79,14 @@ class AppDrawer extends StatelessWidget {
                     route: AppRoutes.reservationFormCreate(),
                     currentPath: currentPath,
                   ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.history_outlined,
-                    label: 'Mis reservas',
-                    route: AppRoutes.reservations,
-                    currentPath: currentPath,
-                  ),
+                  if (!isAdmin)
+                    _buildDrawerItem(
+                      context: context,
+                      icon: Icons.history_outlined,
+                      label: 'Mis reservas',
+                      route: AppRoutes.reservations,
+                      currentPath: currentPath,
+                    ),
                 ],
 
                 // Sección de Administración (Solo visible para admins)
