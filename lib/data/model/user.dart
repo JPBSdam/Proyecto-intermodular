@@ -36,7 +36,7 @@ class User {
     );
   }
 
-  //TOFIRESTOREgit status
+  //TOFIRESTORE
 
   Map<String, dynamic> toFirestore() {
     return {
