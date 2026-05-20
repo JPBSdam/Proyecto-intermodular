@@ -129,7 +129,26 @@ Incluye una línea divisoria inferior (`outlineVariant` al 50% de opacidad) para
 
 ## Imágenes de red
 
-Al cargar imágenes con `Image.network`, añade siempre `loadingBuilder` y `errorBuilder` para evitar pantallas en blanco o errores sin feedback. Patrón estándar:
+Usa siempre `CachedNetworkImage` (paquete `cached_network_image`) en lugar de `Image.network`. Cachea automáticamente las imágenes en disco, reduce peticiones repetidas y proporciona placeholders integrados.
+
+```dart
+CachedNetworkImage(
+  imageUrl: url,
+  width: 60,
+  height: 60,
+  fit: BoxFit.cover,
+  placeholder: (_, __) => Container(
+    color: AppTheme.brandPrimary.withAlpha(20),
+    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+  ),
+  errorWidget: (_, __, ___) => Container(
+    color: AppTheme.brandPrimary.withAlpha(20),
+    child: const Icon(Icons.restaurant, size: 24),
+  ),
+)
+```
+
+Usa `Image.network` únicamente cuando necesites `webHtmlElementStrategy: WebHtmlElementStrategy.fallback` (imágenes estáticas en web que no se cachean). En esos casos mantén `loadingBuilder` y `errorBuilder`:
 
 ```dart
 Image.network(
@@ -148,9 +167,6 @@ Image.network(
   ),
 )
 ```
-OJO: si implementamos subida de imágenes a Firestore, considerar usar CachedNetworkImage para aprovechar el cacheo automático y placeholders integrados, esto permite "cachear" las imágenes para agilizar la carga en futuras visualizaciones.
-
-El `webHtmlElementStrategy: WebHtmlElementStrategy.fallback` es necesario para que las imágenes funcionen correctamente en la versión web.
 
 ---
 
