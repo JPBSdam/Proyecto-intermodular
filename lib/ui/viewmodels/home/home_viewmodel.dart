@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
+import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +15,7 @@ class HomeViewModel extends ChangeNotifier {
   String _actualRole = 'USER'; // Rol real en la base de datos
   String? _userName;
   String? _userPhotoUrl;
+  String? _userGooglePhotoUrl;
 
   // Modo Vista Cliente (para admins)
   bool _previewMode = false;
@@ -66,7 +68,11 @@ class HomeViewModel extends ChangeNotifier {
 
   String? get photoUrl {
     if (isGuest) return null;
-    return _userPhotoUrl ?? currentUser?.photoURL;
+    return AvatarService.resolveFromAuth(
+      storageImage: _userPhotoUrl,
+      googlePhotoUrl: _userGooglePhotoUrl,
+      authUser: currentUser,
+    );
   }
 
   String get email => currentUser?.email ?? '';
@@ -94,6 +100,7 @@ class HomeViewModel extends ChangeNotifier {
     _previewMode = false;
     _userName = null;
     _userPhotoUrl = null;
+    _userGooglePhotoUrl = null;
     _errorMessage = '';
 
     if (user != null && !user.isAnonymous) {
@@ -116,6 +123,7 @@ class HomeViewModel extends ChangeNotifier {
                 _actualRole = data?['role']?.toString().toUpperCase() ?? 'USER';
                 _userName = data?['name']?.toString();
                 _userPhotoUrl = data?['urlImage']?.toString();
+                _userGooglePhotoUrl = data?['googlePhotoUrl']?.toString();
               }
               notifyListeners();
             },
