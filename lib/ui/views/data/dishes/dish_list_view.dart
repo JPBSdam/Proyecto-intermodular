@@ -278,11 +278,21 @@ class _DishesListViewState extends State<DishesListView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  dish.name ?? 'Plato sin nombre',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        dish.name ?? 'Plato sin nombre',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (dish.available == false) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.cancel, size: 14, color: Colors.red),
+                    ],
+                  ],
                 ),
                 if (dish.price != null) ...[
                   Text(

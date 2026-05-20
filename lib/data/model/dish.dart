@@ -9,7 +9,6 @@ class Dish {
   String? urlImage;
   double? price;
   bool? available;
-  //DateTime? createdAt; no creo que sea necesario guardar cuando se crea un plato?
 
   //CONSTRUCTOR
   Dish({

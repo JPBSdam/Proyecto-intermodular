@@ -30,8 +30,6 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
   late TextEditingController _emailController;
   late TextEditingController _descriptionController;
   late TextEditingController _capacityController;
-  late TextEditingController _imageController;
-
   bool _open = false;
   bool _initialized = false;
   File? _selectedImageFile;
@@ -350,7 +348,6 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     _emailController.dispose();
     _descriptionController.dispose();
     _capacityController.dispose();
-    _imageController.dispose();
     super.dispose();
   }
 }

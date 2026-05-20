@@ -181,11 +181,21 @@ class _MenuListViewState extends State<MenuListView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  menu.name ?? 'Menú sin nombre',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        menu.name ?? 'Menú sin nombre',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (menu.available == false) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.cancel, size: 14, color: Colors.red),
+                    ],
+                  ],
                 ),
                 Text(
                   '${menu.price?.toStringAsFixed(2) ?? "0.00"}€',

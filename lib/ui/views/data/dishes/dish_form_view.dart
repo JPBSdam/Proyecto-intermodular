@@ -28,6 +28,7 @@ class _DishFormViewState extends State<DishFormView> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
+  bool _available = true;
   String _selectedCategory = 'Entrante';
   final List<String> _categories = [
     'Entrante',
@@ -68,6 +69,7 @@ class _DishFormViewState extends State<DishFormView> {
     _descController.text = dish.description ?? '';
     _priceController.text = dish.price?.toString() ?? '';
     _imageUrl = dish.urlImage;
+    _available = dish.available ?? true;
     _selectedCategory = _categories.contains(dish.category)
         ? dish.category!
         : 'Entrante';
@@ -84,7 +86,7 @@ class _DishFormViewState extends State<DishFormView> {
       price: double.tryParse(_priceController.text),
       category: _selectedCategory,
       urlImage: _imageUrl,
-      available: _dish?.available ?? true,
+      available: _available,
     );
 
     await viewmodel.saveDish(newDish, _selectedImageFile);
@@ -170,6 +172,30 @@ class _DishFormViewState extends State<DishFormView> {
                   hint: 'Describe los ingredientes...',
                   icon: Icons.description_outlined,
                   maxLines: 4,
+                ),
+
+                const SizedBox(height: 24),
+                SwitchListTile(
+                  title: Text(
+                    _available ? 'Disponible' : 'No disponible',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _available ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  secondary: Icon(
+                    _available
+                        ? Icons.check_circle_outline
+                        : Icons.highlight_off,
+                    color: _available ? Colors.green : Colors.red,
+                  ),
+                  value: _available,
+                  activeThumbColor: Colors.green,
+                  onChanged: (val) => setState(() => _available = val),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  tileColor: Theme.of(context).colorScheme.surface,
                 ),
 
                 const SizedBox(height: 40),

@@ -130,6 +130,10 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                   label: '${menu.price?.toStringAsFixed(2) ?? "0.00"} €',
                   icon: Icons.payments_outlined,
                 ),
+                if (menu.available == false) ...[
+                  const SizedBox(height: 8),
+                  AppBadge.error(label: 'No disponible'),
+                ],
               ],
             ),
           ),
@@ -211,11 +215,21 @@ class _MenuDetailViewState extends State<MenuDetailView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  dish.name ?? '',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        dish.name ?? '',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (dish.available == false) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.cancel, size: 14, color: Colors.red),
+                    ],
+                  ],
                 ),
                 if (dish.category != null)
                   Text(
