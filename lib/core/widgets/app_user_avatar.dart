@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 /// Avatar de usuario unificado que se muestra en la AppBar.
 /// Utiliza HomeViewModel como fuente única de verdad.
@@ -17,36 +17,6 @@ class AppUserAvatar extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Foto o icono de avatar según el estado del HomeViewModel
-    Widget avatarChild;
-    if (homeVM.photoUrl != null && homeVM.photoUrl!.isNotEmpty) {
-      avatarChild = ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: CachedNetworkImage(
-          imageUrl: homeVM.photoUrl!,
-          fit: BoxFit.cover,
-          width: 36,
-          height: 36,
-          placeholder: (_, __) => Icon(
-            Icons.account_circle_outlined,
-            color: colorScheme.primary,
-            size: 24,
-          ),
-          errorWidget: (_, __, ___) => Icon(
-            Icons.account_circle_outlined,
-            color: colorScheme.primary,
-            size: 24,
-          ),
-        ),
-      );
-    } else {
-      avatarChild = Icon(
-        Icons.account_circle_outlined,
-        color: colorScheme.primary,
-        size: 24,
-      );
-    }
-
     return GestureDetector(
       onTap: () => _showProfileSheet(context, homeVM),
       child: Padding(
@@ -58,7 +28,14 @@ class AppUserAvatar extends StatelessWidget {
             color: colorScheme.primary.withAlpha(25),
             shape: BoxShape.circle,
           ),
-          child: Center(child: avatarChild),
+          child: Center(
+            child: AvatarDisplay(
+              imageUrl: homeVM.photoUrl,
+              size: 32,
+              backgroundColor: colorScheme.primary.withAlpha(25),
+              iconColor: colorScheme.primary,
+            ),
+          ),
         ),
       ),
     );
@@ -144,19 +121,11 @@ class AppUserAvatar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  radius: 36,
+                AvatarDisplay(
+                  imageUrl: homeVM.photoUrl,
+                  size: 72,
                   backgroundColor: colorScheme.surfaceContainerHighest,
-                  backgroundImage: (homeVM.photoUrl != null)
-                      ? CachedNetworkImageProvider(homeVM.photoUrl!)
-                      : null,
-                  child: (homeVM.photoUrl == null)
-                      ? Icon(
-                          Icons.person,
-                          size: 40,
-                          color: colorScheme.onSurfaceVariant,
-                        )
-                      : null,
+                  iconColor: colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(height: 16),
                 Row(

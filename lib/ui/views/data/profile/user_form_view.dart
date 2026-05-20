@@ -7,12 +7,13 @@ import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
+import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
+import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class UserFormView extends StatefulWidget {
   final String userId;
@@ -88,6 +89,7 @@ class _UserFormViewState extends State<UserFormView> {
       phoneNumber: _phoneController.text,
       role: _user?.role,
       urlImage: _user?.urlImage,
+      googlePhotoUrl: _user?.googlePhotoUrl,
     );
 
     try {
@@ -141,13 +143,14 @@ class _UserFormViewState extends State<UserFormView> {
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
     final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
-    final effectivePhotoUrl = (_selectedImageFile != null)
+    final effectivePhotoUrl = _selectedImageFile != null
         ? null
-        : (_user?.urlImage != null && _user!.urlImage!.isNotEmpty)
-        ? _user!.urlImage
-        : firebaseUser?.photoURL;
+        : AvatarService.resolveFromAuth(
+            storageImage: _user?.urlImage,
+            googlePhotoUrl: _user?.googlePhotoUrl,
+            authUser: firebaseUser,
+          );
 
     return SizedBox(
       height: 190,
@@ -188,25 +191,12 @@ class _UserFormViewState extends State<UserFormView> {
                         ),
                       ],
                     ),
-                    child: CircleAvatar(
-                      radius: 60,
+                    child: AvatarDisplay(
+                      localImage: _selectedImageFile,
+                      imageUrl: effectivePhotoUrl,
+                      size: 120,
                       backgroundColor: colorScheme.surfaceContainerHighest,
-                      backgroundImage: _selectedImageFile != null
-                          ? FileImage(_selectedImageFile!) as ImageProvider
-                          : (effectivePhotoUrl != null &&
-                                effectivePhotoUrl.isNotEmpty)
-                          ? CachedNetworkImageProvider(effectivePhotoUrl)
-                          : null,
-                      child:
-                          (_selectedImageFile == null &&
-                              (effectivePhotoUrl == null ||
-                                  effectivePhotoUrl.isEmpty))
-                          ? Icon(
-                              Icons.person,
-                              size: 70,
-                              color: colorScheme.onSurfaceVariant,
-                            )
-                          : null,
+                      iconColor: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),

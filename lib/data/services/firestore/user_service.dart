@@ -29,9 +29,14 @@ class UserService {
           id: firebaseUser.uid,
           email: firebaseUser.email,
           name: firebaseUser.displayName,
+          googlePhotoUrl: firebaseUser.photoURL,
         );
 
         await _repository.create(newUser);
+      } else if (firebaseUser.photoURL != null &&
+          existingUser.googlePhotoUrl != firebaseUser.photoURL) {
+        existingUser.googlePhotoUrl = firebaseUser.photoURL;
+        await _repository.update(existingUser);
       }
     });
   }

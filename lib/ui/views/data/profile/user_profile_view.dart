@@ -7,11 +7,12 @@ import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
+import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
+import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
-import 'package:cached_network_image/cached_network_image.dart';
 
 class UserProfileView extends StatefulWidget {
   const UserProfileView({super.key});
@@ -105,12 +106,12 @@ class _UserProfileViewState extends State<UserProfileView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Lógica de fallback: si no hay imagen en Firestore, usamos la de Firebase Auth (Google)
     final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
-    final effectivePhotoUrl =
-        (user?.urlImage != null && user!.urlImage!.isNotEmpty)
-        ? user.urlImage
-        : firebaseUser?.photoURL;
+    final effectivePhotoUrl = AvatarService.resolveFromAuth(
+      storageImage: user?.urlImage,
+      googlePhotoUrl: user?.googlePhotoUrl,
+      authUser: firebaseUser,
+    );
 
     return SizedBox(
       height: 170,
@@ -174,20 +175,11 @@ class _UserProfileViewState extends State<UserProfileView> {
                   ),
                 ],
               ),
-              child: CircleAvatar(
-                radius: 55,
+              child: AvatarDisplay(
+                imageUrl: effectivePhotoUrl,
+                size: 110,
                 backgroundColor: colorScheme.surfaceContainerHighest,
-                backgroundImage:
-                    (effectivePhotoUrl != null && effectivePhotoUrl.isNotEmpty)
-                    ? CachedNetworkImageProvider(effectivePhotoUrl)
-                    : null,
-                child: (effectivePhotoUrl == null || effectivePhotoUrl.isEmpty)
-                    ? Icon(
-                        Icons.person,
-                        size: 65,
-                        color: colorScheme.onSurfaceVariant,
-                      )
-                    : null,
+                iconColor: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
