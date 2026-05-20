@@ -12,10 +12,21 @@ import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class UserViewModel extends ChangeNotifier {
-  final UserService _service = UserService();
-  final UserRepository _repository = UserRepository();
-  final ReservationRepository _reservationRepository = ReservationRepository();
-  final StorageService _storageService = StorageService();
+  final UserService _service;
+  final UserRepository _repository;
+  final ReservationRepository _reservationRepository;
+  final StorageService _storageService;
+
+  UserViewModel({
+    UserService? service,
+    UserRepository? repository,
+    ReservationRepository? reservationRepository,
+    StorageService? storageService,
+  }) : _service = service ?? UserService(),
+       _repository = repository ?? UserRepository(),
+       _reservationRepository =
+           reservationRepository ?? ReservationRepository(),
+       _storageService = storageService ?? StorageService();
 
   User? _user;
   User? get user => _user;
