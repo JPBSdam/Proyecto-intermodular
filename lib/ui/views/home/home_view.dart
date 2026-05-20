@@ -160,6 +160,11 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   Widget _buildHeroSection(HomeViewModel viewModel) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final restaurantVM = context.watch<RestaurantViewModel>();
+    final restaurantImage = restaurantVM.restaurant?.urlImage;
+    final heroImage = (restaurantImage != null && restaurantImage.isNotEmpty)
+        ? restaurantImage
+        : 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1350&q=80';
 
     return Container(
       height: 380,
@@ -174,10 +179,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             offset: const Offset(0, 10),
           ),
         ],
-        image: const DecorationImage(
-          image: CachedNetworkImageProvider(
-            'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-          ),
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(heroImage),
           fit: BoxFit.cover,
         ),
       ),
