@@ -539,24 +539,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (restaurantVM.restaurant?.urlImage != null &&
-              restaurantVM.restaurant!.urlImage!.isNotEmpty) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: CachedNetworkImage(
-                imageUrl: restaurantVM.restaurant!.urlImage!,
-                width: double.infinity,
-                height: 160,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => const SizedBox(
-                  height: 160,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
           Row(
             children: [
               Expanded(
@@ -573,7 +555,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             ],
           ),
           if (restaurantVM.restaurant?.description != null) ...[
-            const SizedBox(height: 12),
             Text(
               restaurantVM.restaurant!.description!,
               style: theme.textTheme.bodyMedium?.copyWith(
