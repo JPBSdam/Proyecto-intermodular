@@ -4,6 +4,7 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -291,18 +292,17 @@ class _UserProfileViewState extends State<UserProfileView> {
             title: 'Mis reservas',
             onTap: () {
               final homeVM = context.read<HomeViewModel>();
+
               if (!homeVM.isEmailVerified) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Verifica tu correo electrónico para poder hacer reservas',
-                    ),
-                    duration: Duration(seconds: 3),
-                  ),
+                showSnackBar(
+                  context,
+                  'Verifica tu correo electrónico para poder hacer reservas',
+                  error: true,
                 );
-              } else {
-                context.go(AppRoutes.reservations);
+                return;
               }
+
+              context.go(AppRoutes.reservations);
             },
           ),
         ],

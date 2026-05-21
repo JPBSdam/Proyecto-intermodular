@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/config/app_theme.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
@@ -281,13 +282,10 @@ class AppDrawer extends StatelessWidget {
 
   void _showVerificationRequired(BuildContext context) {
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Verifica tu correo electrónico para poder hacer reservas',
-        ),
-        duration: Duration(seconds: 3),
-      ),
+
+    showSnackBar(
+      context,
+      'Verifica tu correo electrónico para poder hacer reservas',
     );
   }
 
