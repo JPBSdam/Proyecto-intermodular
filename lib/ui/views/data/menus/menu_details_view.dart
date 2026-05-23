@@ -111,32 +111,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (menu.urlImage != null && menu.urlImage!.isNotEmpty) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: CachedNetworkImage(
-                imageUrl: menu.urlImage!,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  height: 200,
-                  color: AppTheme.brandPrimary.withAlpha(20),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  height: 200,
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    size: 48,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
           Center(
             child: Column(
               children: [
