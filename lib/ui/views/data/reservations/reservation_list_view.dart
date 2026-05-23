@@ -36,7 +36,7 @@ class _ReservationListViewState extends State<ReservationListView> {
     _handleSubscription();
   }
 
-  /// Inicializa o actualiza el stream de datos solo si el rol ha cambiado.
+  // Inicia o actualiza el stream de datos solo si el rol ha cambiado.
   void _handleSubscription() {
     final homeVM = context.watch<HomeViewModel>();
     final currentRole = homeVM.userRole;
@@ -47,7 +47,7 @@ class _ReservationListViewState extends State<ReservationListView> {
       final resVM = context.read<ReservationViewModel>();
       final uid = widget.userId ?? homeVM.currentUser?.uid;
 
-      // Usamos postFrameCallback para que la carga no interfiera con el pintado actual
+      // Espera a que la pantalla termine de renderizarse y carga las reservas según el rol del usuario.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (currentRole == 'ADMIN') {
@@ -283,9 +283,7 @@ class _ReservationListViewState extends State<ReservationListView> {
     }
 
     if (list.isEmpty) {
-      // Estado vacío diferente según si es admin o cliente
       if (isAdmin) {
-        // El admin ve un mensaje neutro
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -305,8 +303,6 @@ class _ReservationListViewState extends State<ReservationListView> {
         );
       }
 
-      // El cliente ve una pantalla que invita a reservar
-      // (llega aquí si volvió atrás del formulario sin reservar)
       final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Padding(
@@ -314,7 +310,6 @@ class _ReservationListViewState extends State<ReservationListView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono decorativo grande
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -328,7 +323,6 @@ class _ReservationListViewState extends State<ReservationListView> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Título
               Text(
                 '¡Aún no tienes reservas!',
                 style: Theme.of(
@@ -337,7 +331,6 @@ class _ReservationListViewState extends State<ReservationListView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              // Subtítulo
               Text(
                 'Reserva tu mesa ahora y disfruta de una experiencia única.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -346,7 +339,6 @@ class _ReservationListViewState extends State<ReservationListView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              // Botón de acción
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -427,7 +419,6 @@ class _ReservationCard extends StatelessWidget {
     final dayFormat = DateFormat('dd MMM', 'es');
     final hourFormat = DateFormat('HH:mm');
 
-    // Prioridad de visualización de nombre: Firestore Name > Auth DisplayName > Auth Email
     final String displayName =
         reservation.userName ?? reservation.userEmail ?? 'Cliente';
 
@@ -447,7 +438,6 @@ class _ReservationCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
             ],
-            // Fecha
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -475,7 +465,6 @@ class _ReservationCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

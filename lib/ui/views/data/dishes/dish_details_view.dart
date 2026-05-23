@@ -185,7 +185,6 @@ class _DishDetailViewState extends State<DishDetailView> {
                       ),
                     ),
                   ),
-                  // Contenido con bordes redondeados superpuestos
                   SliverToBoxAdapter(
                     child: Transform.translate(
                       offset: const Offset(0, -30),

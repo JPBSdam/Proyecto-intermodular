@@ -39,7 +39,6 @@ class _DishesListViewState extends State<DishesListView> {
     final viewmodel = context.watch<DishViewModel>();
     final homeVM = context.watch<HomeViewModel>();
 
-    // Solo el ADMIN puede crear platos
     final bool isAdmin = homeVM.userRole == 'ADMIN';
 
     final filteredDishes = viewmodel.dishes.where((d) {

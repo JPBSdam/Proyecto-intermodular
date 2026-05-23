@@ -9,11 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Pantalla de Login
-/// Muestra el formulario de inicio de sesión con email, Google o modo anónimo.
-/// Gestiona la validación de campos, interacción con LoginViewModel y
-/// muestra errores mediante SnackBar. La lógica de negocio está en el ViewModel.
-
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -44,7 +39,6 @@ class _LoginViewState extends State<LoginView> {
       password: _passwordController.text,
     );
 
-    // Si success es true, el ViewModel GoRouter detectará el cambio de Auth y nos sacará de aquí.
     if (success) {
       if (mounted) context.go(AppRoutes.home);
     } else if (mounted) {
