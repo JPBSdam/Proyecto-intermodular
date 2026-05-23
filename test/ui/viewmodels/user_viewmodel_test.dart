@@ -52,7 +52,7 @@ void main() {
       test('user es null', () => expect(vm.user, isNull));
     });
 
-    // ─── fetchUserById ────────────────────────────────────────────────────────
+    // ─── Fetch de usuario
 
     group('fetchUserById', () {
       test('retorna el usuario y no setea error en éxito', () async {
@@ -83,7 +83,7 @@ void main() {
       });
     });
 
-    // ─── updateUser ──────────────────────────────────────────────────────────
+    // ─── Actualización de usuario
 
     group('updateUser', () {
       test('llama al servicio y no setea error en éxito', () async {
@@ -104,7 +104,7 @@ void main() {
       });
     });
 
-    // ─── saveUser ─────────────────────────────────────────────────────────────
+    // ─── Guardado (con o sin imagen)
 
     group('saveUser', () {
       test('sin imagen solo actualiza el documento', () async {
@@ -124,7 +124,7 @@ void main() {
       });
     });
 
-    // ─── watchUser ────────────────────────────────────────────────────────────
+    // ─── Stream de usuario
 
     group('watchUser', () {
       test('actualiza user cuando llegan datos del stream', () async {
@@ -152,7 +152,7 @@ void main() {
       });
     });
 
-    // ─── _cancelActiveReservations (vía deleteAccount) ────────────────────────
+    // ─── Eliminación de cuenta
 
     group('cancelación de reservas al borrar cuenta', () {
       test('cancela reservas activas antes de anonimizar', () async {

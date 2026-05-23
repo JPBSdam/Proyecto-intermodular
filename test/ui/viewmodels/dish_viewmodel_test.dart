@@ -39,7 +39,7 @@ void main() {
       dishVM.dispose();
     });
 
-    // ─── Estado inicial ───────────────────────────────────────────────────────
+    // ─── Estado inicial
 
     group('estado inicial', () {
       test('dishes está vacío', () => expect(dishVM.dishes, isEmpty));
@@ -51,57 +51,43 @@ void main() {
       );
     });
 
-    // ─── watchDishes ──────────────────────────────────────────────────────────
+    // ─── Escucha de platos
 
     group('watchDishes', () {
       test('actualiza dishes cuando el stream emite datos', () async {
-        // Act
         dishVM.watchDishes();
         streamController.add([testDish]);
         await Future.microtask(() {});
-
-        // Assert
         expect(dishVM.dishes, hasLength(1));
         expect(dishVM.dishes.first.name, 'Paella');
         expect(dishVM.isLoading, isFalse);
       });
 
       test('no re-suscribe si ya está escuchando', () {
-        // Act
         dishVM.watchDishes();
         dishVM.watchDishes();
-
-        // Assert — solo se llama una vez al servicio
         verify(mockService.watchDishes()).called(1);
       });
 
       test('actualiza dishes con lista vacía', () async {
-        // Act
         dishVM.watchDishes();
         streamController.add([]);
         await Future.microtask(() {});
-
-        // Assert
         expect(dishVM.dishes, isEmpty);
         expect(dishVM.isLoading, isFalse);
       });
 
       test('notifica a la UI cuando llegan datos', () async {
-        // Arrange
         var notifyCount = 0;
         dishVM.addListener(() => notifyCount++);
-
-        // Act
         dishVM.watchDishes();
         streamController.add([testDish]);
         await Future.microtask(() {});
-
-        // Assert
         expect(notifyCount, greaterThan(0));
       });
     });
 
-    // ─── saveDish (crear) ─────────────────────────────────────────────────────
+    // ─── Crear plato
 
     group('saveDish (plato nuevo, sin imagen)', () {
       final newDish = Dish(
@@ -138,79 +124,55 @@ void main() {
       });
     });
 
-    // ─── saveDish (editar) ────────────────────────────────────────────────────
+    // ─── Editar/Actualizar plato
 
     group('saveDish (plato existente, sin imagen)', () {
       test('llama a updateDish cuando el plato ya tiene id', () async {
         when(mockService.updateDish(any)).thenAnswer((_) async {});
         final updated = Dish(id: '1', name: 'Paella actualizada', price: 18.0);
-
         await dishVM.saveDish(updated, null);
-
         verify(mockService.updateDish(updated)).called(1);
         verifyNever(mockService.createDish(any));
       });
-
       test('setea errorMessage si updateDish falla', () async {
         when(
           mockService.updateDish(any),
         ).thenThrow('No tienes permisos para realizar esta operación.');
-
         await dishVM.saveDish(testDish, null);
-
         expect(dishVM.errorMessage, isNotEmpty);
       });
     });
 
-    // ─── deleteDish ───────────────────────────────────────────────────────────
+    // ─── Eliminar plato
 
     group('deleteDish', () {
       test('llama al servicio con el id correcto', () async {
         // Arrange
         when(mockService.deleteDish(any)).thenAnswer((_) async {});
-
-        // Act
         await dishVM.deleteDish('1');
-
-        // Assert
         verify(mockService.deleteDish('1')).called(1);
       });
-
       test('setea errorMessage si el servicio falla', () async {
-        // Arrange
         when(mockService.deleteDish(any)).thenThrow('El documento no existe.');
-
-        // Act
         await dishVM.deleteDish('999');
-
-        // Assert
         expect(dishVM.errorMessage, isNotEmpty);
       });
     });
 
-    // ─── fetchDishById ────────────────────────────────────────────────────────
+    // ─── Obtener plato por ID
 
     group('fetchDishById', () {
       test('retorna el plato cuando existe', () async {
-        // Arrange
         when(mockService.getDishById(any)).thenAnswer((_) async => testDish);
 
-        // Act
         final result = await dishVM.fetchDishById('1');
-
-        // Assert
         expect(result, isNotNull);
         expect(result?.name, 'Paella');
       });
 
       test('retorna null y setea errorMessage si falla', () async {
-        // Arrange
         when(mockService.getDishById(any)).thenThrow('El documento no existe.');
-
-        // Act
         final result = await dishVM.fetchDishById('999');
-
-        // Assert
         expect(result, isNull);
         expect(dishVM.errorMessage, isNotEmpty);
       });
