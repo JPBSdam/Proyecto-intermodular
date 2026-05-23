@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Restaurant {
   //ATTRIBUTES
   String? id;
-  String? adminId; //aqui va el id del user propietario
+  String? adminId;
   String? name;
   String? address;
   String? phoneNumber;

@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 
-/// AppBar reutilizable que muestra la marca "SabrosApp" en todas las pantallas.
-///
-/// - Si se pasa [pageTitle], muestra "SabrosApp" en pequeño arriba
-///   y el título de la pantalla en grande debajo.
-/// - Si no se pasa [pageTitle], muestra únicamente "SabrosApp" como título principal.
-///
-/// USO:
-///   appBar: SabrosAppBar(pageTitle: 'Iniciar Sesión')
-///   appBar: SabrosAppBar(pageTitle: 'Menús', actions: [HomeButton()])
-///   appBar: SabrosAppBar()  // solo muestra "SabrosApp"
-/// Utiliza [AppLogoTitle] para mantener la consistencia visual.
+// AppBar reutilizable que muestra la marca "SabrosApp" en todas las pantallas.
 
 class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SabrosAppBar({
@@ -23,17 +13,12 @@ class SabrosAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.centerTitle = false,
   });
 
-  /// Título de la pantalla actual (ej: 'Iniciar Sesión', 'Menús', ...).
-  /// Si es null, solo se muestra la marca "SabrosApp".
   final String? pageTitle;
 
-  /// Botones o iconos que aparecen a la derecha.
   final List<Widget>? actions;
 
-  /// Widget personalizado para el botón/icono izquierdo (ej: flecha atrás).
   final Widget? leading;
 
-  /// Color de fondo del AppBar. Si es null, usa el tema de la app.
   final Color? backgroundColor;
   final bool centerTitle;
 

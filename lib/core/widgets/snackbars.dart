@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Función reutilizable para mostrar un SnackBar con mensaje personalizado y opciones de estilo.
 void showSnackBar(
   BuildContext context,
   String message, {

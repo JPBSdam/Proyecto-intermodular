@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// Servicio para seleccionar imágenes desde la cámara o galería, con manejo de permisos.
 class ImagePickerService {
   final ImagePicker _picker = ImagePicker();
 

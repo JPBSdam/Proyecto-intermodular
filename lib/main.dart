@@ -18,26 +18,17 @@ import 'firebase_options.dart';
 import 'my_app.dart';
 
 Future<void> main() async {
-  // Aseguramos que los bindings de Flutter estén listos antes de usar plugins
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializamos Firebase con las opciones generadas automáticamente
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Si no hay sesión activa, iniciamos sesión anónima para que Firestore
-  // pueda leer datos públicos (restaurante, carta) sin autenticación real.
   if (FirebaseAuth.instance.currentUser == null) {
     try {
       await FirebaseAuth.instance.signInAnonymously();
     } catch (_) {}
   }
 
-  // Inicializamos el servicio de notificaciones locales.
-  // Esto configura los canales de Android, pide permisos al usuario
-  // y carga las zonas horarias para los recordatorios programados.
   await NotificationService.init();
 
-  // Inicializamos FCM: registra el handler de background y escucha mensajes
-  // en primer plano. El token y la cola se gestionan en FcmInitWrapper.
   await FcmService.init();
 
   runApp(

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Contenedor base con estética Premium para SabrosApp.
-///
-/// Centraliza el redondeado, las sombras y los bordes sutiles.
+// Contenedor base con estética Premium para SabrosApp.
+
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;

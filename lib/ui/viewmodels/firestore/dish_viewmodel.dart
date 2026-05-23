@@ -90,12 +90,6 @@ class DishViewModel extends ChangeNotifier {
   }
 
   // ─── CRUD ──────────────────────────────
-  Future<void> addDish(Dish dish) async =>
-      _execute(() => _service.createDish(dish));
-
-  Future<void> updateDish(Dish dish) async =>
-      _execute(() => _service.updateDish(dish));
-
   Future<void> saveDish(Dish dish, File? imageFile) async {
     await _execute(() async {
       final bool isNew = dish.id == null;

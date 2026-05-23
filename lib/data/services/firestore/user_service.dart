@@ -39,7 +39,6 @@ class UserService {
         await _repository.create(newUser);
       } else {
         // Actualizamos si cambió la foto de Google o si isActive no está definido
-        // (documentos creados antes de que se añadiera el campo)
         bool needsUpdate = false;
 
         if (firebaseUser.photoURL != null &&
@@ -58,7 +57,7 @@ class UserService {
     });
   }
 
-  // ─── Manejo de errores ─── Esto es como un decorador para los metodos que recibe
+  // ─── Manejo de errores ───
   Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
       return await action();

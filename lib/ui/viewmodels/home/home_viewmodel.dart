@@ -109,18 +109,20 @@ class HomeViewModel extends ChangeNotifier {
 
       notifyListeners();
 
-      _userSubscription = _userService.watchUser(user.uid).listen(
-        (userData) {
-          _actualRole = userData?.role?.toUpperCase() ?? 'USER';
-          _userName = userData?.name;
-          _userPhotoUrl = userData?.urlImage;
-          _userGooglePhotoUrl = userData?.googlePhotoUrl;
-          notifyListeners();
-        },
-        onError: (e) {
-          debugPrint("Error Firestore Stream: $e");
-        },
-      );
+      _userSubscription = _userService
+          .watchUser(user.uid)
+          .listen(
+            (userData) {
+              _actualRole = userData?.role?.toUpperCase() ?? 'USER';
+              _userName = userData?.name;
+              _userPhotoUrl = userData?.urlImage;
+              _userGooglePhotoUrl = userData?.googlePhotoUrl;
+              notifyListeners();
+            },
+            onError: (e) {
+              debugPrint("Error Firestore Stream: $e");
+            },
+          );
     } else {
       notifyListeners();
     }

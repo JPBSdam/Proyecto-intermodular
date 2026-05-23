@@ -1,5 +1,6 @@
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
+import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_drawer.dart';
@@ -219,24 +220,11 @@ class _ReservationListViewState extends State<ReservationListView> {
 
   Future<void> _confirmBulkComplete(ReservationViewModel vm) async {
     final count = _selectedIds.length;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('¿Completar reservas?'),
-        content: Text(
+    final confirm = await showDialogYesNo(
+      context,
+      title: '¿Completar reservas?',
+      cuestion:
           'Vas a marcar como COMPLETADAS $count reservas. ¿Deseas continuar?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCELAR'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('SÍ, COMPLETAR'),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {

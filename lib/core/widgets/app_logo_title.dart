@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Widget de branding unificado que muestra el logo y el nombre de la app.
-///
-/// Se utiliza principalmente en las AppBars de las pantallas principales.
+
 class AppLogoTitle extends StatelessWidget {
   final double iconSize;
   final double fontSize;
 
-  /// Color opcional para el branding (por defecto usa el color primario del tema).
   final Color? color;
 
   const AppLogoTitle({

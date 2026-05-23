@@ -41,6 +41,7 @@ import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 import '../../ui/viewmodels/firestore/user_viewmodel.dart';
 import '../../ui/views/data/profile/user_form_view.dart';
 import '../../ui/views/data/profile/user_profile_view.dart';
+import '../../ui/views/error/not_found_view.dart';
 
 // Helper para reaccionar a cambios de auth en GoRouter
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -59,6 +60,8 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
+  errorBuilder: (context, state) =>
+      NotFoundView(exception: state.error?.message),
   refreshListenable: GoRouterRefreshStream(
     FirebaseAuth.instance.authStateChanges(),
   ),

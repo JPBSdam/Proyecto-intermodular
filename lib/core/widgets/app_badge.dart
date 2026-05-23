@@ -1,7 +1,7 @@
 import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:flutter/material.dart';
 
-/// Badge unificado para etiquetas informativas (ADMIN, ABIERTO, CATEGORÍA, etc).
+// Badge unificado para etiquetas informativas (ADMIN, ABIERTO, CATEGORÍA, etc).
 class AppBadge extends StatelessWidget {
   final String label;
   final Color? backgroundColor;
@@ -20,7 +20,7 @@ class AppBadge extends StatelessWidget {
     this.isOutline = false,
   });
 
-  /// Variante para indicar éxito o estado positivo (ej: ABIERTO).
+  // Variante para indicar éxito o estado positivo (ej: ABIERTO).
   factory AppBadge.success({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,
@@ -29,7 +29,7 @@ class AppBadge extends StatelessWidget {
     borderRadius: 12,
   );
 
-  /// Variante para errores o estados negativos (ej: CERRADO, NO DISPONIBLE).
+  // Variante para errores o estados negativos (ej: CERRADO, NO DISPONIBLE).
   factory AppBadge.error({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,
@@ -38,7 +38,7 @@ class AppBadge extends StatelessWidget {
     borderRadius: 12,
   );
 
-  /// Variante para avisos o estados pendientes (ej: PENDIENTE).
+  // Variante para avisos o estados pendientes (ej: PENDIENTE).
   factory AppBadge.warning({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,
@@ -47,7 +47,7 @@ class AppBadge extends StatelessWidget {
     borderRadius: 12,
   );
 
-  /// Variante para detalles secundarios (ej: categoría, etiqueta informativa).
+  // Variante para detalles secundarios (ej: categoría, etiqueta informativa).
   factory AppBadge.detail({required String label, IconData? icon}) => AppBadge(
     label: label,
     icon: icon,

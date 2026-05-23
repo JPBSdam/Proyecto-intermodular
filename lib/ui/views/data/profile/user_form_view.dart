@@ -5,6 +5,7 @@ import 'package:app_restaurante/data/services/storage/image_picker_service.dart'
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
@@ -357,38 +358,15 @@ class _UserFormViewState extends State<UserFormView> {
   }
 
   Future<void> _confirmDeleteAccount(UserViewModel viewmodel) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Eliminar cuenta'),
-          ],
-        ),
-        content: const Text(
+    final confirmed = await showDialogYesNo(
+      context,
+      title: 'Eliminar cuenta',
+      cuestion:
           'Se borrarán todos tus datos personales de forma permanente y '
           'perderás el acceso a tu historial de reservas.\n\n'
           'Esta operación es irreversible. Si te registras de nuevo con el '
           'mismo correo, será una cuenta completamente nueva.\n\n'
           '¿Estás seguro de que quieres continuar?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Sí, eliminar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
     );
 
     if (confirmed != true || !mounted) return;

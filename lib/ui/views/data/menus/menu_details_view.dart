@@ -86,7 +86,7 @@ class _MenuDetailViewState extends State<MenuDetailView> {
         body: isNotFound
             ? const Center(child: Text("El menú solicitado no existe."))
             : (menu == null
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const SizedBox.shrink()
                   : _buildContent(
                       menu,
                       menuDishes,

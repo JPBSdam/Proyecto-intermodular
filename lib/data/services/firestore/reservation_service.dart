@@ -2,9 +2,6 @@ import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/repositories/reservation_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Servicio de gestión de reservas.
-/// Capa entre ViewModel y Repository con manejo centralizado de errores.
-
 class ReservationService {
   final ReservationRepository _repo = ReservationRepository();
 

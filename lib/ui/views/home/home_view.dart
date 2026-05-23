@@ -2,6 +2,7 @@ import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
+import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
@@ -61,32 +62,16 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   /// Muestra un diálogo informativo si el usuario intenta acceder a funciones
   /// que requieren autenticación (reservas, perfil), pero está en estado de invitado.
-  void _showLoginRequiredDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Inicia sesión para continuar'),
-          content: const Text(
-            'Necesitas iniciar sesión para acceder a esta función. ¿Deseas hacerlo ahora?',
-            textAlign: TextAlign.center,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.go(AppRoutes.login);
-              },
-              child: const Text('Iniciar Sesión'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Más tarde'),
-            ),
-          ],
-        );
-      },
+  void _showLoginRequiredDialog(BuildContext context) async {
+    final confirmed = await showDialogYesNo(
+      context,
+      title: 'Inicia sesión para continuar',
+      cuestion:
+          'Necesitas iniciar sesión para acceder a esta función. ¿Deseas hacerlo ahora?',
     );
+    if (confirmed == true && context.mounted) {
+      context.go(AppRoutes.login);
+    }
   }
 
   // ── UI ───────────────────────────────────────────────────────
