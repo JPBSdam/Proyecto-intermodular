@@ -19,6 +19,13 @@ class UserService {
   Future<void> updateUser(User user) async =>
       _handleErrors(() => _repository.update(user));
 
+  Future<void> setNotificationsEnabled(String userId, bool value) async =>
+      _handleErrors(
+        () => FirebaseFirestore.instance.collection('users').doc(userId).update(
+          {'notificationsEnabled': value},
+        ),
+      );
+
   Future<void> anonymize(String userId) async =>
       _handleErrors(() => _repository.anonymize(userId));
 
