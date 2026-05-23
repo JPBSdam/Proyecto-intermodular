@@ -10,6 +10,7 @@ class User {
   String? urlImage;
   String? googlePhotoUrl;
   bool? isActive;
+  bool? notificationsEnabled;
   DateTime? deletedAt;
 
   //CONSTRUCTOR
@@ -22,6 +23,7 @@ class User {
     this.urlImage,
     this.googlePhotoUrl,
     this.isActive,
+    this.notificationsEnabled,
     this.deletedAt,
   });
 
@@ -40,6 +42,7 @@ class User {
       urlImage: map?['urlImage'] as String?,
       googlePhotoUrl: map?['googlePhotoUrl'] as String?,
       isActive: map?['isActive'] as bool?,
+      notificationsEnabled: map?['notificationsEnabled'] as bool? ?? true,
       deletedAt: (map?['deletedAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -55,6 +58,8 @@ class User {
       if (urlImage != null) "urlImage": urlImage,
       if (googlePhotoUrl != null) "googlePhotoUrl": googlePhotoUrl,
       if (isActive != null) "isActive": isActive,
+      if (notificationsEnabled != null)
+        "notificationsEnabled": notificationsEnabled,
       if (deletedAt != null) "deletedAt": deletedAt,
     };
   }

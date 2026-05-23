@@ -263,6 +263,23 @@ class _UserFormViewState extends State<UserFormView> {
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
           ),
+          const SizedBox(height: 32),
+          SwitchListTile(
+            title: const Text('Notificaciones'),
+            subtitle: const Text('Recibir avisos sobre tus reservas'),
+            value: _user?.notificationsEnabled ?? true,
+            onChanged: (value) {
+              setState(() => _user?.notificationsEnabled = value);
+              viewmodel.setNotificationsEnabled(widget.userId, value);
+            },
+            secondary: Icon(
+              (_user?.notificationsEnabled ?? true)
+                  ? Icons.notifications_outlined
+                  : Icons.notifications_off_outlined,
+              color: colorScheme.primary,
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
           const SizedBox(height: 40),
           Center(
             child: SizedBox(
