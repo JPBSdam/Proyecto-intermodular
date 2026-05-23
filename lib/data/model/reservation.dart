@@ -16,16 +16,16 @@ class ReservationStatus {
 class Reservation {
   //ATTRIBUTES
   String? id;
-  String? userId; // uid de Firebase del cliente
-  String? userName; // nombre visible para el admin
-  String? userEmail; // email visible para el admin
-  String? userPhone; // teléfono de contacto
+  String? userId;
+  String? userName;
+  String? userEmail;
+  String? userPhone;
   int? seats;
-  DateTime? reservationDate; // fecha y hora unificadas
-  String? state; // ReservationStatus.*
-  String? comments; // peticiones especiales
-  bool? hasBaby; // necesitan espacio para carricoche
-  int? babyCount; // número de bebés (solo si hasBaby == true)
+  DateTime? reservationDate;
+  String? state;
+  String? comments;
+  bool? hasBaby;
+  int? babyCount;
   DateTime? createdAt;
 
   //CONSTRUCTOR
