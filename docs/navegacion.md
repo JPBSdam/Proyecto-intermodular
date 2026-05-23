@@ -37,6 +37,7 @@ lib/core/navigation/
 | `/reservations/form` | Nueva reserva | Requiere sesión real |
 | `/reservations/form/:id` | Editar reserva | Requiere sesión real |
 | `/reservations/detail/:id` | Detalle de reserva | Requiere sesión real |
+| `/admin/notifications` | Reservas pendientes (admin) | Solo admin |
 
 ---
 
@@ -47,6 +48,9 @@ lib/core/navigation/
 ```dart
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
+
+  // Pantalla 404 para rutas desconocidas
+  errorBuilder: (context, state) => NotFoundView(exception: state.error?.message),
 
   // 1. Escucha cambios de autenticación para re-evaluar redirecciones
   refreshListenable: GoRouterRefreshStream(

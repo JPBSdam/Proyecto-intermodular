@@ -95,11 +95,11 @@ class DishViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
-  Future<void> addDish(Dish dish) async {
+  Future<void> saveDish(Dish dish, File? imageFile) async {
     _isLoading = true;
     notifyListeners();
     try {
-      await _service.createDish(dish);
+      await _service.saveDish(dish, imageFile);
     } catch (e) {
       _errorMessage = e.toString();
     }

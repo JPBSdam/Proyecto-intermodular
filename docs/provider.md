@@ -58,8 +58,10 @@ Reconstruye el widget cada vez que el ViewModel notifica un cambio. Se usa cuand
 Widget build(BuildContext context) {
   final dishVM = context.watch<DishViewModel>();
 
-  if (dishVM.isLoading) return const CircularProgressIndicator();
-  return ListView(children: dishVM.dishes.map(...).toList());
+  return LoadingOverlay(
+    isLoading: dishVM.isLoading,
+    child: ListView(children: dishVM.dishes.map(...).toList()),
+  );
 }
 ```
 

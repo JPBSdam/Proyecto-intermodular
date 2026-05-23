@@ -39,14 +39,15 @@ Cuando una cuenta se elimina, los campos `name`, `email`, `urlImage`, `googlePho
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `token` | String | Token FCM del destinatario |
+| `toUserId` | String | UID del usuario destinatario |
 | `title` | String | Título de la notificación |
 | `body` | String | Cuerpo del mensaje |
 | `type` | String | Tipo de evento (`reservation_confirmed`, `reservation_cancelled`…) |
-| `data` | Map? | Datos adicionales (p. ej. `reservationId` para deep links) |
+| `reservationId` | String? | ID de la reserva (para deep linking al detalle) |
+| `isRead` | bool | `false` hasta que el dispositivo la procesa |
 | `createdAt` | Timestamp | Cuándo se encoló la notificación |
 
-Esta colección es procesada por una Cloud Function que envía las notificaciones y borra el documento una vez enviado. Requiere un índice compuesto en Firestore: `token ASC + createdAt DESC`.
+El dispositivo del destinatario escucha esta colección en tiempo real mediante `FcmService.listenToNotificationQueue()`. Cuando llega un documento nuevo, muestra la notificación local y marca el documento como `isRead: true`. No requiere Cloud Functions.
 
 ---
 

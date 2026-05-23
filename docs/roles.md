@@ -35,18 +35,13 @@ Firebase Authentication no sabe nada del rol — solo gestiona si hay sesión o 
 `HomeViewModel` escucha en tiempo real el documento del usuario en Firestore. Cuando el documento cambia (por ejemplo, si se le asigna el rol ADMIN), la app lo refleja inmediatamente sin necesidad de reiniciar sesión:
 
 ```dart
-_userSubscription = _firestore
-    .collection('users')
-    .doc(user.uid)
-    .snapshots()
-    .listen((doc) {
-      if (doc.exists) {
-        _actualRole = doc.data()?['role']?.toString().toUpperCase() ?? 'USER';
-        _userName = doc.data()?['name']?.toString();
-        _userPhotoUrl = doc.data()?['urlImage']?.toString();
-      }
-      notifyListeners();
-    });
+_userSubscription = _userService.watchUser(user.uid).listen((userData) {
+  _actualRole = userData?.role?.toUpperCase() ?? 'USER';
+  _userName = userData?.name;
+  _userPhotoUrl = userData?.urlImage;
+  _userGooglePhotoUrl = userData?.googlePhotoUrl;
+  notifyListeners();
+});
 ```
 
 Los getters que expone `HomeViewModel` para que el resto de la app consulte el rol:

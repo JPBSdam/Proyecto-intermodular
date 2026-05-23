@@ -70,6 +70,9 @@ class AuthService {
   // ─── Verificación de email ───────────────────────────────
   Future<void> sendEmailVerification()
   Future<void> reloadUser()
+
+  // ─── Eliminación de cuenta ───────────────────────────────
+  Future<void> deleteCurrentUser()   
 }
 ```
 

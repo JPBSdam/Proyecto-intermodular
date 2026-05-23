@@ -119,11 +119,30 @@ appBar: SabrosAppBar()
 // Logo + título de sección (pantallas secundarias)
 appBar: SabrosAppBar(pageTitle: 'Iniciar Sesión')
 
-// Con acciones
-appBar: SabrosAppBar(pageTitle: 'Menús', actions: [HomeButton()])
+// Con acciones personalizadas
+appBar: SabrosAppBar(pageTitle: 'Menús', actions: [IconButton(...)])
 ```
 
 Incluye una línea divisoria inferior (`outlineVariant` al 50% de opacidad) para separar visualmente el contenido.
+
+---
+
+### LoadingOverlay
+
+**Ruta:** `lib/core/widgets/loading_overlay.dart`
+
+Widget que bloquea la pantalla con un indicador de carga mientras se ejecuta una operación asíncrona. Es el patrón estándar de carga en la app — úsalo en lugar de `CircularProgressIndicator` directamente en el `build`.
+
+```dart
+LoadingOverlay(
+  isLoading: viewmodel.isLoading,
+  child: Scaffold(
+    // contenido normal de la pantalla
+  ),
+)
+```
+
+`isLoading` se conecta directamente al getter del ViewModel. Cuando es `true`, superpone un overlay semitransparente que impide interacciones mientras la operación está en curso.
 
 ---
 
@@ -139,7 +158,6 @@ CachedNetworkImage(
   fit: BoxFit.cover,
   placeholder: (_, __) => Container(
     color: AppTheme.brandPrimary.withAlpha(20),
-    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
   ),
   errorWidget: (_, __, ___) => Container(
     color: AppTheme.brandPrimary.withAlpha(20),
@@ -157,10 +175,7 @@ Image.network(
   webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
   loadingBuilder: (_, child, progress) => progress == null
       ? child
-      : Container(
-          color: AppTheme.brandPrimary.withAlpha(20),
-          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        ),
+      : Container(color: AppTheme.brandPrimary.withAlpha(20)),
   errorBuilder: (_, __, ___) => Container(
     color: AppTheme.brandPrimary.withAlpha(20),
     child: const Icon(Icons.restaurant, size: 32),
