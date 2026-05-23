@@ -64,6 +64,13 @@ void main() {
       expect(map.containsKey('comments'), false);
     });
 
+    test('ReservationStatus contiene los estados esperados', () {
+      expect(ReservationStatus.pending, 'pending');
+      expect(ReservationStatus.confirmed, 'confirmed');
+      expect(ReservationStatus.cancelled, 'cancelled');
+      expect(ReservationStatus.completed, 'completed');
+    });
+
     test('Conversion de fecha a Timestamp es correcta', () {
       // Arrange
       final originalDate = DateTime(2026, 12, 25, 21, 0);

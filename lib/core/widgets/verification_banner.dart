@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/config/app_theme.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../ui/viewmodels/home/home_viewmodel.dart';
@@ -65,13 +66,14 @@ class VerificationBanner extends StatelessWidget {
                 TextButton(
                   onPressed: () async {
                     await viewModel.resendVerificationEmail();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Correo de verificación reenviado'),
-                        ),
-                      );
-                    }
+
+                    if (!context.mounted) return;
+
+                    showSnackBar(
+                      context,
+                      'Correo de verificación reenviado',
+                      success: true,
+                    );
                   },
                   child: const Text(
                     'Reenviar correo.',

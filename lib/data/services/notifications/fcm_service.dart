@@ -29,6 +29,7 @@ class FcmService {
 
   // Suscripción al stream de la cola de notificaciones del usuario actual
   static StreamSubscription? _queueSubscription;
+  static StreamSubscription? _tokenRefreshSubscription;
 
   // ─── Inicialización (llamar una vez al arrancar la app) ───────────────────
 
@@ -92,8 +93,12 @@ class FcmService {
     }, SetOptions(merge: true));
 
     // FCM puede regenerar el token en cualquier momento.
-    // Nos suscribimos para actualizarlo en Firestore automáticamente.
-    _fcm.onTokenRefresh.listen((String newToken) async {
+    // Cancelamos la suscripción anterior antes de crear una nueva para evitar
+    // que un listener de una sesión anterior escriba en el usuario incorrecto.
+    _tokenRefreshSubscription?.cancel();
+    _tokenRefreshSubscription = _fcm.onTokenRefresh.listen((
+      String newToken,
+    ) async {
       await _db.collection('users').doc(userId).set({
         'fcmToken': newToken,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
@@ -163,6 +168,8 @@ class FcmService {
   static void stopListening() {
     _queueSubscription?.cancel();
     _queueSubscription = null;
+    _tokenRefreshSubscription?.cancel();
+    _tokenRefreshSubscription = null;
   }
 
   // ─── Escritura en la cola (lado del admin) ────────────────────────────────
