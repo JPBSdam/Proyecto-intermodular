@@ -59,13 +59,58 @@ void main() {
     });
 
     test('Constructor acepta solo campos obligatorios', () {
-      // Arrange & Act
       final user = User();
 
-      // Assert
       expect(user.id, isNull);
       expect(user.name, isNull);
       expect(user.email, isNull);
+    });
+
+    test('toFirestore incluye isActive cuando está definido', () {
+      final activeUser = User(email: 'a@b.com', isActive: true);
+      final inactiveUser = User(email: 'a@b.com', isActive: false);
+
+      expect(activeUser.toFirestore()['isActive'], isTrue);
+      expect(inactiveUser.toFirestore()['isActive'], isFalse);
+    });
+
+    test('toFirestore omite isActive cuando es null', () {
+      final user = User(email: 'a@b.com');
+
+      expect(user.toFirestore().containsKey('isActive'), isFalse);
+    });
+
+    test('toFirestore incluye googlePhotoUrl cuando está definido', () {
+      final user = User(googlePhotoUrl: 'https://photo.url/img.jpg');
+
+      expect(user.toFirestore()['googlePhotoUrl'], 'https://photo.url/img.jpg');
+    });
+
+    test('toFirestore omite googlePhotoUrl cuando es null', () {
+      final user = User(name: 'Test');
+
+      expect(user.toFirestore().containsKey('googlePhotoUrl'), isFalse);
+    });
+
+    test('toFirestore omite deletedAt cuando es null', () {
+      final user = User(email: 'a@b.com', isActive: true);
+
+      expect(user.toFirestore().containsKey('deletedAt'), isFalse);
+    });
+
+    test('usuario activo tiene isActive true y sin deletedAt', () {
+      final user = User(id: 'u1', isActive: true);
+
+      expect(user.isActive, isTrue);
+      expect(user.deletedAt, isNull);
+    });
+
+    test('usuario inactivo tiene isActive false', () {
+      final deletedAt = DateTime(2026, 5, 20);
+      final user = User(id: 'u1', isActive: false, deletedAt: deletedAt);
+
+      expect(user.isActive, isFalse);
+      expect(user.deletedAt, deletedAt);
     });
   });
 }

@@ -1,3 +1,5 @@
+import 'package:app_restaurante/data/model/user.dart' as model;
+import 'package:app_restaurante/data/repositories/user_repository.dart';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,19 +8,27 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'login_viewmodel_test.mocks.dart';
 
-class _FakeUserCredential extends Fake implements UserCredential {}
+class _FakeUserCredential extends Fake implements UserCredential {
+  @override
+  User? get user => null;
+}
 
-@GenerateMocks([AuthService])
+@GenerateMocks([AuthService, UserRepository])
 void main() {
   group('LoginViewModel', () {
     late MockAuthService mockAuthService;
+    late MockUserRepository mockUserRepository;
     late LoginViewModel loginVM;
 
     final fakeCredential = _FakeUserCredential();
 
     setUp(() {
       mockAuthService = MockAuthService();
-      loginVM = LoginViewModel(authService: mockAuthService);
+      mockUserRepository = MockUserRepository();
+      loginVM = LoginViewModel(
+        authService: mockAuthService,
+        userRepository: mockUserRepository,
+      );
     });
 
     tearDown(() => loginVM.dispose());
@@ -34,7 +44,6 @@ void main() {
 
     group('signInWithEmail', () {
       test('retorna true y no setea error en éxito', () async {
-        // Arrange
         when(
           mockAuthService.signInWithEmail(
             email: anyNamed('email'),
@@ -42,19 +51,16 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
 
-        // Act
         final result = await loginVM.signInWithEmail(
           email: 'user@test.com',
           password: 'pass123',
         );
 
-        // Assert
         expect(result, isTrue);
         expect(loginVM.errorMessage, isNull);
       });
 
       test('retorna false y setea errorMessage en error', () async {
-        // Arrange
         when(
           mockAuthService.signInWithEmail(
             email: anyNamed('email'),
@@ -62,19 +68,16 @@ void main() {
           ),
         ).thenThrow('Contraseña incorrecta.');
 
-        // Act
         final result = await loginVM.signInWithEmail(
           email: 'user@test.com',
           password: 'mal',
         );
 
-        // Assert
         expect(result, isFalse);
         expect(loginVM.errorMessage, 'Contraseña incorrecta.');
       });
 
       test('isLoading es false al terminar', () async {
-        // Arrange
         when(
           mockAuthService.signInWithEmail(
             email: anyNamed('email'),
@@ -82,18 +85,15 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
 
-        // Act
         await loginVM.signInWithEmail(
           email: 'user@test.com',
           password: 'pass123',
         );
 
-        // Assert
         expect(loginVM.isLoading, isFalse);
       });
 
       test('limpia el error anterior al iniciar una nueva operación', () async {
-        // Arrange — primera llamada falla
         when(
           mockAuthService.signInWithEmail(
             email: anyNamed('email'),
@@ -103,7 +103,6 @@ void main() {
         await loginVM.signInWithEmail(email: 'user@test.com', password: 'mal');
         expect(loginVM.errorMessage, isNotNull);
 
-        // Segunda llamada tiene éxito
         when(
           mockAuthService.signInWithEmail(
             email: anyNamed('email'),
@@ -111,18 +110,15 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
 
-        // Act
         await loginVM.signInWithEmail(
           email: 'user@test.com',
           password: 'pass123',
         );
 
-        // Assert
         expect(loginVM.errorMessage, isNull);
       });
 
       test('notifica a la UI durante la operación', () async {
-        // Arrange
         var notifyCount = 0;
         loginVM.addListener(() => notifyCount++);
         when(
@@ -132,13 +128,12 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
 
-        // Act
         await loginVM.signInWithEmail(
           email: 'user@test.com',
           password: 'pass123',
         );
 
-        // Assert — al menos: clearError + setLoading(true) + setLoading(false)
+        // clearError + setLoading(true) + setLoading(false) = 3 mínimo
         expect(notifyCount, greaterThanOrEqualTo(3));
       });
     });
@@ -147,34 +142,27 @@ void main() {
 
     group('signInWithGoogle', () {
       test('retorna true cuando Google devuelve credencial', () async {
-        // Arrange
         when(
           mockAuthService.signInWithGoogle(),
         ).thenAnswer((_) async => fakeCredential);
 
-        // Act & Assert
         expect(await loginVM.signInWithGoogle(), isTrue);
       });
 
       test('retorna false cuando el usuario cancela (retorna null)', () async {
-        // Arrange
         when(mockAuthService.signInWithGoogle()).thenAnswer((_) async => null);
 
-        // Act & Assert
         expect(await loginVM.signInWithGoogle(), isFalse);
         expect(loginVM.errorMessage, isNull);
       });
 
       test('retorna false y setea errorMessage en error', () async {
-        // Arrange
         when(
           mockAuthService.signInWithGoogle(),
         ).thenThrow('Error inesperado: ...');
 
-        // Act
         final result = await loginVM.signInWithGoogle();
 
-        // Assert
         expect(result, isFalse);
         expect(loginVM.errorMessage, isNotNull);
       });
@@ -184,23 +172,18 @@ void main() {
 
     group('signInAnonymously', () {
       test('retorna true en éxito', () async {
-        // Arrange
         when(
           mockAuthService.signInAnonymously(),
         ).thenAnswer((_) async => _FakeUserCredential());
 
-        // Act & Assert
         expect(await loginVM.signInAnonymously(), isTrue);
       });
 
       test('retorna false y setea errorMessage en error', () async {
-        // Arrange
         when(mockAuthService.signInAnonymously()).thenThrow('Error inesperado');
 
-        // Act
         final result = await loginVM.signInAnonymously();
 
-        // Assert
         expect(result, isFalse);
         expect(loginVM.errorMessage, isNotNull);
       });
@@ -210,25 +193,20 @@ void main() {
 
     group('resetPassword', () {
       test('retorna true en éxito', () async {
-        // Arrange
         when(
           mockAuthService.resetPassword(email: anyNamed('email')),
         ).thenAnswer((_) async {});
 
-        // Act & Assert
         expect(await loginVM.resetPassword(email: 'user@test.com'), isTrue);
       });
 
       test('retorna false y setea errorMessage en error', () async {
-        // Arrange
         when(
           mockAuthService.resetPassword(email: anyNamed('email')),
         ).thenThrow('No existe ninguna cuenta con este correo.');
 
-        // Act
         final result = await loginVM.resetPassword(email: 'no@test.com');
 
-        // Assert
         expect(result, isFalse);
         expect(
           loginVM.errorMessage,
@@ -236,5 +214,84 @@ void main() {
         );
       });
     });
+
+    // ─── _checkUserActive (bloqueo de cuentas eliminadas) ────────────────────
+
+    group('checkUserActive', () {
+      test(
+        'signInWithEmail retorna false y cierra sesión si isActive es false',
+        () async {
+          final inactiveUser = model.User(id: 'uid1', isActive: false);
+
+          // El login de Auth tiene éxito pero devuelve un UID real
+          final fakeUser = _FakeUser('uid1');
+          final fakeCredentialWithUser = _FakeUserCredentialWithUser(fakeUser);
+
+          when(
+            mockAuthService.signInWithEmail(
+              email: anyNamed('email'),
+              password: anyNamed('password'),
+            ),
+          ).thenAnswer((_) async => fakeCredentialWithUser);
+
+          when(
+            mockUserRepository.getById('uid1'),
+          ).thenAnswer((_) async => inactiveUser);
+
+          when(mockAuthService.signOut()).thenAnswer((_) async {});
+
+          final result = await loginVM.signInWithEmail(
+            email: 'deleted@test.com',
+            password: 'pass123',
+          );
+
+          expect(result, isFalse);
+          expect(
+            loginVM.errorMessage,
+            contains('no existe o ha sido eliminada'),
+          );
+          verify(mockAuthService.signOut()).called(1);
+        },
+      );
+
+      test('signInWithEmail permite acceso si isActive es true', () async {
+        final activeUser = model.User(id: 'uid2', isActive: true);
+        final fakeUser = _FakeUser('uid2');
+        final fakeCredentialWithUser = _FakeUserCredentialWithUser(fakeUser);
+
+        when(
+          mockAuthService.signInWithEmail(
+            email: anyNamed('email'),
+            password: anyNamed('password'),
+          ),
+        ).thenAnswer((_) async => fakeCredentialWithUser);
+
+        when(
+          mockUserRepository.getById('uid2'),
+        ).thenAnswer((_) async => activeUser);
+
+        final result = await loginVM.signInWithEmail(
+          email: 'active@test.com',
+          password: 'pass123',
+        );
+
+        expect(result, isTrue);
+        verifyNever(mockAuthService.signOut());
+      });
+    });
   });
+}
+
+// Fakes para simular UserCredential con un User real
+class _FakeUser extends Fake implements User {
+  @override
+  final String uid;
+  _FakeUser(this.uid);
+}
+
+class _FakeUserCredentialWithUser extends Fake implements UserCredential {
+  final User _user;
+  _FakeUserCredentialWithUser(this._user);
+  @override
+  User get user => _user;
 }

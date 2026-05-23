@@ -1,3 +1,4 @@
+import 'package:app_restaurante/data/repositories/user_repository.dart';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
@@ -10,9 +11,11 @@ import 'package:flutter/material.dart';
 
 class LoginViewModel extends ChangeNotifier {
   final AuthService _authService;
+  final UserRepository _userRepository;
 
-  LoginViewModel({AuthService? authService})
-    : _authService = authService ?? AuthService();
+  LoginViewModel({AuthService? authService, UserRepository? userRepository})
+    : _authService = authService ?? AuthService(),
+      _userRepository = userRepository ?? UserRepository();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -29,10 +32,11 @@ class LoginViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      await _authService.signInWithEmail(
+      final credential = await _authService.signInWithEmail(
         email: email.trim(),
         password: password,
       );
+      await _checkUserActive(credential?.user?.uid);
       _setLoading(false);
       return true;
     } catch (e) {
@@ -49,12 +53,36 @@ class LoginViewModel extends ChangeNotifier {
 
     try {
       final result = await _authService.signInWithGoogle();
+      if (result == null) {
+        _setLoading(false);
+        return false;
+      }
+      await _checkUserActive(result.user?.uid);
       _setLoading(false);
-      return result != null;
+      return true;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
       return false;
+    }
+  }
+
+  // ==================== COMPROBACIÓN CUENTA ACTIVA ====================
+
+  Future<void> _checkUserActive(String? uid) async {
+    if (uid == null) return;
+    try {
+      final user = await _userRepository.getById(uid);
+      if (user != null && user.isActive == false) {
+        await _authService.signOut();
+        throw 'Esta cuenta no existe o ha sido eliminada. '
+            'Regístrate de nuevo para crear una cuenta.';
+      }
+    } catch (e) {
+      // Si falla la consulta, cerramos sesión por seguridad y propagamos
+      if (e is String) rethrow;
+      await _authService.signOut();
+      rethrow;
     }
   }
 

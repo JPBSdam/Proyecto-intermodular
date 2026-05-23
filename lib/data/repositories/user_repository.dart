@@ -39,4 +39,19 @@ class UserRepository {
   Future<void> update(User user) async {
     await _collection.doc(user.id).update(user.toFirestore());
   }
+
+  // ─── SOFT DELETE ───────────────────────────────────────────────────────────
+  Future<void> anonymize(String userId) async {
+    await _collection.doc(userId).update({
+      'name': FieldValue.delete(),
+      'email': FieldValue.delete(),
+      'phoneNumber': FieldValue.delete(),
+      'urlImage': FieldValue.delete(),
+      'googlePhotoUrl': FieldValue.delete(),
+      'fcmToken': FieldValue.delete(),
+      'fcmTokenUpdatedAt': FieldValue.delete(),
+      'isActive': false,
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

@@ -16,7 +16,37 @@
 | `menus` | Menús que agrupan platos |
 | `reservations` | Reservas de mesa con usuario, fecha, personas, estado |
 | `restaurants` | Información del restaurante (nombre, dirección, teléfono…) |
-| `users` | Perfiles de usuario con nombre, foto y rol (USER/ADMIN) |
+| `users` | Perfiles de usuario con nombre, foto, rol (USER/ADMIN) y estado de cuenta |
+| `notification_queue` | Cola de notificaciones FCM pendientes de enviar a administradores |
+
+### Colección `users` — campos principales
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `name` | String | Nombre visible del usuario |
+| `email` | String | Correo electrónico |
+| `role` | String | `USER` o `ADMIN` |
+| `isActive` | bool | `true` para cuentas activas, `false` para cuentas eliminadas (soft delete) |
+| `deletedAt` | Timestamp | Fecha de eliminación de la cuenta (solo si `isActive = false`) |
+| `urlImage` | String? | URL de la foto de perfil subida por el usuario |
+| `googlePhotoUrl` | String? | URL de la foto de Google (login con Google) |
+| `fcmToken` | String? | Token de Firebase Cloud Messaging para notificaciones push |
+| `fcmTokenUpdatedAt` | Timestamp? | Última actualización del token FCM |
+
+Cuando una cuenta se elimina, los campos `name`, `email`, `urlImage`, `googlePhotoUrl`, `fcmToken` y `fcmTokenUpdatedAt` se borran con `FieldValue.delete()`. El documento se conserva para mantener la integridad referencial de las reservas históricas.
+
+### Colección `notification_queue` — campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `token` | String | Token FCM del destinatario |
+| `title` | String | Título de la notificación |
+| `body` | String | Cuerpo del mensaje |
+| `type` | String | Tipo de evento (`reservation_confirmed`, `reservation_cancelled`…) |
+| `data` | Map? | Datos adicionales (p. ej. `reservationId` para deep links) |
+| `createdAt` | Timestamp | Cuándo se encoló la notificación |
+
+Esta colección es procesada por una Cloud Function que envía las notificaciones y borra el documento una vez enviado. Requiere un índice compuesto en Firestore: `token ASC + createdAt DESC`.
 
 ---
 

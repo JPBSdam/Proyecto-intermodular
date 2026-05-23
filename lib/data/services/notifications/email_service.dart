@@ -18,6 +18,8 @@ class EmailService {
       'template_7xonz2m'; // Template: nuevo aviso a admins
   static const String _templateIdClientConfirm =
       'template_6ruvyqk'; // Template: confirmación al cliente
+  static const String _templateIdCancellationAdmin =
+      'template_cancel_account'; // Template: reserva cancelada por borrado de cuenta
   static const String _publicKey = 'N_djxO1LI2WPKf-Jk'; // EmailJS Public Key
   static const String _privateKey =
       'JxxlroAkO5CYOb_M74yqF'; // EmailJS Private Key (modo no-browser)
@@ -73,6 +75,47 @@ class EmailService {
           'seats': seats,
           // {{comments}} → peticiones especiales del cliente
           'comments': comments,
+        },
+      );
+    }
+  }
+
+  // ─── Enviar email de cancelación por borrado de cuenta a admins ─────────
+  //
+  // Plantilla EmailJS necesaria (template_cancel_account):
+  //   To Email: {{to_email}}
+  //   Subject:  Reserva cancelada por borrado de cuenta
+  //   Body usa: {{reservation_date}}, {{seats}}, {{reason}}
+  //
+  static Future<void> sendReservationCancelledToAdmins(
+    Reservation reservation,
+  ) async {
+    if (_templateIdCancellationAdmin.contains('template_cancel_account')) {
+      // Plantilla aún no configurada en EmailJS — salta silenciosamente
+      debugPrint(
+        '[EmailService] ⚠️ Template de cancelación no configurado aún',
+      );
+      return;
+    }
+
+    final adminEmails = await _fetchAdminEmails();
+    if (adminEmails.isEmpty) return;
+
+    final dateStr = reservation.reservationDate != null
+        ? DateFormat(
+            "dd/MM/yyyy 'a las' HH:mm",
+          ).format(reservation.reservationDate!)
+        : 'fecha desconocida';
+    final seats = reservation.seats?.toString() ?? '?';
+
+    for (final adminEmail in adminEmails) {
+      await _sendClient(
+        templateId: _templateIdCancellationAdmin,
+        templateParams: {
+          'to_email': adminEmail,
+          'reservation_date': dateStr,
+          'seats': seats,
+          'reason': 'El cliente eliminó su cuenta',
         },
       );
     }

@@ -4,6 +4,7 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/user.dart' as model;
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
@@ -289,9 +290,20 @@ class _UserProfileViewState extends State<UserProfileView> {
           _buildActivityCard(
             icon: Icons.calendar_today_outlined,
             title: 'Mis reservas',
-            // Corregido: la ruta '/reservations/my' no existía,
-            // usamos AppRoutes.reservations que sí está registrada en el router
-            onTap: () => context.go(AppRoutes.reservations),
+            onTap: () {
+              final homeVM = context.read<HomeViewModel>();
+
+              if (!homeVM.isEmailVerified) {
+                showSnackBar(
+                  context,
+                  'Verifica tu correo electrónico para poder hacer reservas',
+                  error: true,
+                );
+                return;
+              }
+
+              context.go(AppRoutes.reservations);
+            },
           ),
         ],
       ),
