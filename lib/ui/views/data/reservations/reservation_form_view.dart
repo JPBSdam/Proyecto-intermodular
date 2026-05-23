@@ -7,7 +7,7 @@ import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -119,7 +119,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       return;
     }
 
-    final fbUser = FirebaseAuth.instance.currentUser;
+    final fbUser = context.read<HomeViewModel>().currentUser;
     if (fbUser == null) {
       showSnackBar(
         context,

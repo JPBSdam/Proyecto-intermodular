@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
+import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/data/services/notifications/email_service.dart';
@@ -14,14 +14,17 @@ class UserViewModel extends ChangeNotifier {
   final UserService _service;
   final ReservationService _reservationService;
   final StorageService _storageService;
+  final AuthService _authService;
 
   UserViewModel({
     UserService? service,
     ReservationService? reservationService,
     StorageService? storageService,
+    AuthService? authService,
   }) : _service = service ?? UserService(),
        _reservationService = reservationService ?? ReservationService(),
-       _storageService = storageService ?? StorageService();
+       _storageService = storageService ?? StorageService(),
+       _authService = authService ?? AuthService();
 
   User? _user;
   User? get user => _user;
@@ -119,10 +122,9 @@ class UserViewModel extends ChangeNotifier {
       await _service.anonymize(userId);
 
       // 3. Eliminar cuenta de Firebase Auth (libera el email para re-registro)
-      final currentUser = firebase.FirebaseAuth.instance.currentUser;
-      await currentUser?.delete();
-      if (firebase.FirebaseAuth.instance.currentUser != null) {
-        await firebase.FirebaseAuth.instance.signOut();
+      await _authService.deleteCurrentUser();
+      if (_authService.currentUser != null) {
+        await _authService.signOut();
       }
     } catch (e) {
       _error = 'Error al eliminar la cuenta: $e';

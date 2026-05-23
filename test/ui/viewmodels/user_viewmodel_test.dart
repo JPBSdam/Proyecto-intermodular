@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
+import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
@@ -12,12 +13,13 @@ import 'package:mockito/mockito.dart';
 
 import 'user_viewmodel_test.mocks.dart';
 
-@GenerateMocks([UserService, ReservationService, StorageService])
+@GenerateMocks([UserService, ReservationService, StorageService, AuthService])
 void main() {
   group('UserViewModel', () {
     late MockUserService mockService;
     late MockReservationService mockReservationService;
     late MockStorageService mockStorageService;
+    late MockAuthService mockAuthService;
     late UserViewModel vm;
 
     final testUser = User(
@@ -31,10 +33,12 @@ void main() {
       mockService = MockUserService();
       mockReservationService = MockReservationService();
       mockStorageService = MockStorageService();
+      mockAuthService = MockAuthService();
       vm = UserViewModel(
         service: mockService,
         reservationService: mockReservationService,
         storageService: mockStorageService,
+        authService: mockAuthService,
       );
     });
 
@@ -170,12 +174,10 @@ void main() {
           mockReservationService.updateStatuses(any, any),
         ).thenAnswer((_) async {});
         when(mockService.anonymize('u1')).thenAnswer((_) async {});
+        when(mockAuthService.deleteCurrentUser()).thenAnswer((_) async {});
+        when(mockAuthService.currentUser).thenReturn(null);
 
-        // deleteAccount también llama a Firebase Auth (currentUser?.delete())
-        // que en test devuelve null → se salta silenciosamente
-        try {
-          await vm.deleteAccount('u1');
-        } catch (_) {}
+        await vm.deleteAccount('u1');
 
         verify(
           mockReservationService.updateStatuses([
@@ -184,6 +186,7 @@ void main() {
           ], ReservationStatus.cancelled),
         ).called(1);
         verify(mockService.anonymize('u1')).called(1);
+        verify(mockAuthService.deleteCurrentUser()).called(1);
       });
 
       test('no llama a updateStatuses si no hay reservas activas', () async {
@@ -191,10 +194,10 @@ void main() {
           mockReservationService.getActiveByUser('u1'),
         ).thenAnswer((_) async => []);
         when(mockService.anonymize('u1')).thenAnswer((_) async {});
+        when(mockAuthService.deleteCurrentUser()).thenAnswer((_) async {});
+        when(mockAuthService.currentUser).thenReturn(null);
 
-        try {
-          await vm.deleteAccount('u1');
-        } catch (_) {}
+        await vm.deleteAccount('u1');
 
         verifyNever(mockReservationService.updateStatuses(any, any));
         verify(mockService.anonymize('u1')).called(1);

@@ -8,6 +8,7 @@ import 'dart:io' as _i9;
 
 import 'package:app_restaurante/data/model/reservation.dart' as _i7;
 import 'package:app_restaurante/data/model/user.dart' as _i4;
+import 'package:app_restaurante/data/services/auth/auth_service.dart' as _i11;
 import 'package:app_restaurante/data/services/firestore/reservation_service.dart'
     as _i6;
 import 'package:app_restaurante/data/services/firestore/user_service.dart'
@@ -243,6 +244,128 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
   _i3.Future<void> deleteUserAvatar(String? userUrlImage) =>
       (super.noSuchMethod(
             Invocation.method(#deleteUserAvatar, [userUrlImage]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+}
+
+/// A class which mocks [AuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthService extends _i1.Mock implements _i11.AuthService {
+  MockAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Stream<_i5.User?> get authStateChanges =>
+      (super.noSuchMethod(
+            Invocation.getter(#authStateChanges),
+            returnValue: _i3.Stream<_i5.User?>.empty(),
+          )
+          as _i3.Stream<_i5.User?>);
+
+  @override
+  bool get isEmailVerified =>
+      (super.noSuchMethod(
+            Invocation.getter(#isEmailVerified),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  bool isAnonymous() =>
+      (super.noSuchMethod(
+            Invocation.method(#isAnonymous, []),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i3.Future<_i5.UserCredential?> signUpWithEmail({
+    required String? email,
+    required String? password,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#signUpWithEmail, [], {
+              #email: email,
+              #password: password,
+            }),
+            returnValue: _i3.Future<_i5.UserCredential?>.value(),
+          )
+          as _i3.Future<_i5.UserCredential?>);
+
+  @override
+  _i3.Future<_i5.UserCredential?> signInWithEmail({
+    required String? email,
+    required String? password,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#signInWithEmail, [], {
+              #email: email,
+              #password: password,
+            }),
+            returnValue: _i3.Future<_i5.UserCredential?>.value(),
+          )
+          as _i3.Future<_i5.UserCredential?>);
+
+  @override
+  _i3.Future<_i5.UserCredential?> signInWithGoogle() =>
+      (super.noSuchMethod(
+            Invocation.method(#signInWithGoogle, []),
+            returnValue: _i3.Future<_i5.UserCredential?>.value(),
+          )
+          as _i3.Future<_i5.UserCredential?>);
+
+  @override
+  _i3.Future<_i5.UserCredential?> signInAnonymously() =>
+      (super.noSuchMethod(
+            Invocation.method(#signInAnonymously, []),
+            returnValue: _i3.Future<_i5.UserCredential?>.value(),
+          )
+          as _i3.Future<_i5.UserCredential?>);
+
+  @override
+  _i3.Future<void> signOut() =>
+      (super.noSuchMethod(
+            Invocation.method(#signOut, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> resetPassword({required String? email}) =>
+      (super.noSuchMethod(
+            Invocation.method(#resetPassword, [], {#email: email}),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> deleteCurrentUser() =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteCurrentUser, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> sendEmailVerification() =>
+      (super.noSuchMethod(
+            Invocation.method(#sendEmailVerification, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> reloadUser() =>
+      (super.noSuchMethod(
+            Invocation.method(#reloadUser, []),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )

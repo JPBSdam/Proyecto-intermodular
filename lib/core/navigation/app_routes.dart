@@ -1,10 +1,4 @@
 // Definición centralizada de rutas de la aplicación.
-//
-// - Contiene todas las rutas como constantes (paths base)
-// - Genera rutas dinámicas con parámetros (ej: id)
-// - Se usa para navegar con `context.go(...)`
-//
-// Permite mantener consistencia y evitar errores al construir URLs.
 
 class AppRoutes {
   // ────── CORE ──────
