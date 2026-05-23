@@ -29,8 +29,6 @@ class _ReservationListViewState extends State<ReservationListView> {
 
   String? _lastRole;
 
-  bool _didAutoNavigateToForm = false;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -72,26 +70,6 @@ class _ReservationListViewState extends State<ReservationListView> {
       if (_filterStatus == 'all') return true;
       return r.state == _filterStatus;
     }).toList();
-
-    if (!isAdmin &&
-        resVM.isWatching &&
-        !resVM.isLoading &&
-        resVM.reservations.isEmpty &&
-        _filterStatus == 'all' &&
-        !_didAutoNavigateToForm) {
-      // Marcamos que ya redirigimos antes de programar la navegación,
-      // para que no se dispare varias veces en rebuilds del mismo frame
-      _didAutoNavigateToForm = true;
-      // Se ejecuta después del frame actual para no interrumpir el build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          // Navegamos al formulario de nueva reserva.
-          // Usamos push (no go) para que el usuario pueda volver atrás con
-          // el botón "back" y quedarse en la lista (ya con _didAutoNavigate = true)
-          context.push(AppRoutes.reservationFormCreate());
-        }
-      });
-    }
 
     return LoadingOverlay(
       isLoading: resVM.isLoading,

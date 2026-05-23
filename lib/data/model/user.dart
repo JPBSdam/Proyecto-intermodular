@@ -9,7 +9,8 @@ class User {
   String? role;
   String? urlImage;
   String? googlePhotoUrl;
-  //DateTime? createdAt; no se si sera necesario teniendo en cuenta los requisitos
+  bool? isActive;
+  DateTime? deletedAt;
 
   //CONSTRUCTOR
   User({
@@ -20,6 +21,8 @@ class User {
     this.role,
     this.urlImage,
     this.googlePhotoUrl,
+    this.isActive,
+    this.deletedAt,
   });
 
   //FROMFIRESTORE
@@ -36,6 +39,8 @@ class User {
       role: map?['role'] as String?,
       urlImage: map?['urlImage'] as String?,
       googlePhotoUrl: map?['googlePhotoUrl'] as String?,
+      isActive: map?['isActive'] as bool?,
+      deletedAt: (map?['deletedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -49,6 +54,8 @@ class User {
       if (role != null) "role": role,
       if (urlImage != null) "urlImage": urlImage,
       if (googlePhotoUrl != null) "googlePhotoUrl": googlePhotoUrl,
+      if (isActive != null) "isActive": isActive,
+      if (deletedAt != null) "deletedAt": deletedAt,
     };
   }
 }

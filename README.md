@@ -68,8 +68,9 @@ lib/
 │       │   ├── restaurant_service.dart
 │       │   └── user_service.dart
 │       ├── notifications/
-│       │   ├── fcm_service.dart       # Firebase Cloud Messaging
-│       │   └── notification_service.dart # Notificaciones locales
+│       │   ├── email_service.dart         # Emails transaccionales (EmailJS)
+│       │   ├── fcm_service.dart           # Firebase Cloud Messaging
+│       │   └── notification_service.dart  # Notificaciones locales
 │       └── storage/
 │           ├── image_picker_service.dart
 │           └── storage_service.dart   # Firebase Storage
@@ -212,6 +213,8 @@ Consulta la carpeta `docs/` para documentación detallada:
 - **[Navegación](docs/navegacion.md)**: Sistema de rutas con GoRouter
 - **[UI y sistema de diseño](docs/ui_sistema_diseno.md)**: Guía de componentes y estilo visual
 - **[Firestore](docs/firestore.md)**: Capa de datos — repositorios, servicios y streams en tiempo real
+- **[Notificaciones](docs/notificaciones.md)**: FCM, cola de Firestore, notificaciones locales y EmailJS
+- **[Storage](docs/storage.md)**: Firebase Storage — subida y gestión de imágenes
 - **[Roles](docs/roles.md)**: Sistema de roles ADMIN/USER y cómo cambia la interfaz
 - **[Tests](test/README.md)**: Guía completa de testing y cobertura
 

@@ -5,6 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
+import 'package:app_restaurante/data/model/user.dart' as _i6;
+import 'package:app_restaurante/data/repositories/user_repository.dart' as _i5;
 import 'package:app_restaurante/data/services/auth/auth_service.dart' as _i2;
 import 'package:firebase_auth/firebase_auth.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
@@ -131,6 +133,58 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
   _i3.Future<void> reloadUser() =>
       (super.noSuchMethod(
             Invocation.method(#reloadUser, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+}
+
+/// A class which mocks [UserRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUserRepository extends _i1.Mock implements _i5.UserRepository {
+  MockUserRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Stream<_i6.User?> watchById(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#watchById, [id]),
+            returnValue: _i3.Stream<_i6.User?>.empty(),
+          )
+          as _i3.Stream<_i6.User?>);
+
+  @override
+  _i3.Future<void> create(_i6.User? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#create, [user]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<_i6.User?> getById(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getById, [id]),
+            returnValue: _i3.Future<_i6.User?>.value(),
+          )
+          as _i3.Future<_i6.User?>);
+
+  @override
+  _i3.Future<void> update(_i6.User? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#update, [user]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> anonymize(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#anonymize, [userId]),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )

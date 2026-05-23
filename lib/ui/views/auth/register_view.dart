@@ -2,6 +2,7 @@ import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -58,18 +59,11 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void _showError(String? message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message ?? 'Error desconocido'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    showSnackBar(context, message ?? 'Error desconocido', error: true);
   }
 
   void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
+    showSnackBar(context, message, success: true);
   }
 
   void _goBackToLogin() {

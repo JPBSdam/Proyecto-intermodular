@@ -7,6 +7,7 @@ import 'package:app_restaurante/core/widgets/app_drawer.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 import 'package:app_restaurante/core/widgets/app_user_avatar.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
+import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'dart:ui';
@@ -313,13 +314,23 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ),
                         ),
                         child: TextButton(
-                          // Si es invitado, muestra el diálogo de login; si está autenticado, va a reservar
+                          // Si es invitado → login; sin verificar → aviso; autenticado → reservar
                           onPressed: () {
                             if (viewModel.isGuest) {
                               _showLoginRequiredDialog(context);
-                            } else {
-                              context.go(AppRoutes.reservationFormCreate());
+                              return;
                             }
+
+                            if (!viewModel.isEmailVerified) {
+                              showSnackBar(
+                                context,
+                                'Verifica tu correo electrónico para poder hacer reservas',
+                                error: true,
+                              );
+                              return;
+                            }
+
+                            context.go(AppRoutes.reservationFormCreate());
                           },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
