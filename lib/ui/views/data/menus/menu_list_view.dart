@@ -1,9 +1,14 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:app_restaurante/data/model/dish.dart';
+import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
+import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/menu_viewmodel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -24,8 +29,12 @@ class _MenuListViewState extends State<MenuListView> {
   void initState() {
     super.initState();
     final viewmodel = context.read<MenuViewModel>();
+    final dishViewModel = context.read<DishViewModel>();
     if (!viewmodel.isWatchingMenus) {
       viewmodel.watchMenus();
+    }
+    if (!dishViewModel.isWatchingDishes) {
+      dishViewModel.watchDishes();
     }
   }
 
@@ -34,6 +43,7 @@ class _MenuListViewState extends State<MenuListView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final viewmodel = context.watch<MenuViewModel>();
+    final dishViewModel = context.watch<DishViewModel>();
     final homeVM = context.watch<HomeViewModel>();
 
     final bool isAdmin = homeVM.userRole == 'ADMIN';
@@ -104,7 +114,13 @@ class _MenuListViewState extends State<MenuListView> {
                       itemCount: filteredMenus.length,
                       itemBuilder: (context, index) {
                         final menu = filteredMenus[index];
-                        return _buildMenuCard(context, menu, theme, isAdmin);
+                        return _buildMenuCard(
+                          context,
+                          menu,
+                          theme,
+                          isAdmin,
+                          dishViewModel.dishes,
+                        );
                       },
                     ),
             ),
@@ -151,30 +167,74 @@ class _MenuListViewState extends State<MenuListView> {
     );
   }
 
+  String? _resolveMenuImageUrl(Menu menu, List<Dish> dishes) {
+    if (menu.urlImage != null && menu.urlImage!.isNotEmpty) {
+      return menu.urlImage;
+    }
+    for (final dishId in menu.dishes ?? []) {
+      final dish = dishes.cast<Dish?>().firstWhere(
+        (d) => d?.id == dishId,
+        orElse: () => null,
+      );
+      if (dish?.urlImage != null && dish!.urlImage!.isNotEmpty) {
+        return dish.urlImage;
+      }
+    }
+    return null;
+  }
+
   Widget _buildMenuCard(
     BuildContext context,
-    dynamic menu,
+    Menu menu,
     ThemeData theme,
     bool isAdmin,
+    List<Dish> dishes,
   ) {
     final colorScheme = theme.colorScheme;
+    final imageUrl = _resolveMenuImageUrl(menu, dishes);
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       onTap: () => context.push(AppRoutes.menuDetail(menu.id!)),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withAlpha(20),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.restaurant_menu,
-              color: colorScheme.primary,
-              size: 24,
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: imageUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      width: 64,
+                      height: 64,
+                      color: AppTheme.brandPrimary.withAlpha(20),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      width: 64,
+                      height: 64,
+                      color: colorScheme.primary.withAlpha(20),
+                      child: Icon(
+                        Icons.restaurant_menu,
+                        color: colorScheme.primary,
+                        size: 24,
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 64,
+                    height: 64,
+                    color: colorScheme.primary.withAlpha(20),
+                    child: Icon(
+                      Icons.restaurant_menu,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
