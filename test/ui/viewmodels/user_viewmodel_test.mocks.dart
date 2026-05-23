@@ -4,20 +4,19 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
-import 'dart:io' as _i10;
+import 'dart:io' as _i9;
 
-import 'package:app_restaurante/data/model/reservation.dart' as _i8;
+import 'package:app_restaurante/data/model/reservation.dart' as _i7;
 import 'package:app_restaurante/data/model/user.dart' as _i4;
-import 'package:app_restaurante/data/repositories/reservation_repository.dart'
-    as _i7;
-import 'package:app_restaurante/data/repositories/user_repository.dart' as _i6;
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart'
+    as _i6;
 import 'package:app_restaurante/data/services/firestore/user_service.dart'
     as _i2;
 import 'package:app_restaurante/data/services/storage/storage_service.dart'
-    as _i9;
+    as _i8;
 import 'package:firebase_auth/firebase_auth.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i11;
+import 'package:mockito/src/dummies.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -68,6 +67,15 @@ class MockUserService extends _i1.Mock implements _i2.UserService {
           as _i3.Future<void>);
 
   @override
+  _i3.Future<void> anonymize(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#anonymize, [userId]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
   _i3.Future<void> ensureUserExistsFromAuth(_i5.User? firebaseUser) =>
       (super.noSuchMethod(
             Invocation.method(#ensureUserExistsFromAuth, [firebaseUser]),
@@ -77,114 +85,53 @@ class MockUserService extends _i1.Mock implements _i2.UserService {
           as _i3.Future<void>);
 }
 
-/// A class which mocks [UserRepository].
+/// A class which mocks [ReservationService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
-  MockUserRepository() {
+class MockReservationService extends _i1.Mock
+    implements _i6.ReservationService {
+  MockReservationService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Stream<_i4.User?> watchById(String? id) =>
-      (super.noSuchMethod(
-            Invocation.method(#watchById, [id]),
-            returnValue: _i3.Stream<_i4.User?>.empty(),
-          )
-          as _i3.Stream<_i4.User?>);
-
-  @override
-  _i3.Future<void> create(_i4.User? user) =>
-      (super.noSuchMethod(
-            Invocation.method(#create, [user]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
-          )
-          as _i3.Future<void>);
-
-  @override
-  _i3.Future<_i4.User?> getById(String? id) =>
-      (super.noSuchMethod(
-            Invocation.method(#getById, [id]),
-            returnValue: _i3.Future<_i4.User?>.value(),
-          )
-          as _i3.Future<_i4.User?>);
-
-  @override
-  _i3.Future<void> update(_i4.User? user) =>
-      (super.noSuchMethod(
-            Invocation.method(#update, [user]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
-          )
-          as _i3.Future<void>);
-
-  @override
-  _i3.Future<void> anonymize(String? userId) =>
-      (super.noSuchMethod(
-            Invocation.method(#anonymize, [userId]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
-          )
-          as _i3.Future<void>);
-}
-
-/// A class which mocks [ReservationRepository].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockReservationRepository extends _i1.Mock
-    implements _i7.ReservationRepository {
-  MockReservationRepository() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i3.Future<void> create(_i8.Reservation? r) =>
-      (super.noSuchMethod(
-            Invocation.method(#create, [r]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
-          )
-          as _i3.Future<void>);
-
-  @override
-  _i3.Stream<List<_i8.Reservation>> watchAll() =>
+  _i3.Stream<List<_i7.Reservation>> watchAll() =>
       (super.noSuchMethod(
             Invocation.method(#watchAll, []),
-            returnValue: _i3.Stream<List<_i8.Reservation>>.empty(),
+            returnValue: _i3.Stream<List<_i7.Reservation>>.empty(),
           )
-          as _i3.Stream<List<_i8.Reservation>>);
+          as _i3.Stream<List<_i7.Reservation>>);
 
   @override
-  _i3.Stream<List<_i8.Reservation>> watchByUser(String? userId) =>
+  _i3.Stream<List<_i7.Reservation>> watchByUser(String? userId) =>
       (super.noSuchMethod(
             Invocation.method(#watchByUser, [userId]),
-            returnValue: _i3.Stream<List<_i8.Reservation>>.empty(),
+            returnValue: _i3.Stream<List<_i7.Reservation>>.empty(),
           )
-          as _i3.Stream<List<_i8.Reservation>>);
+          as _i3.Stream<List<_i7.Reservation>>);
 
   @override
-  _i3.Future<_i8.Reservation?> getById(String? id) =>
+  _i3.Future<void> createReservation(_i7.Reservation? r) =>
       (super.noSuchMethod(
-            Invocation.method(#getById, [id]),
-            returnValue: _i3.Future<_i8.Reservation?>.value(),
+            Invocation.method(#createReservation, [r]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
           )
-          as _i3.Future<_i8.Reservation?>);
+          as _i3.Future<void>);
 
   @override
-  _i3.Future<List<_i8.Reservation>> getActiveByUser(String? userId) =>
+  _i3.Future<void> updateReservation(_i7.Reservation? r) =>
       (super.noSuchMethod(
-            Invocation.method(#getActiveByUser, [userId]),
-            returnValue: _i3.Future<List<_i8.Reservation>>.value(
-              <_i8.Reservation>[],
-            ),
+            Invocation.method(#updateReservation, [r]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
           )
-          as _i3.Future<List<_i8.Reservation>>);
+          as _i3.Future<void>);
 
   @override
-  _i3.Future<void> update(_i8.Reservation? r) =>
+  _i3.Future<void> deleteReservation(String? id) =>
       (super.noSuchMethod(
-            Invocation.method(#update, [r]),
+            Invocation.method(#deleteReservation, [id]),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
@@ -200,29 +147,38 @@ class MockReservationRepository extends _i1.Mock
           as _i3.Future<void>);
 
   @override
-  _i3.Future<void> delete(String? id) =>
+  _i3.Future<_i7.Reservation?> getById(String? id) =>
       (super.noSuchMethod(
-            Invocation.method(#delete, [id]),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            Invocation.method(#getById, [id]),
+            returnValue: _i3.Future<_i7.Reservation?>.value(),
           )
-          as _i3.Future<void>);
+          as _i3.Future<_i7.Reservation?>);
+
+  @override
+  _i3.Future<List<_i7.Reservation>> getActiveByUser(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getActiveByUser, [userId]),
+            returnValue: _i3.Future<List<_i7.Reservation>>.value(
+              <_i7.Reservation>[],
+            ),
+          )
+          as _i3.Future<List<_i7.Reservation>>);
 }
 
 /// A class which mocks [StorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStorageService extends _i1.Mock implements _i9.StorageService {
+class MockStorageService extends _i1.Mock implements _i8.StorageService {
   MockStorageService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<String> uploadDishImage(_i10.File? imageFile, String? dishId) =>
+  _i3.Future<String> uploadDishImage(_i9.File? imageFile, String? dishId) =>
       (super.noSuchMethod(
             Invocation.method(#uploadDishImage, [imageFile, dishId]),
             returnValue: _i3.Future<String>.value(
-              _i11.dummyValue<String>(
+              _i10.dummyValue<String>(
                 this,
                 Invocation.method(#uploadDishImage, [imageFile, dishId]),
               ),
@@ -241,7 +197,7 @@ class MockStorageService extends _i1.Mock implements _i9.StorageService {
 
   @override
   _i3.Future<String> uploadRestaurantImage(
-    _i10.File? imageFile,
+    _i9.File? imageFile,
     String? restaurantId,
   ) =>
       (super.noSuchMethod(
@@ -250,7 +206,7 @@ class MockStorageService extends _i1.Mock implements _i9.StorageService {
               restaurantId,
             ]),
             returnValue: _i3.Future<String>.value(
-              _i11.dummyValue<String>(
+              _i10.dummyValue<String>(
                 this,
                 Invocation.method(#uploadRestaurantImage, [
                   imageFile,
@@ -271,11 +227,11 @@ class MockStorageService extends _i1.Mock implements _i9.StorageService {
           as _i3.Future<void>);
 
   @override
-  _i3.Future<String> uploadUserAvatar(_i10.File? imageFile, String? userId) =>
+  _i3.Future<String> uploadUserAvatar(_i9.File? imageFile, String? userId) =>
       (super.noSuchMethod(
             Invocation.method(#uploadUserAvatar, [imageFile, userId]),
             returnValue: _i3.Future<String>.value(
-              _i11.dummyValue<String>(
+              _i10.dummyValue<String>(
                 this,
                 Invocation.method(#uploadUserAvatar, [imageFile, userId]),
               ),

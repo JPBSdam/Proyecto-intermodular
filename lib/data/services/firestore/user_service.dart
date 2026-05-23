@@ -19,6 +19,9 @@ class UserService {
   Future<void> updateUser(User user) async =>
       _handleErrors(() => _repository.update(user));
 
+  Future<void> anonymize(String userId) async =>
+      _handleErrors(() => _repository.anonymize(userId));
+
   // ─── Crear usuario si no existe ───────────────────
   Future<void> ensureUserExistsFromAuth(firebase.User firebaseUser) {
     return _handleErrors(() async {

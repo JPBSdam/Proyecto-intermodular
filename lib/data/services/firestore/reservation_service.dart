@@ -22,6 +22,8 @@ class ReservationService {
   Future<void> updateStatuses(List<String> ids, String status) =>
       _handle(() => _repo.updateStatuses(ids, status));
   Future<Reservation?> getById(String id) => _handle(() => _repo.getById(id));
+  Future<List<Reservation>> getActiveByUser(String userId) =>
+      _handle(() => _repo.getActiveByUser(userId));
 
   // ─── Manejo de errores ────────────────────────────────────────────────────
   Future<T> _handle<T>(Future<T> Function() action) async {

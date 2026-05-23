@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
-import 'package:app_restaurante/data/repositories/reservation_repository.dart';
-import 'package:app_restaurante/data/repositories/user_repository.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
@@ -13,17 +12,11 @@ import 'package:mockito/mockito.dart';
 
 import 'user_viewmodel_test.mocks.dart';
 
-@GenerateMocks([
-  UserService,
-  UserRepository,
-  ReservationRepository,
-  StorageService,
-])
+@GenerateMocks([UserService, ReservationService, StorageService])
 void main() {
   group('UserViewModel', () {
     late MockUserService mockService;
-    late MockUserRepository mockRepository;
-    late MockReservationRepository mockReservationRepository;
+    late MockReservationService mockReservationService;
     late MockStorageService mockStorageService;
     late UserViewModel vm;
 
@@ -36,13 +29,11 @@ void main() {
 
     setUp(() {
       mockService = MockUserService();
-      mockRepository = MockUserRepository();
-      mockReservationRepository = MockReservationRepository();
+      mockReservationService = MockReservationService();
       mockStorageService = MockStorageService();
       vm = UserViewModel(
         service: mockService,
-        repository: mockRepository,
-        reservationRepository: mockReservationRepository,
+        reservationService: mockReservationService,
         storageService: mockStorageService,
       );
     });
@@ -173,12 +164,12 @@ void main() {
         );
 
         when(
-          mockReservationRepository.getActiveByUser('u1'),
+          mockReservationService.getActiveByUser('u1'),
         ).thenAnswer((_) async => [pending, confirmed]);
         when(
-          mockReservationRepository.updateStatuses(any, any),
+          mockReservationService.updateStatuses(any, any),
         ).thenAnswer((_) async {});
-        when(mockRepository.anonymize('u1')).thenAnswer((_) async {});
+        when(mockService.anonymize('u1')).thenAnswer((_) async {});
 
         // deleteAccount también llama a Firebase Auth (currentUser?.delete())
         // que en test devuelve null → se salta silenciosamente
@@ -187,26 +178,26 @@ void main() {
         } catch (_) {}
 
         verify(
-          mockReservationRepository.updateStatuses([
+          mockReservationService.updateStatuses([
             'r1',
             'r2',
           ], ReservationStatus.cancelled),
         ).called(1);
-        verify(mockRepository.anonymize('u1')).called(1);
+        verify(mockService.anonymize('u1')).called(1);
       });
 
       test('no llama a updateStatuses si no hay reservas activas', () async {
         when(
-          mockReservationRepository.getActiveByUser('u1'),
+          mockReservationService.getActiveByUser('u1'),
         ).thenAnswer((_) async => []);
-        when(mockRepository.anonymize('u1')).thenAnswer((_) async {});
+        when(mockService.anonymize('u1')).thenAnswer((_) async {});
 
         try {
           await vm.deleteAccount('u1');
         } catch (_) {}
 
-        verifyNever(mockReservationRepository.updateStatuses(any, any));
-        verify(mockRepository.anonymize('u1')).called(1);
+        verifyNever(mockReservationService.updateStatuses(any, any));
+        verify(mockService.anonymize('u1')).called(1);
       });
     });
   });

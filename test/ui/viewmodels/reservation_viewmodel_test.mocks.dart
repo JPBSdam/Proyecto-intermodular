@@ -93,4 +93,14 @@ class MockReservationService extends _i1.Mock
             returnValue: _i3.Future<_i4.Reservation?>.value(),
           )
           as _i3.Future<_i4.Reservation?>);
+
+  @override
+  _i3.Future<List<_i4.Reservation>> getActiveByUser(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getActiveByUser, [userId]),
+            returnValue: _i3.Future<List<_i4.Reservation>>.value(
+              <_i4.Reservation>[],
+            ),
+          )
+          as _i3.Future<List<_i4.Reservation>>);
 }

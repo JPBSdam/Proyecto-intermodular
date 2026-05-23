@@ -4,8 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/foundation.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
-import 'package:app_restaurante/data/repositories/reservation_repository.dart';
-import 'package:app_restaurante/data/repositories/user_repository.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:app_restaurante/data/services/notifications/email_service.dart';
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
@@ -13,19 +12,15 @@ import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class UserViewModel extends ChangeNotifier {
   final UserService _service;
-  final UserRepository _repository;
-  final ReservationRepository _reservationRepository;
+  final ReservationService _reservationService;
   final StorageService _storageService;
 
   UserViewModel({
     UserService? service,
-    UserRepository? repository,
-    ReservationRepository? reservationRepository,
+    ReservationService? reservationService,
     StorageService? storageService,
   }) : _service = service ?? UserService(),
-       _repository = repository ?? UserRepository(),
-       _reservationRepository =
-           reservationRepository ?? ReservationRepository(),
+       _reservationService = reservationService ?? ReservationService(),
        _storageService = storageService ?? StorageService();
 
   User? _user;
@@ -121,7 +116,7 @@ class UserViewModel extends ChangeNotifier {
       await _cancelActiveReservations(userId);
 
       // 2. Anonimizar datos personales en Firestore
-      await _repository.anonymize(userId);
+      await _service.anonymize(userId);
 
       // 3. Eliminar cuenta de Firebase Auth (libera el email para re-registro)
       final currentUser = firebase.FirebaseAuth.instance.currentUser;
@@ -138,14 +133,11 @@ class UserViewModel extends ChangeNotifier {
   }
 
   Future<void> _cancelActiveReservations(String userId) async {
-    final active = await _reservationRepository.getActiveByUser(userId);
+    final active = await _reservationService.getActiveByUser(userId);
     if (active.isEmpty) return;
 
     final ids = active.map((r) => r.id!).toList();
-    await _reservationRepository.updateStatuses(
-      ids,
-      ReservationStatus.cancelled,
-    );
+    await _reservationService.updateStatuses(ids, ReservationStatus.cancelled);
 
     // Notificar al admin por FCM (in-app) y email por cada reserva cancelada
     for (final reservation in active) {
