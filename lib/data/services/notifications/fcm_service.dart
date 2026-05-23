@@ -126,6 +126,11 @@ class FcmService {
     required String type,
     String? reservationId,
   }) async {
+    final userDoc = await _db.collection('users').doc(toUserId).get();
+    final notificationsEnabled =
+        userDoc.data()?['notificationsEnabled'] as bool? ?? true;
+    if (!notificationsEnabled) return;
+
     final data = {
       'toUserId': toUserId,
       'title': title,
@@ -156,6 +161,10 @@ class FcmService {
           .get();
 
       for (final doc in snapshot.docs) {
+        final notificationsEnabled =
+            doc.data()['notificationsEnabled'] as bool? ?? true;
+        if (!notificationsEnabled) continue;
+
         await enqueueForUser(
           toUserId: doc.id,
           title: title,
