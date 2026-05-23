@@ -2,14 +2,13 @@ import 'dart:async';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 /// ViewModel de la pantalla Home y gestión de sesión global.
 class HomeViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService _userService = UserService();
 
   // Estado del perfil (Firestore)
   String _actualRole = 'USER'; // Rol real en la base de datos
@@ -104,33 +103,24 @@ class HomeViewModel extends ChangeNotifier {
     _errorMessage = '';
 
     if (user != null && !user.isAnonymous) {
-      // Sincronización silenciosa con Firestore al detectar usuario real
-      UserService()
+      _userService
           .ensureUserExistsFromAuth(user)
           .catchError((e) => debugPrint("Sync Error: $e"));
 
-      // Notificamos el reset para que la UI limpie fotos antiguas de inmediato
       notifyListeners();
 
-      _userSubscription = _firestore
-          .collection('users')
-          .doc(user.uid)
-          .snapshots()
-          .listen(
-            (doc) {
-              if (doc.exists) {
-                final data = doc.data();
-                _actualRole = data?['role']?.toString().toUpperCase() ?? 'USER';
-                _userName = data?['name']?.toString();
-                _userPhotoUrl = data?['urlImage']?.toString();
-                _userGooglePhotoUrl = data?['googlePhotoUrl']?.toString();
-              }
-              notifyListeners();
-            },
-            onError: (e) {
-              debugPrint("Error Firestore Stream: $e");
-            },
-          );
+      _userSubscription = _userService.watchUser(user.uid).listen(
+        (userData) {
+          _actualRole = userData?.role?.toUpperCase() ?? 'USER';
+          _userName = userData?.name;
+          _userPhotoUrl = userData?.urlImage;
+          _userGooglePhotoUrl = userData?.googlePhotoUrl;
+          notifyListeners();
+        },
+        onError: (e) {
+          debugPrint("Error Firestore Stream: $e");
+        },
+      );
     } else {
       notifyListeners();
     }

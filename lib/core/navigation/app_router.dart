@@ -56,7 +56,6 @@ class GoRouterRefreshStream extends ChangeNotifier {
 }
 
 // ─── INSTANCIAS GLOBALES ───
-// Movidas a Providers para mejor gestión de ciclo de vida
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,

@@ -100,6 +100,9 @@ class AuthService {
       _handleErrors(() => _auth.sendPasswordResetEmail(email: email));
 
   /// Envía un correo de verificación al usuario actual
+  Future<void> deleteCurrentUser() =>
+      _handleErrors(() => _auth.currentUser!.delete());
+
   Future<void> sendEmailVerification() =>
       _handleErrors(() => _auth.currentUser!.sendEmailVerification());
 

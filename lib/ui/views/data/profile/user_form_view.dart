@@ -10,7 +10,6 @@ import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/user_viewmodel.dart';
 import 'package:app_restaurante/data/services/avatar/avatar_service.dart';
 import 'package:app_restaurante/core/widgets/avatar_display.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -144,7 +143,7 @@ class _UserFormViewState extends State<UserFormView> {
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
+    final firebaseUser = context.read<HomeViewModel>().currentUser;
     final effectivePhotoUrl = _selectedImageFile != null
         ? null
         : AvatarService.resolveFromAuth(

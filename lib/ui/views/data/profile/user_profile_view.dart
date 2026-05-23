@@ -13,7 +13,6 @@ import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
 
 class UserProfileView extends StatefulWidget {
   const UserProfileView({super.key});
@@ -35,7 +34,7 @@ class _UserProfileViewState extends State<UserProfileView> {
   void _loadUser() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final viewmodel = context.read<UserViewModel>();
-      final user = firebase.FirebaseAuth.instance.currentUser;
+      final user = context.read<HomeViewModel>().currentUser;
 
       if (user == null) {
         setState(() {
@@ -107,7 +106,7 @@ class _UserProfileViewState extends State<UserProfileView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final firebaseUser = firebase.FirebaseAuth.instance.currentUser;
+    final firebaseUser = context.read<HomeViewModel>().currentUser;
     final effectivePhotoUrl = AvatarService.resolveFromAuth(
       storageImage: user?.urlImage,
       googlePhotoUrl: user?.googlePhotoUrl,
@@ -142,7 +141,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                   child: GestureDetector(
                     onTap: () {
                       final uid =
-                          firebase.FirebaseAuth.instance.currentUser?.uid;
+                          context.read<HomeViewModel>().currentUser?.uid;
                       if (uid != null) context.push(AppRoutes.profileEdit(uid));
                     },
                     child: Container(
