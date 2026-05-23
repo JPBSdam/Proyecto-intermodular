@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('User Model Tests', () {
     test('Constructor crea un User con todos los campos', () {
-      // Arrange & Act
       final user = User(
         id: 'user123',
         name: 'Ana García',
@@ -14,7 +13,6 @@ void main() {
         urlImage: 'https://example.com/avatar.jpg',
       );
 
-      // Assert
       expect(user.id, 'user123');
       expect(user.name, 'Ana García');
       expect(user.email, 'ana.garcia@example.com');
@@ -24,7 +22,6 @@ void main() {
     });
 
     test('toFirestore convierte correctamente a Map', () {
-      // Arrange
       final user = User(
         name: 'Carlos López',
         email: 'carlos@example.com',
@@ -32,10 +29,8 @@ void main() {
         role: 'admin',
       );
 
-      // Act
       final map = user.toFirestore();
 
-      // Assert
       expect(map['name'], 'Carlos López');
       expect(map['email'], 'carlos@example.com');
       expect(map['phoneNumber'], '+34687654321');
@@ -44,13 +39,10 @@ void main() {
     });
 
     test('toFirestore omite campos nulos', () {
-      // Arrange
       final user = User(email: 'test@example.com');
 
-      // Act
       final map = user.toFirestore();
 
-      // Assert
       expect(map.containsKey('email'), true);
       expect(map.containsKey('name'), false);
       expect(map.containsKey('phoneNumber'), false);

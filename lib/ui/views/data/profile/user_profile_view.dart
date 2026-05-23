@@ -78,7 +78,6 @@ class _UserProfileViewState extends State<UserProfileView> {
             },
           ),
         ),
-        // AppBottomNav calcula el índice activo automáticamente por la ruta actual
         bottomNavigationBar: const AppBottomNav(),
         body: user == null
             ? Center(

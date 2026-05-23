@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 
-/// Pantalla personalizada para errores 404 (Ruta no encontrada).
+// Pantalla personalizada para errores 404 (Ruta no encontrada).
 class NotFoundView extends StatelessWidget {
   final String? exception;
 
