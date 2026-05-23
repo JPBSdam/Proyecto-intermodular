@@ -1,13 +1,27 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/foundation.dart';
+import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
+import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/data/services/firestore/user_service.dart';
+import 'package:app_restaurante/data/services/notifications/email_service.dart';
+import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
 class UserViewModel extends ChangeNotifier {
-  final UserService _service = UserService();
-  final StorageService _storageService = StorageService();
+  final UserService _service;
+  final ReservationService _reservationService;
+  final StorageService _storageService;
+
+  UserViewModel({
+    UserService? service,
+    ReservationService? reservationService,
+    StorageService? storageService,
+  }) : _service = service ?? UserService(),
+       _reservationService = reservationService ?? ReservationService(),
+       _storageService = storageService ?? StorageService();
 
   User? _user;
   User? get user => _user;
@@ -88,6 +102,54 @@ class UserViewModel extends ChangeNotifier {
       rethrow;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Soft delete: cancela reservas activas, anonimiza datos en Firestore
+  /// (isActive=false) y elimina la cuenta de Firebase Auth.
+  /// El documento de Firestore se conserva para la integridad referencial.
+  Future<void> deleteAccount(String userId) async {
+    _setLoading(true);
+    _error = '';
+    try {
+      // 1. Cancelar reservas pendientes/confirmadas y notificar al admin
+      await _cancelActiveReservations(userId);
+
+      // 2. Anonimizar datos personales en Firestore
+      await _service.anonymize(userId);
+
+      // 3. Eliminar cuenta de Firebase Auth (libera el email para re-registro)
+      final currentUser = firebase.FirebaseAuth.instance.currentUser;
+      await currentUser?.delete();
+      if (firebase.FirebaseAuth.instance.currentUser != null) {
+        await firebase.FirebaseAuth.instance.signOut();
+      }
+    } catch (e) {
+      _error = 'Error al eliminar la cuenta: $e';
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> _cancelActiveReservations(String userId) async {
+    final active = await _reservationService.getActiveByUser(userId);
+    if (active.isEmpty) return;
+
+    final ids = active.map((r) => r.id!).toList();
+    await _reservationService.updateStatuses(ids, ReservationStatus.cancelled);
+
+    // Notificar al admin por FCM (in-app) y email por cada reserva cancelada
+    for (final reservation in active) {
+      unawaited(
+        FcmService.enqueueForAllAdmins(
+          title: 'Reserva cancelada',
+          body:
+              'Una reserva fue cancelada porque el cliente eliminó su cuenta.',
+          type: 'reservation_cancelled',
+        ),
+      );
+      unawaited(EmailService.sendReservationCancelledToAdmins(reservation));
     }
   }
 

@@ -72,13 +72,22 @@ final GoRouter appRouter = GoRouter(
         location == AppRoutes.login || location == AppRoutes.register;
     final isProtectedRoute =
         location.startsWith('/profile') || location.startsWith('/reservations');
+    final isReservationRoute = location.startsWith('/reservations');
 
     // 1. Si no hay sesión real (sin usuario o anónimo) y trata de ir a zona protegida -> Login
     if ((user == null || user.isAnonymous) && isProtectedRoute) {
       return AppRoutes.login;
     }
 
-    // 2. Si ya tiene sesión REAL (no anónimo) y trata de ir a Login/Register -> Home
+    // 2. Sesión real pero email sin verificar: bloquear reservas
+    if (user != null &&
+        !user.isAnonymous &&
+        !user.emailVerified &&
+        isReservationRoute) {
+      return AppRoutes.home;
+    }
+
+    // 3. Si ya tiene sesión REAL (no anónimo) y trata de ir a Login/Register -> Home
     if (user != null && !user.isAnonymous && isAuthRoute) {
       return AppRoutes.home;
     }

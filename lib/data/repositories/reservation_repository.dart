@@ -53,6 +53,19 @@ class ReservationRepository {
     return Reservation.fromFirestore(doc, null);
   }
 
+  Future<List<Reservation>> getActiveByUser(String userId) async {
+    final snapshot = await _col
+        .where('userId', isEqualTo: userId)
+        .where(
+          'state',
+          whereIn: [ReservationStatus.pending, ReservationStatus.confirmed],
+        )
+        .get();
+    return snapshot.docs
+        .map((d) => Reservation.fromFirestore(d, null))
+        .toList();
+  }
+
   // ─── UPDATE ──────────────────────────────────────────────────────────────────
   Future<void> update(Reservation r) async =>
       _col.doc(r.id).update(r.toFirestore());
