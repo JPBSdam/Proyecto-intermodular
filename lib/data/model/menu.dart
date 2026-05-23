@@ -7,7 +7,6 @@ class Menu {
   String? description;
   List<String>? dishes;
   double? price;
-  String? urlImage;
   bool? available;
 
   //CONSTRUCTOR
@@ -17,7 +16,6 @@ class Menu {
     this.description,
     this.dishes,
     this.price,
-    this.urlImage,
     this.available,
   });
 
@@ -35,7 +33,6 @@ class Menu {
           ? List<String>.from(map?['dishes'] ?? [])
           : null,
       price: (map?['price'] as num?)?.toDouble(),
-      urlImage: map?['urlImage'] as String?,
       available: map?['available'] as bool?,
     );
   }
@@ -47,7 +44,6 @@ class Menu {
       if (description != null) "description": description,
       if (dishes != null) "dishes": dishes,
       if (price != null) "price": price,
-      if (urlImage != null) "urlImage": urlImage,
       if (available != null) "available": available,
     };
   }

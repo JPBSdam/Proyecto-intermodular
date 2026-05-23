@@ -168,9 +168,6 @@ class _MenuListViewState extends State<MenuListView> {
   }
 
   String? _resolveMenuImageUrl(Menu menu, List<Dish> dishes) {
-    if (menu.urlImage != null && menu.urlImage!.isNotEmpty) {
-      return menu.urlImage;
-    }
     for (final dishId in menu.dishes ?? []) {
       final dish = dishes.cast<Dish?>().firstWhere(
         (d) => d?.id == dishId,
