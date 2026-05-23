@@ -108,6 +108,18 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> setNotificationsEnabled(String userId, bool value) async {
+    _setLoading(true);
+    _error = '';
+    try {
+      await _service.setNotificationsEnabled(userId, value);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Soft delete: cancela reservas activas, anonimiza datos en Firestore
   /// (isActive=false) y elimina la cuenta de Firebase Auth.
   /// El documento de Firestore se conserva para la integridad referencial.
