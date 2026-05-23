@@ -52,12 +52,6 @@ class AvatarDisplay extends StatelessWidget {
             width: size,
             height: size,
             color: theme.colorScheme.primary.withAlpha(20),
-            child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
-              ),
-            ),
           ),
           errorWidget: (_, __, ___) =>
               _buildPlaceholder(background, iconColorValue),

@@ -210,9 +210,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                       width: 56,
                       height: 56,
                       color: AppTheme.brandPrimary.withAlpha(20),
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 56,

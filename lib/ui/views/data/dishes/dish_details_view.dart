@@ -140,9 +140,6 @@ class _DishDetailViewState extends State<DishDetailView> {
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.primaryContainer,
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
                               ),
                               errorWidget: (context, _, __) => Container(
                                 color: Theme.of(

@@ -250,9 +250,6 @@ class _DishesListViewState extends State<DishesListView> {
                       width: 60,
                       height: 60,
                       color: AppTheme.brandPrimary.withAlpha(20),
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 60,

@@ -207,9 +207,6 @@ class _MenuListViewState extends State<MenuListView> {
                       width: 64,
                       height: 64,
                       color: AppTheme.brandPrimary.withAlpha(20),
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 64,
