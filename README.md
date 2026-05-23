@@ -141,7 +141,45 @@ lib/
    flutter pub get
    ```
 
-3. **Ejecutar la aplicación**
+3. **Configurar variables de entorno**
+
+   Las credenciales de EmailJS se inyectan en tiempo de compilación y **no están en el código fuente**. Para desarrollo local necesitas pasarlas con `--dart-define`.
+
+   La forma más cómoda es crear `.vscode/launch.json` (ya está en `.gitignore`, no se sube al repo):
+
+   ```json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": "SabrosApp (local)",
+         "request": "launch",
+         "type": "dart",
+         "args": [
+           "--dart-define=EMAILJS_SERVICE_ID=TU_SERVICE_ID",
+           "--dart-define=EMAILJS_PUBLIC_KEY=TU_PUBLIC_KEY",
+           "--dart-define=EMAILJS_PRIVATE_KEY=TU_PRIVATE_KEY",
+           "--dart-define=EMAILJS_TEMPLATE_ADMIN=TU_TEMPLATE_ADMIN",
+           "--dart-define=EMAILJS_TEMPLATE_CLIENT_CONFIRM=TU_TEMPLATE_CLIENT_CONFIRM"
+         ]
+       }
+     ]
+   }
+   ```
+
+   O directamente desde terminal:
+   ```bash
+   flutter run \
+     --dart-define=EMAILJS_SERVICE_ID=TU_SERVICE_ID \
+     --dart-define=EMAILJS_PUBLIC_KEY=TU_PUBLIC_KEY \
+     --dart-define=EMAILJS_PRIVATE_KEY=TU_PRIVATE_KEY \
+     --dart-define=EMAILJS_TEMPLATE_ADMIN=TU_TEMPLATE_ADMIN \
+     --dart-define=EMAILJS_TEMPLATE_CLIENT_CONFIRM=TU_TEMPLATE_CLIENT_CONFIRM
+   ```
+
+   > Los valores reales están en los GitHub Secrets del repositorio. Pídelos a un colaborador con acceso.
+
+4. **Ejecutar la aplicación**
    ```bash
    flutter run
    ```

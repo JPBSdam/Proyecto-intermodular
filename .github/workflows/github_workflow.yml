@@ -26,7 +26,13 @@ jobs:
           channel: stable
 
       - name: Build Flutter web
-        run: flutter build web --release
+        run: |
+          flutter build web --release \
+            --dart-define=EMAILJS_SERVICE_ID=${{ secrets.EMAILJS_SERVICE_ID }} \
+            --dart-define=EMAILJS_PUBLIC_KEY=${{ secrets.EMAILJS_PUBLIC_KEY }} \
+            --dart-define=EMAILJS_PRIVATE_KEY=${{ secrets.EMAILJS_PRIVATE_KEY }} \
+            --dart-define=EMAILJS_TEMPLATE_ADMIN=${{ secrets.EMAILJS_TEMPLATE_ADMIN }} \
+            --dart-define=EMAILJS_TEMPLATE_CLIENT_CONFIRM=${{ secrets.EMAILJS_TEMPLATE_CLIENT_CONFIRM }}
 
       - name: Deploy to Netlify
         run: |
