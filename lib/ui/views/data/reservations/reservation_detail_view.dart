@@ -172,8 +172,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
             ),
           ),
           const SizedBox(height: 32),
-
-          // Botones de Acción
           _buildActions(r, vm, isAdmin),
         ],
       ),
@@ -239,7 +237,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   Widget _buildActions(Reservation r, ReservationViewModel vm, bool isAdmin) {
     return Column(
       children: [
-        // Si es Admin y está pendiente, botón Confirmar
         if (isAdmin && r.state == ReservationStatus.pending) ...[
           SizedBox(
             width: double.infinity,
@@ -258,15 +255,13 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                 await vm.confirmReservation(r.id!);
                 if (mounted) {
                   showSnackBar(context, 'Reserva confirmada', success: true);
-                  _load(); // Recargar datos locales
+                  _load();
                 }
               },
             ),
           ),
           const SizedBox(height: 12),
         ],
-
-        // Si es Admin y está confirmada, botón Completar
         if (isAdmin && r.state == ReservationStatus.confirmed) ...[
           SizedBox(
             width: double.infinity,
@@ -296,8 +291,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
           ),
           const SizedBox(height: 12),
         ],
-
-        // Editar (disponible para dueño o admin si no está cancelada ni completada)
         if (r.state != ReservationStatus.cancelled &&
             r.state != ReservationStatus.completed) ...[
           SizedBox(
@@ -317,7 +310,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
           ),
           const SizedBox(height: 12),
         ],
-
         // Cancelar / Eliminar
         SizedBox(
           width: double.infinity,
@@ -346,7 +338,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       await vm.cancelReservation(r.id!);
       if (mounted) {
         showSnackBar(context, 'Reserva cancelada');
-        _load(); // Recargamos para ver el estado 'cancelada'
+        _load();
       }
     }
   }

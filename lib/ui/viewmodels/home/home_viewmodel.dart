@@ -5,13 +5,13 @@ import 'package:app_restaurante/data/services/firestore/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-/// ViewModel de la pantalla Home y gestión de sesión global.
+// ViewModel de la pantalla Home y gestión de sesión global.
 class HomeViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
 
   // Estado del perfil (Firestore)
-  String _actualRole = 'USER'; // Rol real en la base de datos
+  String _actualRole = 'USER';
   String? _userName;
   String? _userPhotoUrl;
   String? _userGooglePhotoUrl;
@@ -28,13 +28,13 @@ class HomeViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
-  /// Retorna el rol efectivo (USER si previewMode está activo)
+  // Devuelve el rol efectivo (USER si previewMode está activo)
   String get userRole {
     if (_actualRole == 'ADMIN' && _previewMode) return 'USER';
     return _actualRole;
   }
 
-  /// Retorna el rol real sin filtros
+  // Devuelve el rol real sin filtros
   String get actualRole => _actualRole;
 
   bool get previewMode => _previewMode;
@@ -46,15 +46,11 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  // Getters - Información del usuario
   User? get currentUser => _authService.currentUser;
   bool get isAnonymous => _authService.isAnonymous();
 
-  /// true si el usuario NO está autenticado con una cuenta real:
-  /// es decir, si currentUser es null o si está en modo anónimo.
   bool get isGuest => currentUser == null || isAnonymous;
 
-  // Lógica de visualización: Prioridad Firestore > Auth > Email > Fallback
   String get displayName {
     if (isGuest) return 'Invitado';
     if (_userName != null && _userName!.isNotEmpty) return _userName!;
@@ -82,10 +78,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void _setupAuthListener() {
-    // 1. Carga inicial
     _initUserStream(currentUser);
-
-    // 2. Escucha cambios de auth
     _authService.authStateChanges.listen((user) {
       _initUserStream(user);
     });

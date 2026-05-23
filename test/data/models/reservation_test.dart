@@ -28,7 +28,6 @@ void main() {
     });
 
     test('toFirestore convierte correctamente a Map con Timestamp', () {
-      // Arrange
       final date = DateTime(2026, 3, 15, 20, 30);
       final reservation = Reservation(
         userId: 'user123',
@@ -38,7 +37,6 @@ void main() {
         comments: 'Sin alérgenos',
       );
 
-      // Act
       final map = reservation.toFirestore();
 
       // Assert
@@ -50,13 +48,10 @@ void main() {
     });
 
     test('toFirestore omite campos nulos', () {
-      // Arrange
       final reservation = Reservation(userId: 'user123', seats: 2);
 
-      // Act
       final map = reservation.toFirestore();
 
-      // Assert
       expect(map.containsKey('userId'), true);
       expect(map.containsKey('seats'), true);
       expect(map.containsKey('reservationDate'), false);
@@ -72,7 +67,6 @@ void main() {
     });
 
     test('Conversion de fecha a Timestamp es correcta', () {
-      // Arrange
       final originalDate = DateTime(2026, 12, 25, 21, 0);
       final reservation = Reservation(
         userId: 'user1',
@@ -80,12 +74,10 @@ void main() {
         reservationDate: originalDate,
       );
 
-      // Act
       final map = reservation.toFirestore();
       final timestamp = map['reservationDate'] as Timestamp;
       final convertedDate = timestamp.toDate();
 
-      // Assert
       expect(convertedDate.year, originalDate.year);
       expect(convertedDate.month, originalDate.month);
       expect(convertedDate.day, originalDate.day);

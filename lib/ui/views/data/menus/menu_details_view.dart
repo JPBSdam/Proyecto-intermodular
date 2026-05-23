@@ -1,4 +1,6 @@
+import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
@@ -27,7 +29,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
   @override
   void initState() {
     super.initState();
-    // Aseguramos que los ViewModels estén escuchando datos
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final menuVM = context.read<MenuViewModel>();
       final dishVM = context.read<DishViewModel>();
@@ -46,7 +47,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
 
     final bool isAdmin = homeVM.userRole == 'ADMIN';
 
-    // Buscamos el menú en tiempo real dentro de la lista del ViewModel
     final Menu? menu = menuViewModel.menus.cast<Menu?>().firstWhere(
       (m) => m?.id == widget.menuId,
       orElse: () => null,
@@ -54,7 +54,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
 
     final bool isNotFound = menu == null && !menuViewModel.isLoading;
 
-    // Obtenemos los platos reales vinculados
     final List<Dish> menuDishes = dishViewModel.dishes
         .where((d) => menu?.dishes?.contains(d.id) ?? false)
         .toList();
@@ -112,7 +111,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera: Nombre y Precio
           Center(
             child: Column(
               children: [
@@ -139,7 +137,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
           ),
           const SizedBox(height: 40),
 
-          // Descripción si existe
           if (menu.description != null && menu.description!.isNotEmpty) ...[
             _buildSectionHeader('DESCRIPCIÓN', Icons.notes_outlined, theme),
             const SizedBox(height: 12),
@@ -153,7 +150,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
             const SizedBox(height: 32),
           ],
 
-          // Composición
           _buildSectionHeader(
             'COMPOSICIÓN DEL MENÚ',
             Icons.restaurant_outlined,
@@ -199,18 +195,44 @@ class _MenuDetailViewState extends State<MenuDetailView> {
     final colorScheme = theme.colorScheme;
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withAlpha(50),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.done, color: colorScheme.primary, size: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: (dish.urlImage != null && dish.urlImage!.isNotEmpty)
+                ? CachedNetworkImage(
+                    imageUrl: dish.urlImage!,
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      width: 56,
+                      height: 56,
+                      color: AppTheme.brandPrimary.withAlpha(20),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      width: 56,
+                      height: 56,
+                      color: colorScheme.primary.withAlpha(20),
+                      child: const Icon(Icons.restaurant, size: 22),
+                    ),
+                  )
+                : Container(
+                    width: 56,
+                    height: 56,
+                    color: colorScheme.primary.withAlpha(20),
+                    child: Icon(
+                      Icons.restaurant,
+                      color: colorScheme.primary,
+                      size: 22,
+                    ),
+                  ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

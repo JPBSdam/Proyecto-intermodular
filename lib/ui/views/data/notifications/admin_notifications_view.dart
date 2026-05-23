@@ -31,8 +31,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
   @override
   void initState() {
     super.initState();
-    // No reseteamos el badge aquí. Solo lo reseteamos cuando no hay nada pendiente
-    // (ver _buildEmptyState)
   }
 
   @override
@@ -41,7 +39,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // ViewModel calcula el filtrado y ordenamiento → vista solo pinta
     final pendingReservations = resVM.pendingReservations;
 
     return LoadingOverlay(
@@ -60,7 +57,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
   // ─── Estado vacío (ninguna reserva pendiente) ─────────────────────────────
 
   Widget _buildEmptyState(ColorScheme colorScheme) {
-    // Cuando no hay reservas pendientes, marcamos todas como vistas (resetea badge)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ReservationViewModel>().markAllAsSeen();
@@ -71,7 +67,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icono decorativo de campana sin badge
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -133,7 +128,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
             ],
           ),
         ),
-        // Lista con scroll
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -141,11 +135,8 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
             itemCount: list.length,
             itemBuilder: (context, i) => _NotificationCard(
               reservation: list[i],
-              // Al confirmar: actualiza Firestore + envía notificación al cliente
               onConfirm: () => _confirm(list[i], resVM),
-              // Al cancelar: actualiza Firestore + cancela recordatorio
               onCancel: () => _cancel(list[i], resVM),
-              // Al tocar la tarjeta: navega al detalle completo de la reserva
               onTap: () =>
                   context.push(AppRoutes.reservationDetail(list[i].id!)),
             ),
@@ -169,7 +160,6 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
     );
 
     if (ok == true && mounted) {
-      // confirmReservation() actualiza Firestore + envía push al cliente
       await vm.confirmReservation(reservation.id!);
       if (mounted) {
         showSnackBar(context, '✅ Reserva confirmada', success: true);
@@ -215,10 +205,8 @@ class _NotificationCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final date = reservation.reservationDate;
 
-    // Formatos de fecha: día completo y hora
     final dayFormat = DateFormat('dd MMM', 'es');
     final hourFormat = DateFormat('HH:mm');
-    // Tiempo transcurrido desde que se hizo la reserva (ej: "hace 2 horas")
     final timeAgo = _timeAgo(reservation.createdAt);
 
     return AppCard(
@@ -228,10 +216,8 @@ class _NotificationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Fila superior: nombre + badge PENDIENTE + tiempo ──
           Row(
             children: [
-              // Icono de persona
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -245,7 +231,6 @@ class _NotificationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // Nombre del cliente
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +245,6 @@ class _NotificationCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // Tiempo transcurrido desde la solicitud
                     if (timeAgo != null)
                       Text(
                         timeAgo,
@@ -271,16 +255,12 @@ class _NotificationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Badge PENDIENTE
               AppBadge.warning(label: 'PENDIENTE'),
             ],
           ),
           const SizedBox(height: 12),
-
-          // ── Fila con datos de la reserva ──
           Row(
             children: [
-              // Fecha y hora de la reserva
               _InfoChip(
                 icon: Icons.calendar_today_outlined,
                 label: date != null
@@ -298,7 +278,6 @@ class _NotificationCard extends StatelessWidget {
             ],
           ),
 
-          // ── Comentarios (si los hay) ──
           if (reservation.comments != null &&
               reservation.comments!.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -337,7 +316,6 @@ class _NotificationCard extends StatelessWidget {
           // ── Botones de acción rápida ──
           Row(
             children: [
-              // Botón CONFIRMAR
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: onConfirm,
@@ -352,7 +330,6 @@ class _NotificationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              // Botón CANCELAR (más discreto, solo borde)
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onCancel,
@@ -379,7 +356,7 @@ class _NotificationCard extends StatelessWidget {
 
   // ─── Helper: texto relativo de tiempo ─────────────────────────────────────
 
-  /// Devuelve cuánto tiempo hace que se creó la reserva (ej: "hace 3 horas")
+  // Devuelve cuánto tiempo hace que se creó la reserva (ej: "hace 3 horas")
   String? _timeAgo(DateTime? createdAt) {
     if (createdAt == null) return null;
     final diff = DateTime.now().difference(createdAt);

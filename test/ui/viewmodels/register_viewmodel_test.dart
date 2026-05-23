@@ -24,7 +24,7 @@ void main() {
 
     tearDown(() => registerVM.dispose());
 
-    // ─── Estado inicial ───────────────────────────────────────────────────────
+    // ─── Estado inicial
 
     group('estado inicial', () {
       test('isLoading es false', () => expect(registerVM.isLoading, isFalse));
@@ -34,11 +34,10 @@ void main() {
       );
     });
 
-    // ─── signUpWithEmail ──────────────────────────────────────────────────────
+    // ─── Registro de usuario
 
     group('signUpWithEmail', () {
       test('retorna true y envía email de verificación en éxito', () async {
-        // Arrange
         when(
           mockAuthService.signUpWithEmail(
             email: anyNamed('email'),
@@ -47,13 +46,10 @@ void main() {
         ).thenAnswer((_) async => fakeCredential);
         when(mockAuthService.sendEmailVerification()).thenAnswer((_) async {});
 
-        // Act
         final result = await registerVM.signUpWithEmail(
           email: 'nuevo@test.com',
           password: 'password123',
         );
-
-        // Assert
         expect(result, isTrue);
         verify(mockAuthService.sendEmailVerification()).called(1);
       });
@@ -61,7 +57,6 @@ void main() {
       test(
         'retorna false y setea errorMessage cuando el registro falla',
         () async {
-          // Arrange
           when(
             mockAuthService.signUpWithEmail(
               email: anyNamed('email'),
@@ -69,13 +64,11 @@ void main() {
             ),
           ).thenThrow('Ya existe una cuenta con este correo electrónico.');
 
-          // Act
           final result = await registerVM.signUpWithEmail(
             email: 'existente@test.com',
             password: 'pass123',
           );
 
-          // Assert
           expect(result, isFalse);
           expect(
             registerVM.errorMessage,
@@ -85,10 +78,6 @@ void main() {
       );
 
       test('retorna true aunque falle el envío de verificación', () async {
-        // El registro es exitoso aunque no se pueda enviar el email de verificación.
-        // El usuario puede re-enviarlo más tarde desde la Home.
-
-        // Arrange
         when(
           mockAuthService.signUpWithEmail(
             email: anyNamed('email'),
@@ -99,19 +88,16 @@ void main() {
           mockAuthService.sendEmailVerification(),
         ).thenThrow('Error al enviar verificación');
 
-        // Act
         final result = await registerVM.signUpWithEmail(
           email: 'nuevo@test.com',
           password: 'pass123',
         );
 
-        // Assert — registro ok, pero errorMessage informa del problema
         expect(result, isTrue);
         expect(registerVM.errorMessage, isNotNull);
       });
 
       test('isLoading es false al terminar', () async {
-        // Arrange
         when(
           mockAuthService.signUpWithEmail(
             email: anyNamed('email'),
@@ -119,19 +105,14 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
         when(mockAuthService.sendEmailVerification()).thenAnswer((_) async {});
-
-        // Act
         await registerVM.signUpWithEmail(
           email: 'nuevo@test.com',
           password: 'pass123',
         );
-
-        // Assert
         expect(registerVM.isLoading, isFalse);
       });
 
       test('notifica a la UI durante la operación', () async {
-        // Arrange
         var notifyCount = 0;
         registerVM.addListener(() => notifyCount++);
         when(
@@ -141,14 +122,10 @@ void main() {
           ),
         ).thenAnswer((_) async => fakeCredential);
         when(mockAuthService.sendEmailVerification()).thenAnswer((_) async {});
-
-        // Act
         await registerVM.signUpWithEmail(
           email: 'nuevo@test.com',
           password: 'pass123',
         );
-
-        // Assert
         expect(notifyCount, greaterThanOrEqualTo(3));
       });
     });
