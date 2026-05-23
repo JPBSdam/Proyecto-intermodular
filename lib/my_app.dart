@@ -9,9 +9,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FcmInitWrapper envuelve toda la app para reaccionar a cambios de sesión:
-    // - Al iniciar sesión → guarda el token FCM y escucha la cola de notificaciones
-    // - Al cerrar sesión  → deja de escuchar la cola
     return FcmInitWrapper(
       child: MaterialApp.router(
         title: 'SabrosApp',

@@ -33,14 +33,14 @@ void main() {
 
     tearDown(() => loginVM.dispose());
 
-    // ─── Estado inicial ───────────────────────────────────────────────────────
+    // ─── Estado inicial
 
     group('estado inicial', () {
       test('isLoading es false', () => expect(loginVM.isLoading, isFalse));
       test('errorMessage es null', () => expect(loginVM.errorMessage, isNull));
     });
 
-    // ─── signInWithEmail ──────────────────────────────────────────────────────
+    // ─── Inicio de sesión con email
 
     group('signInWithEmail', () {
       test('retorna true y no setea error en éxito', () async {
@@ -133,12 +133,11 @@ void main() {
           password: 'pass123',
         );
 
-        // clearError + setLoading(true) + setLoading(false) = 3 mínimo
         expect(notifyCount, greaterThanOrEqualTo(3));
       });
     });
 
-    // ─── signInWithGoogle ─────────────────────────────────────────────────────
+    // ─── Inicio de sesión con Google
 
     group('signInWithGoogle', () {
       test('retorna true cuando Google devuelve credencial', () async {
@@ -168,7 +167,7 @@ void main() {
       });
     });
 
-    // ─── signInAnonymously ────────────────────────────────────────────────────
+    // ─── Inicio de sesión anónimo
 
     group('signInAnonymously', () {
       test('retorna true en éxito', () async {
@@ -189,7 +188,7 @@ void main() {
       });
     });
 
-    // ─── resetPassword ────────────────────────────────────────────────────────
+    // ─── Recuperación de contraseña
 
     group('resetPassword', () {
       test('retorna true en éxito', () async {
@@ -215,7 +214,7 @@ void main() {
       });
     });
 
-    // ─── _checkUserActive (bloqueo de cuentas eliminadas) ────────────────────
+    // ─── Validación de usuario activo
 
     group('checkUserActive', () {
       test(

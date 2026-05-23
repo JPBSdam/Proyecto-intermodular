@@ -24,7 +24,7 @@ class RestaurantViewModel extends ChangeNotifier {
   bool _isWatching = false;
   bool get isWatching => _isWatching;
 
-  // ─── Escuchar restaurante (único) ──────────────────────
+  // ────────────────────── Escuchar restaurante (único) ──────────────────────
   void watchRestaurant() {
     if (_isWatching) return;
     _isWatching = true;
@@ -34,7 +34,6 @@ class RestaurantViewModel extends ChangeNotifier {
     _sub?.cancel();
     _sub = _service.watchRestaurants().listen(
       (restaurants) {
-        // 👇 Como solo hay 1, cogemos el primero
         _restaurant = restaurants.isNotEmpty ? restaurants.first : null;
         _setLoading(false);
         notifyListeners();
@@ -46,7 +45,7 @@ class RestaurantViewModel extends ChangeNotifier {
     );
   }
 
-  // ─── CRUD ──────────────────────────────
+  // ────────────────────────────── CRUD ──────────────────────────────
   Future<void> createRestaurant(Restaurant r) async =>
       _execute(() => _service.createRestaurant(r));
 
@@ -88,7 +87,7 @@ class RestaurantViewModel extends ChangeNotifier {
   Future<void> deleteRestaurant(String id) async =>
       _execute(() => _service.deleteRestaurant(id));
 
-  // ─── Obtener una vez ────────────────────
+  // ──────────────────── Obtener una vez ────────────────────
   Future<Restaurant?> fetchRestaurant() async {
     try {
       _setLoading(true);
@@ -103,7 +102,7 @@ class RestaurantViewModel extends ChangeNotifier {
     }
   }
 
-  // ─── Helpers internos ─────────────────
+  // ───────────────── Helpers internos ─────────────────
   Future<void> _execute(Future<void> Function() action) async {
     _setLoading(true);
     _errorMessage = '';

@@ -37,7 +37,6 @@ class UserViewModel extends ChangeNotifier {
 
   StreamSubscription<User?>? _userSub;
 
-  // ─── Escuchar cambios en tiempo real ───
   void watchUser(String uid) {
     _setLoading(true);
     _userSub?.cancel();
@@ -55,7 +54,7 @@ class UserViewModel extends ChangeNotifier {
         );
   }
 
-  // ─── CRUD ──────────────────────────────
+  // ────────────────────────────── CRUD ──────────────────────────────
   Future<User?> fetchUserById(String id) async {
     try {
       _setLoading(true);
@@ -80,25 +79,17 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
-  /// Guarda un usuario existente y opcionalmente sube/elimina su avatar.
-  ///
-  /// Nota: La creación de usuarios se gestiona en otro lugar (vinculada
-  /// al flujo de Auth). Aquí solo gestionamos la subida del avatar y la
-  /// actualización del documento del usuario.
+  // Guarda un usuario existente y opcionalmente sube/elimina su foto de perfil.
   Future<void> saveUser(User user, File? imageFile) async {
     _setLoading(true);
     _error = '';
     try {
-      // Subir avatar si se ha seleccionado uno. Usamos un path fijo para
-      // el avatar que sobrescribe la imagen anterior, evitando el borrado.
       if (imageFile != null) {
         user.urlImage = await _storageService.uploadUserAvatar(
           imageFile,
           user.id!,
         );
       }
-
-      // Actualizamos siempre el documento del usuario.
       await _service.updateUser(user);
     } catch (e) {
       _error = 'Error al guardar usuario: $e';
@@ -108,20 +99,13 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
-  /// Soft delete: cancela reservas activas, anonimiza datos en Firestore
-  /// (isActive=false) y elimina la cuenta de Firebase Auth.
-  /// El documento de Firestore se conserva para la integridad referencial.
+  // Cancela reservas activas, anonimiza datos en Firestore
   Future<void> deleteAccount(String userId) async {
     _setLoading(true);
     _error = '';
     try {
-      // 1. Cancelar reservas pendientes/confirmadas y notificar al admin
       await _cancelActiveReservations(userId);
-
-      // 2. Anonimizar datos personales en Firestore
       await _service.anonymize(userId);
-
-      // 3. Eliminar cuenta de Firebase Auth (libera el email para re-registro)
       await _authService.deleteCurrentUser();
       if (_authService.currentUser != null) {
         await _authService.signOut();
@@ -140,8 +124,6 @@ class UserViewModel extends ChangeNotifier {
 
     final ids = active.map((r) => r.id!).toList();
     await _reservationService.updateStatuses(ids, ReservationStatus.cancelled);
-
-    // Notificar al admin por FCM (in-app) y email por cada reserva cancelada
     for (final reservation in active) {
       unawaited(
         FcmService.enqueueForAllAdmins(

@@ -12,13 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Formulario para crear o editar una reserva.
-/// - Usa showDatePicker y showTimePicker nativos de Flutter (sin librerías extra).
-/// - Contador +/- para el número de personas (enteros, mín 1, máx 20).
-/// - Checkbox bebé/carricoche.
-/// - Rellena userId, userName y userEmail desde FirebaseAuth automáticamente.
-///
-/// NOTA ROLES: la lógica de aceptar/cancelar desde admin va en reservation_detail_view.
+// Formulario para crear o editar una reserva.
 
 class ReservationFormView extends StatefulWidget {
   final String? reservationId;
@@ -35,9 +29,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
   DateTime? _selectedDate;
   int _seats = 1;
   bool _hasBaby = false;
-  // feat: contador de bebés (desplegable tras marcar hasBaby)
   int _babyCount = 1;
-  // fix: flag de carga para cuando se edita (carga de Firestore por ID)
   bool _loadingEdit = false;
   Reservation? _reservation;
 
@@ -49,8 +41,6 @@ class _ReservationFormViewState extends State<ReservationFormView> {
     }
   }
 
-  // fix: carga la reserva directamente de Firestore por ID en lugar de
-  // buscarla en vm.reservations (que puede estar vacío y causaba duplicados)
   Future<void> _loadExisting(String id) async {
     setState(() => _loadingEdit = true);
     try {
@@ -91,7 +81,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_selectedDate ?? now),
-      initialEntryMode: TimePickerEntryMode.input, // reloj digital
+      initialEntryMode: TimePickerEntryMode.input,
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
@@ -128,8 +118,6 @@ class _ReservationFormViewState extends State<ReservationFormView> {
       );
       return;
     }
-
-    // Intentamos obtener los datos reales desde Firestore antes de guardar
     String? realName = fbUser.displayName;
     String? realPhone;
     try {
@@ -156,10 +144,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
           ? null
           : _commentsController.text.trim(),
       hasBaby: _hasBaby,
-      // feat: guarda babyCount solo si hasBaby está marcado
       babyCount: _hasBaby ? _babyCount : null,
-      // feat: siempre se guarda como pending al crear o editar
-      // (si estaba confirmed, vuelve a pending para que el admin reconfirme)
       state: ReservationStatus.pending,
       createdAt: _reservation?.createdAt ?? DateTime.now(),
     );

@@ -50,7 +50,7 @@ void main() {
       reservationVM.dispose();
     });
 
-    // ─── Estado inicial ───────────────────────────────────────────────────────
+    // ─── Estado inicial
 
     group('estado inicial', () {
       test(
@@ -72,7 +72,7 @@ void main() {
       test('pendingCount es 0', () => expect(reservationVM.pendingCount, 0));
     });
 
-    // ─── watchAll ─────────────────────────────────────────────────────────────
+    // ─── Escucha de reservas (todas)
 
     group('watchAll', () {
       test('recibe la lista de reservas', () async {
@@ -80,18 +80,13 @@ void main() {
         reservationVM.watchAll();
         streamController.add([pending, confirmed, cancelled]);
         await Future.microtask(() {});
-
-        // Assert
         expect(reservationVM.reservations, hasLength(3));
         expect(reservationVM.isLoading, isFalse);
       });
 
       test('no re-suscribe si ya está escuchando con scope "all"', () {
-        // Act
         reservationVM.watchAll();
         reservationVM.watchAll();
-
-        // Assert
         verify(mockService.watchAll()).called(1);
       });
 
@@ -101,40 +96,31 @@ void main() {
       });
     });
 
-    // ─── watchByUser ──────────────────────────────────────────────────────────
+    // ─── Escucha de reservas por usuario
 
     group('watchByUser', () {
       test('recibe solo las reservas del usuario', () async {
-        // Act
         reservationVM.watchByUser('u1');
         streamController.add([pending, confirmed]);
         await Future.microtask(() {});
-
-        // Assert
         expect(reservationVM.reservations, hasLength(2));
       });
 
       test('no re-suscribe si el userId no cambia', () {
-        // Act
         reservationVM.watchByUser('u1');
         reservationVM.watchByUser('u1');
-
-        // Assert
         verify(mockService.watchByUser('u1')).called(1);
       });
 
       test('re-suscribe cuando cambia el userId', () {
-        // Act
         reservationVM.watchByUser('u1');
         reservationVM.watchByUser('u2');
-
-        // Assert
         verify(mockService.watchByUser('u1')).called(1);
         verify(mockService.watchByUser('u2')).called(1);
       });
     });
 
-    // ─── pendingCount ─────────────────────────────────────────────────────────
+    // ─── Conteo de reservas pendientes
 
     group('pendingCount', () {
       test('cuenta solo las reservas en estado pending', () async {
@@ -142,97 +128,66 @@ void main() {
         reservationVM.watchAll();
         streamController.add([pending, confirmed, cancelled]);
         await Future.microtask(() {});
-
-        // Assert — solo 1 de las 3 está en pending
         expect(reservationVM.pendingCount, 1);
       });
 
       test('es 0 cuando no hay reservas pendientes', () async {
-        // Arrange
         reservationVM.watchAll();
         streamController.add([confirmed, cancelled]);
         await Future.microtask(() {});
-
-        // Assert
         expect(reservationVM.pendingCount, 0);
       });
     });
 
-    // ─── confirmReservation ───────────────────────────────────────────────────
+    // ─── Confirmar reserva
 
     group('confirmReservation', () {
       test('llama al servicio con estado confirmed', () async {
-        // Arrange
         when(mockService.updateStatuses(any, any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.confirmReservation('1');
-
-        // Assert
         verify(
           mockService.updateStatuses(['1'], ReservationStatus.confirmed),
         ).called(1);
       });
 
       test('setea errorMessage si falla', () async {
-        // Arrange
         when(
           mockService.updateStatuses(any, any),
         ).thenThrow('No tienes permisos para realizar esta operación.');
-
-        // Act
         await reservationVM.confirmReservation('1');
-
-        // Assert
         expect(reservationVM.errorMessage, isNotEmpty);
       });
     });
 
-    // ─── cancelReservation ────────────────────────────────────────────────────
-
+    // ─── Cancelar Reserva
     group('cancelReservation', () {
       test('llama al servicio con estado cancelled', () async {
-        // Arrange
         when(mockService.updateStatuses(any, any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.cancelReservation('1');
-
-        // Assert
         verify(
           mockService.updateStatuses(['1'], ReservationStatus.cancelled),
         ).called(1);
       });
     });
 
-    // ─── completeReservation ──────────────────────────────────────────────────
+    // ─── Completar reserva
 
     group('completeReservation', () {
       test('llama al servicio con estado completed', () async {
-        // Arrange
         when(mockService.updateStatuses(any, any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.completeReservation('1');
-
-        // Assert
         verify(
           mockService.updateStatuses(['1'], ReservationStatus.completed),
         ).called(1);
       });
     });
 
-    // ─── completeMultipleReservations ─────────────────────────────────────────
+    // ─── Completar muchas reservas
 
     group('completeMultipleReservations', () {
       test('completa varias reservas a la vez', () async {
-        // Arrange
         when(mockService.updateStatuses(any, any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.completeMultipleReservations(['1', '2', '3']);
-
-        // Assert
         verify(
           mockService.updateStatuses([
             '1',
@@ -243,43 +198,28 @@ void main() {
       });
     });
 
-    // ─── addReservation ───────────────────────────────────────────────────────
+    // ─── Crear reserva
 
     group('addReservation', () {
       test('llama al servicio con la reserva correcta', () async {
-        // Arrange
         when(mockService.createReservation(any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.addReservation(pending);
-
-        // Assert
         verify(mockService.createReservation(pending)).called(1);
       });
 
       test('setea errorMessage si falla', () async {
-        // Arrange
         when(mockService.createReservation(any)).thenThrow('Error inesperado');
-
-        // Act
         await reservationVM.addReservation(pending);
-
-        // Assert
         expect(reservationVM.errorMessage, isNotEmpty);
       });
     });
 
-    // ─── deleteReservation ────────────────────────────────────────────────────
+    // ─── Eliminar reserva
 
     group('deleteReservation', () {
       test('llama al servicio con el id correcto', () async {
-        // Arrange
         when(mockService.deleteReservation(any)).thenAnswer((_) async {});
-
-        // Act
         await reservationVM.deleteReservation('1');
-
-        // Assert
         verify(mockService.deleteReservation('1')).called(1);
       });
     });
