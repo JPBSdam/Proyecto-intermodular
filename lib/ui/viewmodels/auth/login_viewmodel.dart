@@ -2,13 +2,6 @@ import 'package:app_restaurante/data/repositories/user_repository.dart';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
-/// ViewModel que gestiona el estado y la lógica de negocio de la pantalla de Login.
-///
-/// - Se encarga de la autenticación mediante email/password, Google o modo anónimo.
-/// - Mantiene el estado de carga (`isLoading`) y posibles errores (`errorMessage`) para la UI.
-/// - Interactúa con `AuthService` y notifica cambios a la interfaz mediante `ChangeNotifier`.
-/// - Centraliza la lógica de validación y manejo de errores de la UI.
-
 class LoginViewModel extends ChangeNotifier {
   final AuthService _authService;
   final UserRepository _userRepository;
@@ -79,7 +72,6 @@ class LoginViewModel extends ChangeNotifier {
             'Regístrate de nuevo para crear una cuenta.';
       }
     } catch (e) {
-      // Si falla la consulta, cerramos sesión por seguridad y propagamos
       if (e is String) rethrow;
       await _authService.signOut();
       rethrow;
@@ -119,7 +111,6 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   // ==================== VERIFICACIÓN DE CORREO ====================
-  /// Envía un nuevo correo de verificación al usuario actual
   Future<bool> resendEmailVerification() async {
     _setLoading(true);
     _clearError();
@@ -135,7 +126,6 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  /// Recarga el estado del usuario para comprobar si el correo ha sido verificado
   Future<bool> checkEmailVerification() async {
     try {
       await _authService.reloadUser();
@@ -146,7 +136,6 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  /// Obtiene si el correo del usuario actual está verificado
   bool get isEmailVerified => _authService.isEmailVerified;
   void _setLoading(bool value) {
     _isLoading = value;

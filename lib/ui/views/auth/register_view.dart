@@ -8,11 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-/// Pantalla de Registro
-/// Muestra el formulario para crear una cuenta nueva con email y contraseña.
-/// Gestiona la validación de campos, interacción con RegisterViewModel y
-/// muestra errores mediante SnackBar. La lógica de negocio está en el ViewModel.
-
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 
@@ -51,8 +46,6 @@ class _RegisterViewState extends State<RegisterView> {
       _showError(viewModel.errorMessage);
       return;
     }
-
-    // Mostrar mensaje de verificación de correo
     _showSuccess(
       '¡Registro exitoso! Verifica tu correo para activar tu cuenta.',
     );
@@ -180,7 +173,6 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
-    //se ha movido la creación del viewmodel al router
     final viewmodel = context.watch<RegisterViewModel>();
 
     return LoadingOverlay(

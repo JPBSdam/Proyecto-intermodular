@@ -27,7 +27,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
   @override
   void initState() {
     super.initState();
-    // Aseguramos que los ViewModels estén escuchando datos
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final menuVM = context.read<MenuViewModel>();
       final dishVM = context.read<DishViewModel>();
@@ -46,7 +45,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
 
     final bool isAdmin = homeVM.userRole == 'ADMIN';
 
-    // Buscamos el menú en tiempo real dentro de la lista del ViewModel
     final Menu? menu = menuViewModel.menus.cast<Menu?>().firstWhere(
       (m) => m?.id == widget.menuId,
       orElse: () => null,
@@ -54,7 +52,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
 
     final bool isNotFound = menu == null && !menuViewModel.isLoading;
 
-    // Obtenemos los platos reales vinculados
     final List<Dish> menuDishes = dishViewModel.dishes
         .where((d) => menu?.dishes?.contains(d.id) ?? false)
         .toList();
@@ -112,7 +109,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera: Nombre y Precio
           Center(
             child: Column(
               children: [
@@ -139,7 +135,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
           ),
           const SizedBox(height: 40),
 
-          // Descripción si existe
           if (menu.description != null && menu.description!.isNotEmpty) ...[
             _buildSectionHeader('DESCRIPCIÓN', Icons.notes_outlined, theme),
             const SizedBox(height: 12),
@@ -153,7 +148,6 @@ class _MenuDetailViewState extends State<MenuDetailView> {
             const SizedBox(height: 32),
           ],
 
-          // Composición
           _buildSectionHeader(
             'COMPOSICIÓN DEL MENÚ',
             Icons.restaurant_outlined,

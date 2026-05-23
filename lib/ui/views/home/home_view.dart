@@ -37,7 +37,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       context.read<DishViewModel>().watchDishes();
       context.read<RestaurantViewModel>().watchRestaurant();
 
-      // Si el usuario ya está logueado como ADMIN, activamos la escucha de reservas
       final homeVM = context.read<HomeViewModel>();
       if (homeVM.userRole == 'ADMIN') {
         context.read<ReservationViewModel>().watchAll();
@@ -60,8 +59,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   // ── Lógica de autenticación ──────────────────────────────
 
-  /// Muestra un diálogo informativo si el usuario intenta acceder a funciones
-  /// que requieren autenticación (reservas, perfil), pero está en estado de invitado.
   void _showLoginRequiredDialog(BuildContext context) async {
     final confirmed = await showDialogYesNo(
       context,
@@ -106,7 +103,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       return const LoadingOverlay(isLoading: true, child: SizedBox.shrink());
     }
 
-    // Mostrar error si existe
     if (viewModel.errorMessage.isNotEmpty) {
       return Center(
         child: Column(
@@ -124,9 +120,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppTheme.kContentMaxWidth,
-        ), // ignore: prefer_const_constructors
+        constraints: const BoxConstraints(maxWidth: AppTheme.kContentMaxWidth),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
@@ -183,7 +177,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            // Saludo personalizado para usuario autenticado
             if (!viewModel.isGuest) ...[
               Text(
                 '¡Hola, ${viewModel.displayName}!',
@@ -211,7 +204,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                 color: colorScheme.onPrimary.withAlpha(200),
               ),
             ),
-            // Banner informativo para invitados
             if (viewModel.isGuest) ...[
               const SizedBox(height: 12),
               SizedBox(
@@ -299,7 +291,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ),
                         ),
                         child: TextButton(
-                          // Si es invitado → login; sin verificar → aviso; autenticado → reservar
                           onPressed: () {
                             if (viewModel.isGuest) {
                               _showLoginRequiredDialog(context);
@@ -577,7 +568,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             restaurantVM.restaurant?.email ?? 'Sin email',
           ),
 
-          // Solo mostrar botón de gestión si es ADMIN
           if (isAdmin) ...[
             const SizedBox(height: 24),
             SizedBox(
