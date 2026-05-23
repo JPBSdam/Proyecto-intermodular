@@ -4,19 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../ui/viewmodels/home/home_viewmodel.dart';
 
-/// Banner que se muestra en la parte superior de la Home si el usuario no ha verificado su email.
-/// Se actualiza automáticamente cuando el usuario vuelve a la app (onResume) o manualmente con el icono de refresco.
+// Banner que se muestra en la parte superior de la Home si el usuario no ha verificado su email.
+// Se actualiza automáticamente cuando el usuario vuelve a la app (onResume) o manualmente con el icono de refresco.
 class VerificationBanner extends StatelessWidget {
   const VerificationBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos el HomeViewModel para reaccionar a cambios en emailVerified
     final viewModel = context.watch<HomeViewModel>();
 
-    // No mostrar nada si:
-    // - Es un invitado (sin login o anónimo)
-    // - El email ya está verificado
     if (viewModel.isGuest || viewModel.isEmailVerified) {
       return const SizedBox.shrink();
     }
@@ -52,7 +48,6 @@ class VerificationBanner extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Botón para forzar el refresco manualmente si el auto-refresco falla o si se verifica desde otro dispositivo
                 IconButton(
                   icon: Icon(Icons.refresh, size: 20, color: warningColor),
                   tooltip: 'Comprobar ahora',

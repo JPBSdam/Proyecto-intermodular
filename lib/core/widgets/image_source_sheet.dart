@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+// Widget para mostrar un modal con opciones de fuente de imagen (cámara o galería).
 class ImageSourceSheet {
   static Future<ImageSource?> show(BuildContext context) async {
     return showModalBottomSheet<ImageSource>(

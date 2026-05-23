@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase;
 class AvatarService {
   const AvatarService._();
 
-  /// Determina la URL de avatar correcta según la prioridad:
-  /// 1. imagen de Storage propia (`storageImage`)
-  /// 2. imagen almacenada de Google en Firestore (`googlePhotoUrl`)
-  /// 3. imagen del proveedor de autenticación (`authPhotoUrl`)
+  // Determina la URL de avatar correcta según la prioridad:
+  // 1. imagen de Storage propia (`storageImage`)
+  // 2. imagen almacenada de Google en Firestore (`googlePhotoUrl`)
+  // 3. imagen del proveedor de autenticación (`authPhotoUrl`)
   static String? resolveAvatarUrl({
     String? storageImage,
     String? googlePhotoUrl,
@@ -24,8 +24,6 @@ class AvatarService {
     return null;
   }
 
-  /// Resuelve la URL de avatar a partir del documento de usuario y del usuario
-  /// actual de Firebase Auth.
   static String? resolveFromAuth({
     String? storageImage,
     String? googlePhotoUrl,

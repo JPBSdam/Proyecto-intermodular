@@ -2,25 +2,17 @@ import 'package:app_restaurante/data/model/restaurant.dart';
 import 'package:app_restaurante/data/repositories/restaurant_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Servicio de gestión de restaurantes.
-/// - Intermediario entre UI y Repository
-/// - Expone streams y operaciones CRUD
-/// - Manejo centralizado de errores
-
 class RestaurantService {
   // Singleton repository
   final RestaurantRepository _repository = RestaurantRepository();
 
   // ─── Streams ─────────────────────────────
 
-  /// Escuchar todos los restaurantes
   Stream<List<Restaurant>> watchRestaurants() => _repository.watchAll();
 
-  /// Escuchar un restaurante por ID
   Stream<Restaurant?> watchRestaurantById(String id) =>
       _repository.watchById(id);
 
-  /// Escuchar restaurante por admin (MUY IMPORTANTE en tu caso)
   Stream<Restaurant?> watchRestaurantByAdminId(String adminId) =>
       _repository.watchByAdminId(adminId);
 

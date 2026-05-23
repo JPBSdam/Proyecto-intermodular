@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+// Widget para mostrar una imagen seleccionada o un placeholder si no hay imagen.
 class ImageSelectorCard extends StatelessWidget {
   final File? localImage;
   final String? imageUrl;

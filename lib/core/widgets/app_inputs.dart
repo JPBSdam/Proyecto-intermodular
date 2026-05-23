@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Widget estandarizado para campos de texto en SabrosApp.
-/// Incluye el label superior, icono corporativo y estilo de tarjeta blanca.
+// Widget estandarizado para campos de texto en SabrosApp.
+
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -84,51 +84,6 @@ class AppTextField extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Contenedor estandarizado para secciones de formulario.
-class AppFormCard extends StatelessWidget {
-  final List<Widget> children;
-  final String? title;
-
-  const AppFormCard({super.key, required this.children, this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title != null) ...[
-          Text(
-            title!.toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurfaceVariant.withAlpha(180),
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withAlpha(5),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(children: children),
         ),
       ],
     );

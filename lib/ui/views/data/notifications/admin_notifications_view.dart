@@ -7,6 +7,7 @@
 
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
+import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
@@ -160,25 +161,11 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
     Reservation reservation,
     ReservationViewModel vm,
   ) async {
-    // Mostramos diálogo de confirmación para evitar toques accidentales
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar reserva'),
-        content: Text(
+    final ok = await showDialogYesNo(
+      context,
+      title: 'Confirmar reserva',
+      cuestion:
           '¿Confirmas la reserva de ${reservation.userName ?? 'este cliente'}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCELAR'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('CONFIRMAR'),
-          ),
-        ],
-      ),
     );
 
     if (ok == true && mounted) {
@@ -191,27 +178,11 @@ class _AdminNotificationsViewState extends State<AdminNotificationsView> {
   }
 
   Future<void> _cancel(Reservation reservation, ReservationViewModel vm) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancelar reserva'),
-        content: Text(
+    final ok = await showDialogYesNo(
+      context,
+      title: 'Cancelar reserva',
+      cuestion:
           '¿Quieres cancelar la reserva de ${reservation.userName ?? 'este cliente'}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('NO'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('SÍ, CANCELAR'),
-          ),
-        ],
-      ),
     );
 
     if (ok == true && mounted) {

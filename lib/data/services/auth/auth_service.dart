@@ -2,31 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// Servicio de autenticación que encapsula toda la interacción con FirebaseAuth
-/// y Google Sign-In.
-///
-/// - Gestiona:
-///   • Registro y login con email/password
-///   • Login con Google y anónimo
-///   • Cierre de sesión y recuperación de contraseña
-///
-/// - Expone:
-///   • Un stream (`authStateChanges`) para reaccionar a cambios de sesión
-///   • El usuario actual y su estado (ej: anónimo)
-///
-/// - Manejo de errores:
-///   • Centralizado mediante `_handleErrors`
-///   • Traduce excepciones de Firebase a mensajes legibles
-///
-/// Actúa como capa intermedia entre Firebase y la aplicación,
-/// manteniendo la lógica de autenticación desacoplada de la UI.
+// Servicio de autenticación que encapsula toda la interacción con FirebaseAuth
 
 class AuthService {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
 
-  // Constructor con inyección de dependencias opcional para facilitar testing
-  // Se añade la opción de inyectar GoogleSignIn para permitir mocks en tests.
   AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       _googleSignIn = googleSignIn ?? GoogleSignIn();
@@ -36,8 +17,8 @@ class AuthService {
 
   // ─── Getters ─────────────────────────────
   User? get currentUser => _auth.currentUser;
-
   bool isAnonymous() => _auth.currentUser?.isAnonymous ?? false;
+  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
 
   // ─── Métodos de autenticación ─────────────
 
@@ -60,7 +41,6 @@ class AuthService {
     try {
       final googleUser = await _googleSignIn.signIn();
 
-      // El usuario cerró el diálogo o pulsó atrás: no es un error.
       if (googleUser == null) return null;
 
       final googleAuth = await googleUser.authentication;
@@ -99,18 +79,13 @@ class AuthService {
   Future<void> resetPassword({required String email}) =>
       _handleErrors(() => _auth.sendPasswordResetEmail(email: email));
 
-  /// Envía un correo de verificación al usuario actual
   Future<void> deleteCurrentUser() =>
       _handleErrors(() => _auth.currentUser!.delete());
 
   Future<void> sendEmailVerification() =>
       _handleErrors(() => _auth.currentUser!.sendEmailVerification());
 
-  /// Recarga el usuario actual para obtener el estado más reciente de verificación
   Future<void> reloadUser() => _handleErrors(() => _auth.currentUser!.reload());
-
-  /// Comprueba si el correo del usuario actual está verificado
-  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
 
   // ─── Manejo de errores ────────────────────
 

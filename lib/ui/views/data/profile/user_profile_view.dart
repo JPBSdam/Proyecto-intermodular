@@ -140,8 +140,10 @@ class _UserProfileViewState extends State<UserProfileView> {
                   right: 20,
                   child: GestureDetector(
                     onTap: () {
-                      final uid =
-                          context.read<HomeViewModel>().currentUser?.uid;
+                      final uid = context
+                          .read<HomeViewModel>()
+                          .currentUser
+                          ?.uid;
                       if (uid != null) context.push(AppRoutes.profileEdit(uid));
                     },
                     child: Container(

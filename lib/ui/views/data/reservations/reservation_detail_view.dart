@@ -1,4 +1,5 @@
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
+import 'package:app_restaurante/core/widgets/confirmation_dialog.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
@@ -83,9 +84,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
 
   Widget _buildBody(ReservationViewModel vm, bool isAdmin) {
     if (_error.isNotEmpty) return Center(child: Text(_error));
-    if (_reservation == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
 
     final r = _reservation!;
     final date = r.reservationDate;
@@ -338,29 +336,10 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   }
 
   Future<void> _confirmDelete(Reservation r, ReservationViewModel vm) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('¿Cancelar reserva?'),
-        content: const Text('Esta acción no se puede deshacer.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('VOLVER'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorScheme.error,
-              foregroundColor: colorScheme.onError,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'SÍ, CANCELAR',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+    final confirm = await showDialogYesNo(
+      context,
+      title: '¿Cancelar reserva?',
+      cuestion: 'Esta acción no se puede deshacer.',
     );
 
     if (confirm == true && mounted) {

@@ -5,14 +5,13 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/avatar_display.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
-/// Avatar de usuario unificado que se muestra en la AppBar.
-/// Utiliza HomeViewModel como fuente única de verdad.
+// Avatar de usuario unificado que se muestra en la AppBar.
+
 class AppUserAvatar extends StatelessWidget {
   const AppUserAvatar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos el HomeViewModel (nuestra fuente global de sesión)
     final homeVM = context.watch<HomeViewModel>();
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -190,12 +189,9 @@ class AppUserAvatar extends StatelessWidget {
                     ),
                   ),
                   onTap: () async {
-                    // Importante: No cerramos el diálogo manualmente antes,
-                    // dejamos que signOut maneje el estado.
                     final success = await homeVM.signOut();
                     if (success && context.mounted) {
                       Navigator.pop(context);
-                      // El router redirigirá si es necesario
                     }
                   },
                 ),

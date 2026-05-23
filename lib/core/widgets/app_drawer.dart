@@ -10,9 +10,8 @@ import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-/// Drawer lateral unificado con estética Premium.
-///
-/// Gestiona el acceso a todas las secciones de la app, incluyendo la administración.
+// Drawer lateral unificado con el diseño definido.
+
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -71,7 +70,6 @@ class AppDrawer extends StatelessWidget {
                     currentPath: currentPath,
                   ),
 
-                // Sección de Reservas (Solo para usuarios autenticados)
                 if (!isAnonymous) ...[
                   _buildSectionTitle(context, 'RESERVAS'),
                   _buildDrawerItem(
@@ -97,7 +95,6 @@ class AppDrawer extends StatelessWidget {
                     ),
                 ],
 
-                // Sección de Administración (Solo visible para admins)
                 if (isAdmin) ...[
                   _buildSectionTitle(context, 'ADMINISTRACIÓN'),
                   _buildDrawerItem(

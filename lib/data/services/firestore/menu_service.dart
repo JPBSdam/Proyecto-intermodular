@@ -2,24 +2,6 @@ import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/data/repositories/menu_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Servicio de gestión de menús que sirve como intermediario entre la aplicación
-/// y el repositorio de datos (`MenuRepository`).
-///
-/// - Responsabilidades:
-///   • Proporcionar operaciones CRUD sobre `Menu`
-///   • Exponer un stream reactivo de menús (`watchMenus`)
-///
-/// - Arquitectura:
-///   • Mantiene la lógica de negocio separada de la capa de acceso a datos
-///   • Delega la persistencia y consultas al repositorio
-///
-/// - Manejo de errores:
-///   • Centralizado mediante `_handleErrors`
-///   • Traduce excepciones de Firebase a mensajes legibles para la UI
-///
-/// Facilita el desacoplamiento entre la UI y Firestore, promoviendo código
-/// más mantenible y escalable.
-
 class MenuService {
   // Singleton repository
   final MenuRepository _repository = MenuRepository();
@@ -43,7 +25,7 @@ class MenuService {
   Future<void> deleteMenu(String id) async =>
       _handleErrors(() => _repository.delete(id));
 
-  // ─── Manejo de errores ─── Esto es como un decorador para los metodos que recibe
+  // ─── Manejo de errores ─────────────────────────────────
   Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
       return await action();

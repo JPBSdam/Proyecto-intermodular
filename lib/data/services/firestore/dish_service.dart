@@ -2,24 +2,6 @@ import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/repositories/dish_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Servicio de gestión de platos que actúa como intermediario entre
-/// la aplicación y el repositorio (capa de acceso a datos).
-///
-/// - Responsabilidades:
-///   • Proporcionar operaciones CRUD sobre Dish
-///   • Exponer un stream reactivo de platos (`watchDishes`)
-///
-/// - Arquitectura:
-///   • Delega el acceso a datos en `DishRepository`
-///   • Mantiene la lógica de negocio separada de la capa de datos
-///
-/// - Manejo de errores:
-///   • Centralizado mediante `_handleErrors`
-///   • Traduce excepciones de Firebase a mensajes legibles
-///
-/// Permite desacoplar la UI del acceso a Firestore y facilita
-/// el mantenimiento y la escalabilidad del código.
-
 class DishService {
   // Singleton repository
   final DishRepository _repository = DishRepository();
@@ -43,7 +25,7 @@ class DishService {
   Future<void> deleteDish(String id) async =>
       _handleErrors(() => _repository.delete(id));
 
-  // ─── Manejo de errores ─── Esto es como un decorador para los metodos que recibe
+  // ─── Manejo de errores ───────────────────────────────
   Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
       return await action();

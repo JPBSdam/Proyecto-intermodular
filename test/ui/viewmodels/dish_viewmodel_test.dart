@@ -101,68 +101,63 @@ void main() {
       });
     });
 
-    // ─── addDish ──────────────────────────────────────────────────────────────
+    // ─── saveDish (crear) ─────────────────────────────────────────────────────
 
-    group('addDish', () {
-      test('llama al servicio con el plato correcto', () async {
-        // Arrange
+    group('saveDish (plato nuevo, sin imagen)', () {
+      final newDish = Dish(
+        name: 'Paella',
+        description: 'Paella valenciana',
+        category: 'Principales',
+        price: 15.50,
+        available: true,
+      );
+
+      test('llama a createDish cuando el plato no tiene id', () async {
         when(mockService.createDish(any)).thenAnswer((_) async {});
 
-        // Act
-        await dishVM.addDish(testDish);
+        await dishVM.saveDish(newDish, null);
 
-        // Assert
-        verify(mockService.createDish(testDish)).called(1);
+        verify(mockService.createDish(newDish)).called(1);
+        verifyNever(mockService.updateDish(any));
       });
 
-      test('setea errorMessage si el servicio lanza un error', () async {
-        // Arrange
+      test('setea errorMessage si createDish lanza un error', () async {
         when(mockService.createDish(any)).thenThrow('Error inesperado');
 
-        // Act
-        await dishVM.addDish(testDish);
+        await dishVM.saveDish(newDish, null);
 
-        // Assert
         expect(dishVM.errorMessage, isNotEmpty);
       });
 
       test('isLoading es false al terminar', () async {
-        // Arrange
         when(mockService.createDish(any)).thenAnswer((_) async {});
 
-        // Act
-        await dishVM.addDish(testDish);
+        await dishVM.saveDish(newDish, null);
 
-        // Assert
         expect(dishVM.isLoading, isFalse);
       });
     });
 
-    // ─── updateDish ───────────────────────────────────────────────────────────
+    // ─── saveDish (editar) ────────────────────────────────────────────────────
 
-    group('updateDish', () {
-      test('llama al servicio con el plato actualizado', () async {
-        // Arrange
+    group('saveDish (plato existente, sin imagen)', () {
+      test('llama a updateDish cuando el plato ya tiene id', () async {
         when(mockService.updateDish(any)).thenAnswer((_) async {});
         final updated = Dish(id: '1', name: 'Paella actualizada', price: 18.0);
 
-        // Act
-        await dishVM.updateDish(updated);
+        await dishVM.saveDish(updated, null);
 
-        // Assert
         verify(mockService.updateDish(updated)).called(1);
+        verifyNever(mockService.createDish(any));
       });
 
-      test('setea errorMessage si el servicio falla', () async {
-        // Arrange
+      test('setea errorMessage si updateDish falla', () async {
         when(
           mockService.updateDish(any),
         ).thenThrow('No tienes permisos para realizar esta operación.');
 
-        // Act
-        await dishVM.updateDish(testDish);
+        await dishVM.saveDish(testDish, null);
 
-        // Assert
         expect(dishVM.errorMessage, isNotEmpty);
       });
     });

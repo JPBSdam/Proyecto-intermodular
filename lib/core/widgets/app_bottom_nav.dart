@@ -5,9 +5,8 @@ import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 
-/// Widget de navegación inferior unificado para SabrosApp.
-/// Diferencia visualmente entre Admin (Gestión) y Usuario (Reserva).
-/// Calcula automáticamente el currentIndex basado en la ruta actual.
+// Widget de navegación inferior unificado para SabrosApp.
+
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key});
 
@@ -16,21 +15,18 @@ class AppBottomNav extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Usamos ViewModels para conocer el estado
     final homeVM = context.watch<HomeViewModel>();
     final reservationVM = context.watch<ReservationViewModel>();
 
     final bool isGuest = homeVM.isGuest;
     final bool isAdmin = homeVM.userRole == 'ADMIN';
 
-    // Aseguramos que si es Admin, el ViewModel esté escuchando
     if (isAdmin && !reservationVM.isWatching) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         reservationVM.watchAll();
       });
     }
 
-    // Definición dinámica de las pestañas
     final List<_BottomNavItem> allItems = [
       _BottomNavItem(
         icon: Icons.home_outlined,
@@ -51,7 +47,6 @@ class AppBottomNav extends StatelessWidget {
         route: AppRoutes.menus,
       ),
 
-      // Pestaña dinámica central
       if (!isGuest)
         isAdmin
             ? _BottomNavItem(
@@ -59,9 +54,6 @@ class AppBottomNav extends StatelessWidget {
                 activeIcon: Icons.assignment,
                 label: 'RESERVAS',
                 route: AppRoutes.reservations,
-                // No mostramos badge aquí: RESERVAS es el historial completo
-                // (pending, confirmed, completed, cancelled).
-                // El badge de "nuevas no vistas" solo tiene sentido en AVISOS.
               )
             : _BottomNavItem(
                 icon: Icons.calendar_today_outlined,
@@ -70,8 +62,6 @@ class AppBottomNav extends StatelessWidget {
                 route: AppRoutes.reservationFormCreate(),
               ),
 
-      // Pestaña de AVISOS: solo visible para admins.
-      // El badge muestra todas las reservas SIN CONFIRMAR (pending) que requieren acción del admin.
       if (isAdmin)
         _BottomNavItem(
           icon: Icons.notifications_outlined,
@@ -82,11 +72,9 @@ class AppBottomNav extends StatelessWidget {
         ),
     ];
 
-    // Calcular currentIndex basado en la ruta actual
     final currentRoute = GoRouterState.of(context).matchedLocation;
-    int currentIndex = 0; // Default a Home
+    int currentIndex = 0;
 
-    // Buscar el índice correspondiente a la ruta actual
     for (int i = 0; i < allItems.length; i++) {
       final item = allItems[i];
       if (currentRoute == item.route ||
@@ -96,9 +84,8 @@ class AppBottomNav extends StatelessWidget {
       }
     }
 
-    // Asegurar que currentIndex esté dentro del rango válido
     if (currentIndex >= allItems.length) {
-      currentIndex = 0; // Fallback a Home
+      currentIndex = 0;
     }
 
     return Container(
