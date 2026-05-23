@@ -8,6 +8,7 @@ env:
 jobs:
   call-reusable:
     uses: 3592917/ci-templates/.github/workflows/flutter-reusable.yml@main
+    secrets: inherit
     with:
       channel: 'stable'
       run_ios: false
