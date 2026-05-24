@@ -293,10 +293,10 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: colorScheme.onPrimary.withAlpha(51),
+                          color: Colors.white.withAlpha(51),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: colorScheme.onPrimary.withAlpha(77),
+                            color: Colors.white.withAlpha(180),
                             width: 1.5,
                           ),
                         ),
@@ -320,13 +320,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            foregroundColor: colorScheme.onPrimary,
+                            foregroundColor: Colors.white,
                           ),
                           child: Text(
                             'Reservar',
                             style: theme.textTheme.labelLarge?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: colorScheme.onPrimary,
+                              color: Colors.white,
                             ),
                           ),
                         ),
