@@ -87,6 +87,10 @@ class ReservationViewModel extends ChangeNotifier {
 
         _reservations = list;
         _setLoading(false);
+
+        if (_currentScope == 'all') {
+          _autoExpireReservations(list);
+        }
       },
       onError: (e) {
         _errorMessage = 'Error al cargar reservas: $e';
@@ -147,6 +151,34 @@ class ReservationViewModel extends ChangeNotifier {
       if (reservation.id != null && reservation.state != null) {
         _previousStates[reservation.id!] = reservation.state!;
       }
+    }
+  }
+
+  // ───────────────────── Auto-expiración ────────────────────────────────────
+
+  // Cancela automáticamente las reservas pendientes cuya fecha ya ha pasado.
+  Future<void> _autoExpireReservations(List<Reservation> list) async {
+    final now = DateTime.now();
+    final expiredIds = list
+        .where(
+          (r) =>
+              r.state == ReservationStatus.pending &&
+              r.reservationDate != null &&
+              r.reservationDate!.isBefore(now) &&
+              r.id != null,
+        )
+        .map((r) => r.id!)
+        .toList();
+
+    if (expiredIds.isEmpty) return;
+
+    try {
+      await _service.updateStatuses(expiredIds, ReservationStatus.cancelled);
+      debugPrint(
+        '[ReservationVM] ⏰ ${expiredIds.length} reservas expiradas canceladas',
+      );
+    } catch (e) {
+      debugPrint('[ReservationVM] ⚠️ Error al expirar reservas: $e');
     }
   }
 

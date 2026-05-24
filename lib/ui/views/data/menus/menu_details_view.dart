@@ -195,6 +195,9 @@ class _MenuDetailViewState extends State<MenuDetailView> {
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
+      onTap: dish.id != null
+          ? () => context.push(AppRoutes.dishDetail(dish.id!))
+          : null,
       child: Row(
         children: [
           ClipRRect(
@@ -260,6 +263,12 @@ class _MenuDetailViewState extends State<MenuDetailView> {
               ],
             ),
           ),
+          if (dish.id != null)
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
         ],
       ),
     );
