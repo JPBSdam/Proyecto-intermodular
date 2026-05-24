@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class StorageRepository {
@@ -13,9 +13,13 @@ class StorageRepository {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // ─── UPLOAD ──────────────────────────────────────────────────────
-  Future<String> uploadFile(File file, String storagePath) async {
+  Future<String> uploadData(
+    Uint8List bytes,
+    String storagePath,
+    String contentType,
+  ) async {
     final reference = _storage.ref(storagePath);
-    await reference.putFile(file);
+    await reference.putData(bytes, SettableMetadata(contentType: contentType));
     return storagePath;
   }
 

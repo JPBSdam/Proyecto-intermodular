@@ -291,12 +291,16 @@ class _ReservationListViewState extends State<ReservationListView> {
               Icon(
                 Icons.calendar_today_outlined,
                 size: 64,
-                color: Colors.grey.withAlpha(50),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withAlpha(100),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'No hay reservas que mostrar',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

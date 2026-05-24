@@ -273,7 +273,7 @@ class _ReservationFormViewState extends State<ReservationFormView> {
                           Icons.child_friendly,
                           color: _hasBaby
                               ? theme.colorScheme.primary
-                              : Colors.grey,
+                              : theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       if (_hasBaby) ...[

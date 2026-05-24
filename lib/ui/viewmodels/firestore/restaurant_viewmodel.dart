@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/data/model/restaurant.dart';
 import 'package:app_restaurante/data/services/firestore/restaurant_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
@@ -52,7 +52,7 @@ class RestaurantViewModel extends ChangeNotifier {
   Future<void> updateRestaurant(Restaurant r) async =>
       _execute(() => _service.updateRestaurant(r));
 
-  Future<void> saveRestaurant(Restaurant r, File? imageFile) async {
+  Future<void> saveRestaurant(Restaurant r, XFile? imageFile) async {
     await _execute(() async {
       final bool isNew = r.id == null;
 

@@ -1,10 +1,10 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // Widget para mostrar una imagen seleccionada o un placeholder si no hay imagen.
 class ImageSelectorCard extends StatelessWidget {
-  final File? localImage;
+  final Uint8List? localImageBytes;
   final String? imageUrl;
   final VoidCallback onTap;
 
@@ -17,7 +17,7 @@ class ImageSelectorCard extends StatelessWidget {
   const ImageSelectorCard({
     super.key,
     required this.onTap,
-    this.localImage,
+    this.localImageBytes,
     this.imageUrl,
     this.height = 180,
     this.borderRadius = 20,
@@ -46,10 +46,8 @@ class ImageSelectorCard extends StatelessWidget {
             ),
           ],
         ),
-
         child: ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
-
           child: _buildContent(primaryColor, theme),
         ),
       ),
@@ -57,25 +55,20 @@ class ImageSelectorCard extends StatelessWidget {
   }
 
   Widget _buildContent(Color primaryColor, ThemeData theme) {
-    // Imagen local
-    if (localImage != null) {
-      return Image.file(localImage!, fit: BoxFit.cover);
+    if (localImageBytes != null) {
+      return Image.memory(localImageBytes!, fit: BoxFit.cover);
     }
 
-    // Imagen remota
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: imageUrl!,
         fit: BoxFit.cover,
         placeholder: (_, __) =>
             Container(color: theme.colorScheme.primaryContainer),
-        errorWidget: (_, __, ___) {
-          return _buildPlaceholder(primaryColor, theme);
-        },
+        errorWidget: (_, __, ___) => _buildPlaceholder(primaryColor, theme),
       );
     }
 
-    // Placeholder
     return _buildPlaceholder(primaryColor, theme);
   }
 
@@ -84,9 +77,7 @@ class ImageSelectorCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(placeholderIcon, size: 40, color: primaryColor),
-
         const SizedBox(height: 8),
-
         Text(
           placeholderText,
           style: theme.textTheme.labelLarge?.copyWith(

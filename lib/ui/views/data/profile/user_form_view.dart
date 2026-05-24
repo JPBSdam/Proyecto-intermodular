@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/image_source_sheet.dart';
 import 'package:app_restaurante/data/services/storage/image_picker_service.dart';
@@ -32,7 +33,8 @@ class _UserFormViewState extends State<UserFormView> {
   late TextEditingController _phoneController;
 
   User? _user;
-  File? _selectedImageFile;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   final ImagePickerService _imagePickerService = ImagePickerService();
 
   @override
@@ -64,13 +66,16 @@ class _UserFormViewState extends State<UserFormView> {
     if (source == null) return;
 
     try {
-      final file = await _imagePickerService.pickImage(source: source);
+      final xfile = await _imagePickerService.pickImage(source: source);
 
-      if (file == null) return;
+      if (xfile == null) return;
+
+      final bytes = await xfile.readAsBytes();
 
       if (mounted) {
         setState(() {
-          _selectedImageFile = file;
+          _selectedImage = xfile;
+          _selectedImageBytes = bytes;
         });
       }
     } catch (e) {
@@ -94,7 +99,7 @@ class _UserFormViewState extends State<UserFormView> {
     );
 
     try {
-      await viewmodel.saveUser(updatedUser, _selectedImageFile);
+      await viewmodel.saveUser(updatedUser, _selectedImage);
       if (mounted && viewmodel.error.isEmpty) {
         context.pop();
         showSnackBar(
@@ -145,7 +150,7 @@ class _UserFormViewState extends State<UserFormView> {
     final colorScheme = Theme.of(context).colorScheme;
 
     final firebaseUser = context.read<HomeViewModel>().currentUser;
-    final effectivePhotoUrl = _selectedImageFile != null
+    final effectivePhotoUrl = _selectedImageBytes != null
         ? null
         : AvatarService.resolveFromAuth(
             storageImage: _user?.urlImage,
@@ -193,7 +198,7 @@ class _UserFormViewState extends State<UserFormView> {
                       ],
                     ),
                     child: AvatarDisplay(
-                      localImage: _selectedImageFile,
+                      localImageBytes: _selectedImageBytes,
                       imageUrl: effectivePhotoUrl,
                       size: 120,
                       backgroundColor: colorScheme.surfaceContainerHighest,

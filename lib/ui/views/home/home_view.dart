@@ -167,10 +167,11 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [colorScheme.scrim.withAlpha(220), Colors.transparent],
+            stops: [0.0, 0.45, 1.0],
+            colors: [Color(0xE0000000), Color(0x80000000), Color(0x00000000)],
           ),
         ),
         padding: const EdgeInsets.all(24),
@@ -182,8 +183,11 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                 '¡Hola, ${viewModel.displayName}!',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onPrimary.withAlpha(220),
+                  color: Colors.white.withAlpha(220),
                   fontWeight: FontWeight.w500,
+                  shadows: const [
+                    Shadow(color: Color(0xCC000000), blurRadius: 6),
+                  ],
                 ),
               ),
               const SizedBox(height: 4),
@@ -192,16 +196,22 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
               'Experiencia\nGastronómica',
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineLarge?.copyWith(
-                color: colorScheme.onPrimary,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 height: 1.1,
+                shadows: const [
+                  Shadow(color: Color(0xCC000000), blurRadius: 8),
+                ],
               ),
             ),
             const SizedBox(height: 10),
             Text(
               'Sabor y elegancia en tu mesa',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onPrimary.withAlpha(200),
+                color: Colors.white.withAlpha(200),
+                shadows: const [
+                  Shadow(color: Color(0xAA000000), blurRadius: 6),
+                ],
               ),
             ),
             if (viewModel.isGuest) ...[

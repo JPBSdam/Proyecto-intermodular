@@ -1,4 +1,3 @@
-import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:app_restaurante/core/widgets/app_badge.dart';
@@ -209,7 +208,7 @@ class _MenuDetailViewState extends State<MenuDetailView> {
                     placeholder: (_, __) => Container(
                       width: 56,
                       height: 56,
-                      color: AppTheme.brandPrimary.withAlpha(20),
+                      color: colorScheme.primary.withAlpha(20),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 56,

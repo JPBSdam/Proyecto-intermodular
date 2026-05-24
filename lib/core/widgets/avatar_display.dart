@@ -1,11 +1,11 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 // Widget para mostrar avatares de usuario.
 
 class AvatarDisplay extends StatelessWidget {
-  final File? localImage;
+  final Uint8List? localImageBytes;
   final String? imageUrl;
   final double size;
   final Color? backgroundColor;
@@ -15,7 +15,7 @@ class AvatarDisplay extends StatelessWidget {
 
   const AvatarDisplay({
     super.key,
-    this.localImage,
+    this.localImageBytes,
     this.imageUrl,
     this.size = 56,
     this.backgroundColor,
@@ -32,10 +32,10 @@ class AvatarDisplay extends StatelessWidget {
     final iconColorValue = iconColor ?? theme.colorScheme.onSurfaceVariant;
 
     Widget imageContent;
-    if (localImage != null) {
+    if (localImageBytes != null) {
       imageContent = ClipOval(
-        child: Image.file(
-          localImage!,
+        child: Image.memory(
+          localImageBytes!,
           width: size,
           height: size,
           fit: BoxFit.cover,

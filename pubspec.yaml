@@ -29,6 +29,7 @@ dependencies:
   firebase_messaging: ^16.1.1
   # Paquete HTTP para llamar a la API REST de EmailJS (emails gratuitos sin servidor)
   http: ^1.2.2
+  shared_preferences: ^2.5.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

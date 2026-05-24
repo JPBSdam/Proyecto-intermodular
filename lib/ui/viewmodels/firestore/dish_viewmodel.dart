@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
@@ -66,7 +66,7 @@ class DishViewModel extends ChangeNotifier {
   }
 
   // ───────────────────── CRUD ──────────────────────────────
-  Future<void> saveDish(Dish dish, File? imageFile) async {
+  Future<void> saveDish(Dish dish, XFile? imageFile) async {
     await _execute(() async {
       final bool isNew = dish.id == null;
 

@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
 import 'package:app_restaurante/data/model/user.dart';
 import 'package:app_restaurante/data/services/auth/auth_service.dart';
@@ -80,7 +80,7 @@ class UserViewModel extends ChangeNotifier {
   }
 
   // Guarda un usuario existente y opcionalmente sube/elimina su foto de perfil.
-  Future<void> saveUser(User user, File? imageFile) async {
+  Future<void> saveUser(User user, XFile? imageFile) async {
     _setLoading(true);
     _error = '';
     try {

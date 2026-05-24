@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:app_restaurante/data/repositories/storage_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 // Servicio de gestión de Firebase Storage.
 
@@ -22,36 +22,40 @@ class StorageService {
   static const String _usersPath = 'sabrosaapp/users';
 
   // ─── Validaciones ────────────────────────────────────────────────
-  // Tamaño máximo de imagen: 2MB
   static const int _maxFileSizeBytes = 2 * 1024 * 1024;
 
-  void _validateImageFile(File file) {
-    if (!file.existsSync()) {
-      throw ArgumentError('El archivo no existe');
-    }
-
-    final fileSize = file.lengthSync();
-    if (fileSize > _maxFileSizeBytes) {
+  Future<void> _validateImage(XFile file) async {
+    final size = await file.length();
+    if (size > _maxFileSizeBytes) {
       throw ArgumentError(
         'La imagen es demasiado grande. Máximo ${_maxFileSizeBytes ~/ (1024 * 1024)}MB',
       );
     }
 
-    final extension = file.path.split('.').last.toLowerCase();
-    final allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-    if (!allowedExtensions.contains(extension)) {
+    final ext = file.name.split('.').last.toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!allowed.contains(ext)) {
       throw ArgumentError('Tipo de archivo no permitido. Solo JPG, PNG, WebP');
     }
   }
 
-  // ─── DISH IMAGES ─────────────────────────────────────────────────
-  Future<String> uploadDishImage(File imageFile, String dishId) async {
-    return _handleErrors(() async {
-      _validateImageFile(imageFile);
+  String _contentType(XFile file) {
+    final ext = file.name.split('.').last.toLowerCase();
+    return switch (ext) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
+  }
 
+  // ─── DISH IMAGES ─────────────────────────────────────────────────
+  Future<String> uploadDishImage(XFile imageFile, String dishId) async {
+    return _handleErrors(() async {
+      await _validateImage(imageFile);
+      final bytes = await imageFile.readAsBytes();
       final storagePath = '$_dishesPath/$dishId/image.jpg';
       debugPrint('📸 StorageService.uploadDishImage - Ruta: $storagePath');
-      await _repository.uploadFile(imageFile, storagePath);
+      await _repository.uploadData(bytes, storagePath, _contentType(imageFile));
       return await _repository.getDownloadUrl(storagePath);
     });
   }
@@ -65,16 +69,15 @@ class StorageService {
   }
 
   // ─── RESTAURANT IMAGES ───────────────────────────────────────────
-
   Future<String> uploadRestaurantImage(
-    File imageFile,
+    XFile imageFile,
     String restaurantId,
   ) async {
     return _handleErrors(() async {
-      _validateImageFile(imageFile);
-
+      await _validateImage(imageFile);
+      final bytes = await imageFile.readAsBytes();
       final storagePath = '$_restaurantsPath/$restaurantId/image.jpg';
-      await _repository.uploadFile(imageFile, storagePath);
+      await _repository.uploadData(bytes, storagePath, _contentType(imageFile));
       return await _repository.getDownloadUrl(storagePath);
     });
   }
@@ -88,13 +91,12 @@ class StorageService {
   }
 
   // ─── USER AVATARS ────────────────────────────────────────────────
-
-  Future<String> uploadUserAvatar(File imageFile, String userId) async {
+  Future<String> uploadUserAvatar(XFile imageFile, String userId) async {
     return _handleErrors(() async {
-      _validateImageFile(imageFile);
-
+      await _validateImage(imageFile);
+      final bytes = await imageFile.readAsBytes();
       final storagePath = '$_usersPath/$userId/avatar.jpg';
-      await _repository.uploadFile(imageFile, storagePath);
+      await _repository.uploadData(bytes, storagePath, _contentType(imageFile));
       return await _repository.getDownloadUrl(storagePath);
     });
   }
@@ -108,7 +110,6 @@ class StorageService {
   }
 
   // ─── Manejo de errores ───────────────────────────────────────────
-
   Future<T> _handleErrors<T>(Future<T> Function() action) async {
     try {
       return await action();

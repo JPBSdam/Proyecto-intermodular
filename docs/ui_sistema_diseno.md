@@ -26,12 +26,21 @@ Todos los colores están centralizados en `lib/core/config/app_theme.dart`. **No
 
 ### Tema del material
 
-El tema global se aplica en el `MaterialApp` con `AppTheme.lightTheme`. Incluye configuración predefinida para:
+La app tiene `lightTheme` y `darkTheme` completos, y el usuario puede elegir entre Claro / Auto / Oscuro desde el drawer. El `ThemeMode` se persiste en `SharedPreferences` mediante `ThemeViewModel`.
 
-- **AppBar**: fondo `brandBackground`, sin elevación, sin cambio de color al hacer scroll
-- **ElevatedButton**: fondo `brandPrimary`, texto blanco, `borderRadius` de 15, elevación 2
-- **Card**: fondo `brandSurface`, sin elevación
-- **FAB**: fondo `brandPrimary`, icono `brandSecondary`, elevación 3
+**Regla:** en las vistas usa siempre `Theme.of(context).colorScheme.X` en lugar de `AppTheme.brandX` directamente, para que los colores se adapten automáticamente al modo oscuro.
+
+| Tema | Fondo scaffold | Superficie cards |
+|---|---|---|
+| Claro | `brandBackground` (#FDEADF) | blanco |
+| Oscuro | `#12140B` (negro oliva) | `surfaceContainer` generado |
+
+Configuración predefinida (ambos temas):
+
+- **AppBar**: sin elevación, sin cambio de color al hacer scroll
+- **ElevatedButton**: `borderRadius` de 15, elevación 2
+- **Card**: sin elevación
+- **FAB**: elevación 3
 
 ### Ancho máximo de contenido (responsive)
 
@@ -157,10 +166,10 @@ CachedNetworkImage(
   height: 60,
   fit: BoxFit.cover,
   placeholder: (_, __) => Container(
-    color: AppTheme.brandPrimary.withAlpha(20),
+    color: colorScheme.primary.withAlpha(20),  // adapta al modo oscuro
   ),
   errorWidget: (_, __, ___) => Container(
-    color: AppTheme.brandPrimary.withAlpha(20),
+    color: colorScheme.primary.withAlpha(20),
     child: const Icon(Icons.restaurant, size: 24),
   ),
 )
@@ -175,13 +184,44 @@ Image.network(
   webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
   loadingBuilder: (_, child, progress) => progress == null
       ? child
-      : Container(color: AppTheme.brandPrimary.withAlpha(20)),
+      : Container(color: colorScheme.primary.withAlpha(20)),
   errorBuilder: (_, __, ___) => Container(
-    color: AppTheme.brandPrimary.withAlpha(20),
+    color: colorScheme.primary.withAlpha(20),
     child: const Icon(Icons.restaurant, size: 32),
   ),
 )
 ```
+
+---
+
+## Imágenes locales (selector de imagen)
+
+Los formularios con selector de imagen siguen este patrón multiplataforma (funciona en iOS, Android y web):
+
+```dart
+// Estado en el formulario
+XFile? _selectedImage;
+Uint8List? _selectedImageBytes;
+
+// Al seleccionar imagen
+final xfile = await _imagePickerService.pickImage(source: source);
+if (xfile != null) {
+  final bytes = await xfile.readAsBytes();
+  setState(() {
+    _selectedImage = xfile;
+    _selectedImageBytes = bytes;
+  });
+}
+
+// En el widget de preview (ImageSelectorCard / AvatarDisplay)
+ImageSelectorCard(localImageBytes: _selectedImageBytes, ...)
+AvatarDisplay(localImageBytes: _selectedImageBytes, ...)
+
+// Al guardar, pasar XFile al viewmodel
+viewmodel.saveDish(dish, _selectedImage);
+```
+
+**No uses `dart:io File`** — `File(xfile.path)` falla en web porque `path` está vacío en ese entorno.
 
 ---
 
@@ -206,8 +246,8 @@ SizedBox(
   height: 50,
   child: OutlinedButton(
     style: OutlinedButton.styleFrom(
-      foregroundColor: AppTheme.brandPrimary,
-      side: BorderSide(color: AppTheme.brandPrimary.withAlpha(100)),
+      foregroundColor: colorScheme.primary,
+      side: BorderSide(color: colorScheme.primary.withAlpha(100)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     ),
     onPressed: ...,

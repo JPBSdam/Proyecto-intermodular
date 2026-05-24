@@ -249,12 +249,12 @@ class _DishesListViewState extends State<DishesListView> {
                     placeholder: (_, __) => Container(
                       width: 60,
                       height: 60,
-                      color: AppTheme.brandPrimary.withAlpha(20),
+                      color: colorScheme.primary.withAlpha(20),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 60,
                       height: 60,
-                      color: AppTheme.brandPrimary.withAlpha(20),
+                      color: colorScheme.primary.withAlpha(20),
                       child: const Icon(Icons.restaurant, size: 24),
                     ),
                   )

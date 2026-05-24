@@ -4,7 +4,6 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
-import 'dart:io' as _i9;
 
 import 'package:app_restaurante/data/model/reservation.dart' as _i7;
 import 'package:app_restaurante/data/model/user.dart' as _i4;
@@ -16,6 +15,7 @@ import 'package:app_restaurante/data/services/firestore/user_service.dart'
 import 'package:app_restaurante/data/services/storage/storage_service.dart'
     as _i8;
 import 'package:firebase_auth/firebase_auth.dart' as _i5;
+import 'package:image_picker/image_picker.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i10;
 
@@ -62,6 +62,15 @@ class MockUserService extends _i1.Mock implements _i2.UserService {
   _i3.Future<void> updateUser(_i4.User? user) =>
       (super.noSuchMethod(
             Invocation.method(#updateUser, [user]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> setNotificationsEnabled(String? userId, bool? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setNotificationsEnabled, [userId, value]),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
@@ -175,7 +184,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
   }
 
   @override
-  _i3.Future<String> uploadDishImage(_i9.File? imageFile, String? dishId) =>
+  _i3.Future<String> uploadDishImage(_i9.XFile? imageFile, String? dishId) =>
       (super.noSuchMethod(
             Invocation.method(#uploadDishImage, [imageFile, dishId]),
             returnValue: _i3.Future<String>.value(
@@ -198,7 +207,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
 
   @override
   _i3.Future<String> uploadRestaurantImage(
-    _i9.File? imageFile,
+    _i9.XFile? imageFile,
     String? restaurantId,
   ) =>
       (super.noSuchMethod(
@@ -228,7 +237,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
           as _i3.Future<void>);
 
   @override
-  _i3.Future<String> uploadUserAvatar(_i9.File? imageFile, String? userId) =>
+  _i3.Future<String> uploadUserAvatar(_i9.XFile? imageFile, String? userId) =>
       (super.noSuchMethod(
             Invocation.method(#uploadUserAvatar, [imageFile, userId]),
             returnValue: _i3.Future<String>.value(

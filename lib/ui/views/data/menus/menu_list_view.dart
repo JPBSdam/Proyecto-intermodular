@@ -1,4 +1,3 @@
-import 'package:app_restaurante/core/config/app_theme.dart';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/menu.dart';
@@ -206,7 +205,7 @@ class _MenuListViewState extends State<MenuListView> {
                     placeholder: (_, __) => Container(
                       width: 64,
                       height: 64,
-                      color: AppTheme.brandPrimary.withAlpha(20),
+                      color: colorScheme.primary.withAlpha(20),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       width: 64,

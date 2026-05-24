@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
 import 'package:app_restaurante/core/widgets/image_selector_card.dart';
@@ -38,7 +39,8 @@ class _DishFormViewState extends State<DishFormView> {
     'Otro',
   ];
   String? _imageUrl;
-  File? _selectedImageFile;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   final ImagePickerService _imagePickerService = ImagePickerService();
 
   Dish? _dish;
@@ -89,7 +91,7 @@ class _DishFormViewState extends State<DishFormView> {
       available: _available,
     );
 
-    await viewmodel.saveDish(newDish, _selectedImageFile);
+    await viewmodel.saveDish(newDish, _selectedImage);
 
     if (mounted && viewmodel.errorMessage.isEmpty) {
       showSnackBar(
@@ -128,7 +130,7 @@ class _DishFormViewState extends State<DishFormView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ImageSelectorCard(
-                  localImage: _selectedImageFile,
+                  localImageBytes: _selectedImageBytes,
                   imageUrl: _imageUrl,
                   height: 160,
                   borderRadius: 20,
@@ -281,13 +283,16 @@ class _DishFormViewState extends State<DishFormView> {
     if (source == null) return;
 
     try {
-      final file = await _imagePickerService.pickImage(source: source);
+      final xfile = await _imagePickerService.pickImage(source: source);
 
-      if (file == null) return;
+      if (xfile == null) return;
+
+      final bytes = await xfile.readAsBytes();
 
       if (mounted) {
         setState(() {
-          _selectedImageFile = file;
+          _selectedImage = xfile;
+          _selectedImageBytes = bytes;
           _imageUrl = null;
         });
       }

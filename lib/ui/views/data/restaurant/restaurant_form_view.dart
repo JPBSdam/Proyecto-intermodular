@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:app_restaurante/core/navigation/app_routes.dart';
 import 'package:app_restaurante/core/widgets/app_bottom_nav.dart';
 import 'package:app_restaurante/core/widgets/app_inputs.dart';
@@ -32,7 +32,8 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
   late TextEditingController _capacityController;
   bool _open = false;
   bool _initialized = false;
-  File? _selectedImageFile;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   String? _imageUrl;
   final ImagePickerService _imagePickerService = ImagePickerService();
 
@@ -93,7 +94,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ImageSelectorCard(
-                  localImage: _selectedImageFile,
+                  localImageBytes: _selectedImageBytes,
                   imageUrl: _imageUrl,
                   onTap: _showPickImageOptions,
                   placeholderText: 'Foto del Local',
@@ -256,12 +257,15 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
 
   Future<void> _onPickImage(ImageSource source) async {
     try {
-      final file = await _imagePickerService.pickImage(source: source);
+      final xfile = await _imagePickerService.pickImage(source: source);
 
-      if (!mounted || file == null) return;
+      if (!mounted || xfile == null) return;
+
+      final bytes = await xfile.readAsBytes();
 
       setState(() {
-        _selectedImageFile = file;
+        _selectedImage = xfile;
+        _selectedImageBytes = bytes;
         _imageUrl = null;
       });
     } catch (e) {
@@ -317,7 +321,7 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
     );
 
     try {
-      await vm.saveRestaurant(restaurant, _selectedImageFile);
+      await vm.saveRestaurant(restaurant, _selectedImage);
 
       if (!mounted) return;
 

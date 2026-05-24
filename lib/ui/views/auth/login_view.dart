@@ -73,9 +73,12 @@ class _LoginViewState extends State<LoginView> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Introduce tu email para recuperar la contraseña.',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -195,9 +198,9 @@ class _LoginViewState extends State<LoginView> {
             ? null
             : () => _handleGoogleLogin(viewModel),
         style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          side: const BorderSide(color: Color(0xFFDDDDDD)),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

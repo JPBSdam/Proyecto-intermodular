@@ -1,5 +1,6 @@
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/register_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/theme_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/dish_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/restaurant_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
@@ -34,6 +35,7 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeViewModel()),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
         ChangeNotifierProvider(create: (_) => RegisterViewModel()),
         ChangeNotifierProvider(create: (_) => UserViewModel()),

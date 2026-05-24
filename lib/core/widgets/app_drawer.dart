@@ -7,6 +7,7 @@ import 'package:app_restaurante/core/widgets/app_badge.dart';
 import 'package:app_restaurante/core/widgets/app_logo_title.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
+import 'package:app_restaurante/ui/viewmodels/theme_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -118,6 +119,7 @@ class AppDrawer extends StatelessWidget {
                         : null,
                   ),
                 ],
+                _buildThemeSelector(context),
               ],
             ),
           ),
@@ -352,6 +354,60 @@ class AppDrawer extends StatelessWidget {
           fontWeight: FontWeight.bold,
           letterSpacing: 1.1,
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector(BuildContext context) {
+    final themeVM = context.watch<ThemeViewModel>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final current = themeVM.themeMode;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          Text(
+            'APARIENCIA',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurfaceVariant,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<ThemeMode>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.light,
+                icon: Icon(Icons.light_mode_outlined, size: 18),
+                tooltip: 'Modo claro',
+              ),
+              ButtonSegment(
+                value: ThemeMode.system,
+                icon: Icon(Icons.brightness_auto_outlined, size: 18),
+                tooltip: 'Seguir el sistema',
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                icon: Icon(Icons.dark_mode_outlined, size: 18),
+                tooltip: 'Modo oscuro',
+              ),
+            ],
+            selected: {current},
+            onSelectionChanged: (selection) =>
+                themeVM.setThemeMode(selection.first),
+            style: ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 10)),
+            ),
+          ),
+        ],
       ),
     );
   }
