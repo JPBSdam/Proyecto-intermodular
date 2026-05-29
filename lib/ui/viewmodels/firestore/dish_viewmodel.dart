@@ -73,12 +73,14 @@ class DishViewModel extends ChangeNotifier {
 
       if (isNew) {
         await _service.createDish(dish);
-        unawaited(FcmService.enqueueForAllCustomers(
-          title: '🆕 ¡Nuevo plato en carta!',
-          body:
-              'Descubre nuestro nuevo plato: ${dish.name ?? 'Novedad del chef'}. ¡No te lo pierdas!',
-          type: 'new_dish',
-        ));
+        unawaited(
+          FcmService.enqueueForAllCustomers(
+            title: '🆕 ¡Nuevo plato en carta!',
+            body:
+                'Descubre nuestro nuevo plato: ${dish.name ?? 'Novedad del chef'}. ¡No te lo pierdas!',
+            type: 'new_dish',
+          ),
+        );
       }
 
       if (imageFile != null) {

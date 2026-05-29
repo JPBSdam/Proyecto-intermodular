@@ -76,14 +76,16 @@ class MenuViewModel extends ChangeNotifier {
 
   // ───────────────────── CRUD ──────────────────────────────
   Future<void> addMenu(Menu menu) async => _execute(() async {
-        await _menuService.createMenu(menu);
-        unawaited(FcmService.enqueueForAllCustomers(
-          title: '🍽️ ¡Nuevo menú disponible!',
-          body:
-              'Tenemos un nuevo menú: ${menu.name ?? 'Novedad del chef'}. ¡Échale un vistazo!',
-          type: 'new_menu',
-        ));
-      });
+    await _menuService.createMenu(menu);
+    unawaited(
+      FcmService.enqueueForAllCustomers(
+        title: '🍽️ ¡Nuevo menú disponible!',
+        body:
+            'Tenemos un nuevo menú: ${menu.name ?? 'Novedad del chef'}. ¡Échale un vistazo!',
+        type: 'new_menu',
+      ),
+    );
+  });
 
   Future<void> updateMenu(Menu menu) async =>
       _execute(() => _menuService.updateMenu(menu));

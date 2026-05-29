@@ -26,8 +26,9 @@ Future<void> main() async {
 
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.macOS) {
     try {
-      await const MethodChannel('app.sabros/auth_config')
-          .invokeMethod('fixMacOSKeychain');
+      await const MethodChannel(
+        'app.sabros/auth_config',
+      ).invokeMethod('fixMacOSKeychain');
     } catch (_) {}
   }
 

@@ -169,7 +169,9 @@ class EmailService {
     required Map<String, String> templateParams,
   }) async {
     if (_publicKey.isEmpty || _serviceId.isEmpty || templateId.isEmpty) {
-      debugPrint('[EmailService] ⚠️ Credenciales EmailJS no configuradas (--dart-define)');
+      debugPrint(
+        '[EmailService] ⚠️ Credenciales EmailJS no configuradas (--dart-define)',
+      );
       return;
     }
     try {
