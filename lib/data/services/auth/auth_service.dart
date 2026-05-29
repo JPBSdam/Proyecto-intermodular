@@ -60,6 +60,11 @@ class AuthService {
       }
       throw 'Error inesperado: ${e.message ?? e.code}';
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' ||
+          e.code == 'canceled' ||
+          e.code == 'user-cancelled') {
+        return null;
+      }
       throw _mapAuthException(e);
     } catch (e) {
       throw 'Error inesperado: $e';
