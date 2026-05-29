@@ -6,7 +6,6 @@ import 'package:app_restaurante/core/widgets/app_card.dart';
 import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/data/model/reservation.dart';
-import 'package:app_restaurante/data/services/firestore/reservation_service.dart';
 import 'package:app_restaurante/ui/viewmodels/firestore/reservation_viewmodel.dart';
 import 'package:app_restaurante/ui/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +24,6 @@ class ReservationDetailView extends StatefulWidget {
 }
 
 class _ReservationDetailViewState extends State<ReservationDetailView> {
-  Reservation? _reservation;
-  bool _loading = true;
-  String _error = '';
-
   // Getters para acceso centralizado a estilos
   ThemeData get theme => Theme.of(context);
   ColorScheme get colorScheme => theme.colorScheme;
@@ -36,26 +31,17 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final r = await ReservationService().getById(widget.reservationId);
-      if (mounted) {
-        setState(() {
-          _reservation = r;
-          _loading = false;
-        });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final homeVM = context.read<HomeViewModel>();
+      final vm = context.read<ReservationViewModel>();
+      if (homeVM.userRole == 'ADMIN') {
+        vm.watchAll();
+      } else {
+        final uid = homeVM.currentUser?.uid;
+        if (uid != null) vm.watchByUser(uid);
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = '$e';
-          _loading = false;
-        });
-      }
-    }
+    });
   }
 
   @override
@@ -65,7 +51,7 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
     final isAdmin = homeVM.userRole == 'ADMIN';
 
     return LoadingOverlay(
-      isLoading: _loading || vm.isLoading,
+      isLoading: vm.isLoading,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: SabrosAppBar(
@@ -83,13 +69,14 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
   }
 
   Widget _buildBody(ReservationViewModel vm, bool isAdmin) {
-    if (_error.isNotEmpty) return Center(child: Text(_error));
-    if (_loading) return const SizedBox.shrink();
-    if (_reservation == null) {
+    if (vm.errorMessage.isNotEmpty) return Center(child: Text(vm.errorMessage));
+
+    final r = vm.reservations
+        .where((r) => r.id == widget.reservationId)
+        .firstOrNull;
+    if (r == null) {
       return const Center(child: Text('Reserva no encontrada'));
     }
-
-    final r = _reservation!;
     final date = r.reservationDate;
     final dayFormat = DateFormat('EEEE, d MMMM yyyy', 'es');
     final hourFormat = DateFormat('HH:mm');
@@ -259,7 +246,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                 await vm.confirmReservation(r.id!);
                 if (mounted) {
                   showSnackBar(context, 'Reserva confirmada', success: true);
-                  _load();
                 }
               },
             ),
@@ -288,7 +274,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
                     'Reserva marcada como completada',
                     success: true,
                   );
-                  _load();
                 }
               },
             ),
@@ -342,7 +327,6 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
       await vm.cancelReservation(r.id!);
       if (mounted) {
         showSnackBar(context, 'Reserva cancelada');
-        _load();
       }
     }
   }

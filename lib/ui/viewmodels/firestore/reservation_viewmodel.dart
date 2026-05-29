@@ -86,7 +86,8 @@ class ReservationViewModel extends ChangeNotifier {
         _isFirstLoad = false;
 
         _reservations = list;
-        _setLoading(false);
+        _isLoading = false;
+        notifyListeners();
 
         if (_currentScope == 'all') {
           _autoExpireReservations(list);
