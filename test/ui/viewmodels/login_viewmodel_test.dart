@@ -247,7 +247,9 @@ void main() {
           expect(result, isFalse);
           expect(
             loginVM.errorMessage,
-            contains('Tu cuenta ha sido eliminada. Puedes registrarte de nuevo con el mismo correo.'),
+            contains(
+              'Tu cuenta ha sido eliminada. Puedes registrarte de nuevo con el mismo correo.',
+            ),
           );
           verify(mockAuthService.signOut()).called(1);
         },
