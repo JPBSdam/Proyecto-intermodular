@@ -40,6 +40,14 @@ class UserRepository {
     await _collection.doc(user.id).update(user.toFirestore());
   }
 
+  // ─── REACTIVAR ─────────────────────────────────────────────────────────────
+  Future<void> reactivate(String userId) async {
+    await _collection.doc(userId).update({
+      'isActive': true,
+      'deletedAt': FieldValue.delete(),
+    });
+  }
+
   // ─── SOFT DELETE ───────────────────────────────────────────────────────────
   Future<void> anonymize(String userId) async {
     await _collection.doc(userId).update({

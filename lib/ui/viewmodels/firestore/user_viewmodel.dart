@@ -113,23 +113,29 @@ class UserViewModel extends ChangeNotifier {
   }
 
   /// Soft delete: cancela reservas activas, anonimiza datos en Firestore
-  /// (isActive=false) y elimina la cuenta de Firebase Auth.
+  /// (isActive=false) y elimina la cuenta de Firebase Auth si es el propio usuario.
   /// El documento de Firestore se conserva para la integridad referencial.
   Future<void> deleteAccount(String userId) async {
     _setLoading(true);
     _error = '';
     try {
       await _cancelActiveReservations(userId);
+      // Anonimizamos Firestore mientras el usuario aún está autenticado.
       await _service.anonymize(userId);
-      await _authService.deleteCurrentUser();
-      if (_authService.currentUser != null) {
-        await _authService.signOut();
-      }
+      // Borramos la cuenta de Auth. Si falla, no lo propagamos:
+      // la cuenta ya está anonimizada y el usuario quedará desconectado igualmente.
+      try {
+        await _authService.deleteCurrentUser();
+      } catch (_) {}
     } catch (e) {
       _error = 'Error al eliminar la cuenta: $e';
       rethrow;
     } finally {
       _setLoading(false);
+      // Siempre cerramos sesión, tanto si el borrado fue completo como parcial.
+      try {
+        await _authService.signOut();
+      } catch (_) {}
     }
   }
 

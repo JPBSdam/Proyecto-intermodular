@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
+import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
 import 'package:app_restaurante/data/services/notifications/notification_service.dart';
 import 'package:app_restaurante/data/services/storage/storage_service.dart';
 
@@ -72,6 +73,12 @@ class DishViewModel extends ChangeNotifier {
 
       if (isNew) {
         await _service.createDish(dish);
+        unawaited(FcmService.enqueueForAllCustomers(
+          title: '🆕 ¡Nuevo plato en carta!',
+          body:
+              'Descubre nuestro nuevo plato: ${dish.name ?? 'Novedad del chef'}. ¡No te lo pierdas!',
+          type: 'new_dish',
+        ));
       }
 
       if (imageFile != null) {

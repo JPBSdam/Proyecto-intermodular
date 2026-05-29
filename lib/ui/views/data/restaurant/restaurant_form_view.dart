@@ -211,8 +211,8 @@ class _RestaurantFormViewState extends State<RestaurantFormView> {
                   child: ElevatedButton(
                     onPressed: () => _save(vm),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
+                      backgroundColor: colorScheme.primaryContainer,
+                      foregroundColor: colorScheme.onPrimaryContainer,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

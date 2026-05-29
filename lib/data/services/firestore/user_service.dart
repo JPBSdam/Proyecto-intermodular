@@ -41,6 +41,7 @@ class UserService {
           name: firebaseUser.displayName,
           googlePhotoUrl: firebaseUser.photoURL,
           isActive: true,
+          role: 'USER',
         );
 
         await _repository.create(newUser);

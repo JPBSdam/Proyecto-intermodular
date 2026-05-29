@@ -86,8 +86,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.primaryContainer,
+          foregroundColor: colorScheme.onPrimaryContainer,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -98,9 +98,9 @@ class AppTheme {
         color: colorScheme.surfaceContainer,
         elevation: 0,
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.secondary,
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: brandSecondary,
+        foregroundColor: brandPrimary,
         elevation: 3,
       ),
     );

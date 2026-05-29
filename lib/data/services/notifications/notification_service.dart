@@ -111,7 +111,7 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
 
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
@@ -165,7 +165,7 @@ class NotificationService {
           channelDescription: 'Notificaciones sobre el estado de tus reservas',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
@@ -215,7 +215,7 @@ class NotificationService {
           channelDescription: 'Recordatorio del día de tu reserva',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
@@ -253,7 +253,7 @@ class NotificationService {
           channelDescription: 'Avisos cuando se añaden nuevos platos al menú',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
@@ -297,7 +297,7 @@ class NotificationService {
           channelDescription: 'Notificaciones push de SabrosApp',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
@@ -335,7 +335,7 @@ class NotificationService {
           channelDescription: 'Notificaciones push de SabrosApp',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,

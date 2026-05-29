@@ -4,6 +4,7 @@ import 'package:app_restaurante/data/model/dish.dart';
 import 'package:app_restaurante/data/model/menu.dart';
 import 'package:app_restaurante/data/services/firestore/dish_service.dart';
 import 'package:app_restaurante/data/services/firestore/menu_service.dart';
+import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
 import 'package:flutter/foundation.dart';
 
 class MenuViewModel extends ChangeNotifier {
@@ -74,8 +75,15 @@ class MenuViewModel extends ChangeNotifier {
   }
 
   // ───────────────────── CRUD ──────────────────────────────
-  Future<void> addMenu(Menu menu) async =>
-      _execute(() => _menuService.createMenu(menu));
+  Future<void> addMenu(Menu menu) async => _execute(() async {
+        await _menuService.createMenu(menu);
+        unawaited(FcmService.enqueueForAllCustomers(
+          title: '🍽️ ¡Nuevo menú disponible!',
+          body:
+              'Tenemos un nuevo menú: ${menu.name ?? 'Novedad del chef'}. ¡Échale un vistazo!',
+          type: 'new_menu',
+        ));
+      });
 
   Future<void> updateMenu(Menu menu) async =>
       _execute(() => _menuService.updateMenu(menu));

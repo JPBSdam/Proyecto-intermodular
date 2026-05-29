@@ -13,7 +13,9 @@ import 'package:app_restaurante/data/services/notifications/notification_service
 import 'package:app_restaurante/data/services/notifications/fcm_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'my_app.dart';
@@ -21,6 +23,13 @@ import 'my_app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.macOS) {
+    try {
+      await const MethodChannel('app.sabros/auth_config')
+          .invokeMethod('fixMacOSKeychain');
+    } catch (_) {}
+  }
 
   if (FirebaseAuth.instance.currentUser == null) {
     try {

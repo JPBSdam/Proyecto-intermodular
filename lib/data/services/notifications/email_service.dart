@@ -168,6 +168,10 @@ class EmailService {
     required String templateId,
     required Map<String, String> templateParams,
   }) async {
+    if (_publicKey.isEmpty || _serviceId.isEmpty || templateId.isEmpty) {
+      debugPrint('[EmailService] ⚠️ Credenciales EmailJS no configuradas (--dart-define)');
+      return;
+    }
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),

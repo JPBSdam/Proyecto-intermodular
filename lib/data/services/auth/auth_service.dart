@@ -115,6 +115,8 @@ class AuthService {
         return 'Esta cuenta ha sido deshabilitada.';
       case 'too-many-requests':
         return 'Demasiados intentos. Intenta más tarde.';
+      case 'requires-recent-login':
+        return 'Por seguridad, cierra sesión, vuelve a iniciarla y elimina la cuenta de nuevo.';
       case 'operation-not-allowed':
         return 'Operación no permitida.';
       case 'account-exists-with-different-credential':

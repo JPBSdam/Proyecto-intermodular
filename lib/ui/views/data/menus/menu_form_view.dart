@@ -150,8 +150,8 @@ class _MenuFormViewState extends State<MenuFormView> {
                   child: ElevatedButton(
                     onPressed: () => _apply(menuViewModel),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -161,7 +161,7 @@ class _MenuFormViewState extends State<MenuFormView> {
                       _menu == null ? 'CREAR MENÚ' : 'ACTUALIZAR MENÚ',
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ),

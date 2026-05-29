@@ -67,9 +67,13 @@ class LoginViewModel extends ChangeNotifier {
     try {
       final user = await _userRepository.getById(uid);
       if (user != null && user.isActive == false) {
+        // La cuenta estaba en proceso de borrado pero Auth no se eliminó.
+        // Aprovechamos que ahora está autenticado para terminar de borrarla.
+        try {
+          await _authService.deleteCurrentUser();
+        } catch (_) {}
         await _authService.signOut();
-        throw 'Esta cuenta no existe o ha sido eliminada. '
-            'Regístrate de nuevo para crear una cuenta.';
+        throw 'Tu cuenta ha sido eliminada. Puedes registrarte de nuevo con el mismo correo.';
       }
     } catch (e) {
       if (e is String) rethrow;

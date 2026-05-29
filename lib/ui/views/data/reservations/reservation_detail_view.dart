@@ -84,6 +84,10 @@ class _ReservationDetailViewState extends State<ReservationDetailView> {
 
   Widget _buildBody(ReservationViewModel vm, bool isAdmin) {
     if (_error.isNotEmpty) return Center(child: Text(_error));
+    if (_loading) return const SizedBox.shrink();
+    if (_reservation == null) {
+      return const Center(child: Text('Reserva no encontrada'));
+    }
 
     final r = _reservation!;
     final date = r.reservationDate;

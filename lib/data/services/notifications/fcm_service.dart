@@ -37,16 +37,8 @@ class FcmService {
       } catch (_) {}
     }());
 
-    // Escuchamos mensajes FCM cuando la app está en PRIMER PLANO.
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final notification = message.notification;
-      if (notification != null) {
-        NotificationService.showFromFcm(
-          title: notification.title ?? 'SabrosApp',
-          body: notification.body ?? '',
-        );
-      }
-    });
+    // Cuando la app está en primer plano, el listener de Firestore (listenToNotificationQueue)
+    // ya muestra la notificación local. No duplicamos con onMessage.
   }
 
   // ─── Gestión del token FCM ────────────────────────────────────────────────
@@ -55,7 +47,14 @@ class FcmService {
   // del usuario en Firestore. Este token identifica este dispositivo
   // para poder enviarle notificaciones push directas.
   static Future<void> saveUserToken(String userId) async {
-    final String? token = await _fcm.getToken();
+    final String? token;
+    try {
+      token = await _fcm.getToken();
+    } catch (e) {
+      // APNS token not yet available on iOS (common on simulator / first launch)
+      if (kDebugMode) print('[FcmService] getToken() skipped: $e');
+      return;
+    }
     if (token == null) return;
 
     await _db.collection('users').doc(userId).set({
@@ -146,6 +145,37 @@ class FcmService {
     }
 
     await _db.collection('notification_queue').add(data);
+  }
+
+  // ─── Notificar a TODOS los clientes (plato nuevo) ───────────────────────
+  static Future<void> enqueueForAllCustomers({
+    required String title,
+    required String body,
+    required String type,
+  }) async {
+    try {
+      final snapshot = await _db.collection('users').get();
+
+      for (final doc in snapshot.docs) {
+        final role = doc.data()['role'] as String?;
+        if (role == 'ADMIN') continue;
+
+        final notificationsEnabled =
+            doc.data()['notificationsEnabled'] as bool? ?? true;
+        if (!notificationsEnabled) continue;
+
+        await enqueueForUser(
+          toUserId: doc.id,
+          title: title,
+          body: body,
+          type: type,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('[FcmService] Error al notificar clientes: $e');
+      }
+    }
   }
 
   // ─── Notificar a TODOS los admins (reserva nueva) ────────────────────────

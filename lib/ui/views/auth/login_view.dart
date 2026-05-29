@@ -5,6 +5,7 @@ import 'package:app_restaurante/core/widgets/loading_overlay.dart';
 import 'package:app_restaurante/core/widgets/sabros_app_bar.dart';
 import 'package:app_restaurante/core/widgets/snackbars.dart';
 import 'package:app_restaurante/ui/viewmodels/auth/login_viewmodel.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -248,8 +249,10 @@ class _LoginViewState extends State<LoginView> {
           _buildPasswordField(),
           const SizedBox(height: 24),
           _buildLoginButton(viewModel),
-          const SizedBox(height: 16),
-          _buildGoogleButton(viewModel),
+          if (kIsWeb || defaultTargetPlatform != TargetPlatform.macOS) ...[
+            const SizedBox(height: 16),
+            _buildGoogleButton(viewModel),
+          ],
           const SizedBox(height: 16),
           _buildRegisterLink(viewModel),
         ],

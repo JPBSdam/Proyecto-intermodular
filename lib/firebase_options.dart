@@ -54,6 +54,7 @@ class DefaultFirebaseOptions {
     projectId: 'fir-proyecto-intermodular',
     storageBucket: 'fir-proyecto-intermodular.firebasestorage.app',
     iosBundleId: 'com.example.appRestaurante',
+    iosClientId: '941200508100-sfsfc2eims1me4qep56aq5q6ofi6agqv.apps.googleusercontent.com',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -61,8 +62,10 @@ class DefaultFirebaseOptions {
     appId: '1:941200508100:ios:55761e07f71ca21593b591',
     messagingSenderId: '941200508100',
     projectId: 'fir-proyecto-intermodular',
+    authDomain: 'fir-proyecto-intermodular.firebaseapp.com',
     storageBucket: 'fir-proyecto-intermodular.firebasestorage.app',
     iosBundleId: 'com.example.appRestaurante',
+    iosClientId: '941200508100-sfsfc2eims1me4qep56aq5q6ofi6agqv.apps.googleusercontent.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
