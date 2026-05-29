@@ -56,3 +56,12 @@ lib/ui/views/data_seed_screen.dart
 
 # Linux related
 **/linux/flutter/ephemeral/
+
+# Firebase / Google credentials — contienen secretos, no subir al repo
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# Cloud Functions
+functions/node_modules/
+functions/lib/
