@@ -1,4 +1,6 @@
-# 🍽️ SabrosApp - Aplicación de Restaurante
+# SabrosApp
+
+![SabrosApp Banner](assets/banner-sabrosapp.png)
 
 Una aplicación Flutter moderna para gestionar menús, reservas y autenticación de usuarios en restaurantes.
 
@@ -141,7 +143,25 @@ lib/
    flutter pub get
    ```
 
-3. **Configurar variables de entorno**
+3. **Obtener archivos secretos (no están en el repo)**
+
+   Estos archivos están en `.gitignore` por seguridad. Pídelos a un colaborador con acceso:
+
+   | Archivo | Dónde colocarlo | Para qué sirve |
+   |---------|-----------------|----------------|
+   | `google-services.json` | `android/app/google-services.json` | Configuración de Firebase para Android |
+   | `sabrosapp.jks` | `android/sabrosapp.jks` | Keystore para firmar el APK |
+   | `key.properties` | `android/key.properties` | Credenciales de la keystore |
+
+   Formato de `android/key.properties`:
+   ```properties
+   storePassword=CONTRASEÑA
+   keyPassword=CONTRASEÑA
+   keyAlias=upload
+   storeFile=../sabrosapp.jks
+   ```
+
+4. **Configurar variables de entorno**
 
    Las credenciales de EmailJS se inyectan en tiempo de compilación y **no están en el código fuente**. Para desarrollo local necesitas pasarlas con `--dart-define`.
 
@@ -179,7 +199,7 @@ lib/
 
    > Los valores reales están en los GitHub Secrets del repositorio. Pídelos a un colaborador con acceso.
 
-4. **Ejecutar la aplicación**
+5. **Ejecutar la aplicación**
    ```bash
    flutter run
    ```
@@ -226,11 +246,22 @@ lib/
 
 ## 🔄 GitHub Actions
 
-El proyecto incluye un workflow automático que:
+El proyecto tiene dos workflows:
 
+**CI (`github_workflow.yml`)** — se ejecuta en cada push y PR:
 - ✅ Analiza el código con `flutter analyze`
 - ✅ Ejecuta tests con `flutter test --coverage`
-- ✅ Verifica la calidad del código
+- ✅ Despliega la web en Netlify (solo rama `main`)
+
+**Release APK (`release.yml`)** — se ejecuta al crear un tag `v*`:
+- ✅ Compila el APK firmado en modo release
+- ✅ Crea automáticamente un GitHub Release con el APK adjunto
+
+Para lanzar una nueva versión:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ## 📱 Plataformas soportadas
 

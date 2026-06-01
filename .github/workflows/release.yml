@@ -1,0 +1,71 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Decode google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" \
+            | base64 --decode > android/app/google-services.json
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" \
+            | base64 --decode > $RUNNER_TEMP/sabrosapp.jks
+
+      - name: Crear key.properties
+        run: |
+          {
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "storeFile=$RUNNER_TEMP/sabrosapp.jks"
+          } > android/key.properties
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Build APK release
+        run: |
+          flutter build apk --release \
+            --dart-define=EMAILJS_SERVICE_ID=${{ secrets.EMAILJS_SERVICE_ID }} \
+            --dart-define=EMAILJS_PUBLIC_KEY=${{ secrets.EMAILJS_PUBLIC_KEY }} \
+            --dart-define=EMAILJS_PRIVATE_KEY=${{ secrets.EMAILJS_PRIVATE_KEY }} \
+            --dart-define=EMAILJS_TEMPLATE_ADMIN=${{ secrets.EMAILJS_TEMPLATE_ADMIN }} \
+            --dart-define=EMAILJS_TEMPLATE_CLIENT_CONFIRM=${{ secrets.EMAILJS_TEMPLATE_CLIENT_CONFIRM }}
+
+      - name: Renombrar APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             "build/app/outputs/flutter-apk/SabrosApp-${{ github.ref_name }}.apk"
+
+      - name: Crear GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "SabrosApp ${{ github.ref_name }}"
+          files: "build/app/outputs/flutter-apk/SabrosApp-${{ github.ref_name }}.apk"
+          generate_release_notes: true
