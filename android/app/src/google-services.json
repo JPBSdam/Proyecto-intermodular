@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "941200508100",
+    "project_id": "fir-proyecto-intermodular",
+    "storage_bucket": "fir-proyecto-intermodular.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941200508100:android:7cd004a2809b4fc693b591",
+        "android_client_info": {
+          "package_name": "com.example.app_restaurante"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "941200508100-7cpljm5g3102gg57ti2fblkc98qs9mgn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "8740150d107442155a15c97fa0cb0485ad2e8d26"
+          }
+        },
+        {
+          "client_id": "941200508100-8tir6iom0h0e36uh3oanbv3176hr3kau.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "a6d5f19cef385f96aa94ab46670681f72af8cdb8"
+          }
+        },
+        {
+          "client_id": "941200508100-9khhlt8q13ekmve5tiakd4tgj2d9r53q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "93dedc9ebbf51e31b05b43fc5d520539386b7d38"
+          }
+        },
+        {
+          "client_id": "941200508100-dnsosu0jrq4famonm1ih9rnep8dligu3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "f90ad28272f6ab1d8c34c9d18bb73f9d1edae86e"
+          }
+        },
+        {
+          "client_id": "941200508100-mglh1r6e7i3d8po17u0soo8j5bf322kd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_restaurante",
+            "certificate_hash": "a9382f77aef2914f1b708c075e48f06ad13353d3"
+          }
+        },
+        {
+          "client_id": "941200508100-nc328jj4fmla8c8vc8cp3ubqg7ttbjog.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwGuvxxDp9tQFPQD7AGy55dYBnIoOLti4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "941200508100-nc328jj4fmla8c8vc8cp3ubqg7ttbjog.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "941200508100-sfsfc2eims1me4qep56aq5q6ofi6agqv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.appRestaurante"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
