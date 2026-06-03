@@ -4,6 +4,8 @@
 
 Una aplicación Flutter moderna para gestionar menús, reservas y autenticación de usuarios en restaurantes.
 
+🌐 **Disponible en:** [sabrosapp.netlify.app](https://sabrosapp.netlify.app)
+
 ## 📋 Descripción del proyecto
 
 **SabrosApp** es una aplicación multiplataforma desarrollada en Flutter que permite:
